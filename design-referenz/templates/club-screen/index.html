@@ -1,0 +1,78 @@
+<!-- @template name="Club-App Screen" description="Mobile PWA screen scaffold — AppBar, scrolling content and bottom tab bar, in the Lions 2.0 style." -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Club-App Screen</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="./ds-base.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #E9E2D4; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: var(--font-sans); }
+  .lc-ic svg { width: 100%; height: 100%; display: block; stroke-width: 1.9; }
+  .pf { width: 390px; height: 760px; max-height: calc(100vh - 48px); background: var(--surface-app); border-radius: 44px; border: 10px solid #1b1814; overflow: hidden; box-shadow: 0 30px 70px -20px rgba(33,30,24,.45); display: flex; flex-direction: column; }
+  .pf__status { height: 44px; flex: none; display: flex; align-items: center; padding: 0 26px; font-weight: 600; font-size: 15px; color: var(--text-strong); }
+  .screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .screen__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+  .pad { padding: 12px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .hello { font-family: var(--font-display); font-weight: 600; font-size: 20px; color: var(--text-strong); margin: 4px 2px; }
+  .p { font-size: 15px; color: var(--text-secondary); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+function Ic({ name, size = 24 }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => { if (ref.current && window.lucide) { ref.current.innerHTML = `<i data-lucide="${name}"></i>`; window.lucide.createIcons(); } }, [name]);
+  return <span ref={ref} className="lc-ic" style={{ display: 'inline-flex', width: size, height: size }} />;
+}
+
+function Screen() {
+  const DS = window.LionsClubBonnRheinaueDesignSystem_4b530e || {};
+  const { AppBar, Card, ListRow, StatusBadge, TabBar, Button } = DS;
+  const [tab, setTab] = React.useState('termine');
+  const tabs = [
+    { id: 'termine', label: 'Termine', icon: <Ic name="calendar-days" /> },
+    { id: 'mitglieder', label: 'Mitglieder', icon: <Ic name="users" /> },
+    { id: 'news', label: 'News', icon: <Ic name="newspaper" /> },
+    { id: 'mehr', label: 'Mehr', icon: <Ic name="menu" /> },
+  ];
+  return (
+    <div className="pf">
+      <div className="pf__status">9:41</div>
+      <div className="screen">
+        <AppBar large title="Termine" eyebrow="Lions Club Bonn-Rheinaue" />
+        <div className="screen__scroll">
+          <div className="pad">
+            {/* Start building your screen here */}
+            <div className="hello">Neuer Screen</div>
+            <p className="p">Dieses Template lädt das Lions-2.0-Design-System. Komponenten kommen aus <code>window.LionsClubBonnRheinaueDesignSystem_4b530e</code>.</p>
+            <Card flush>
+              <ListRow lead={<StatusBadge status="yes" dotOnly />} title="Club-Abend Juni" subtitle="Restaurant Rheinblick" date={"12.06.\n19:00"} chevron />
+              <ListRow lead={<StatusBadge status="open" dotOnly />} title="Mitglieder-Versammlung" subtitle="Restaurant Rheinblick" date={"26.06.\n19:00"} chevron />
+            </Card>
+            <Button variant="primary" size="lg" fullWidth>Aktion</Button>
+          </div>
+        </div>
+        <TabBar items={tabs} value={tab} onChange={setTab} />
+      </div>
+    </div>
+  );
+}
+
+window.addEventListener('load', () => {
+  const start = () => {
+    if (!window.LionsClubBonnRheinaueDesignSystem_4b530e) { setTimeout(start, 60); return; }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Screen />);
+  };
+  start();
+});
+</script>
+</body>
+</html>

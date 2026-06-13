@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Ink — Text" subtitle="Warm near-black text scale; never pure grey" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 20px; background: var(--surface-card); }
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .sw { border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-hairline); }
+  .chip { height: 64px; display: flex; align-items: flex-end; padding: 6px 8px; }
+  .chip span { font-family: var(--font-display); font-size: 20px; color: var(--cream-50); }
+  .meta { padding: 8px 10px; }
+  .name { font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--text-strong); }
+  .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="swatches">
+  <div class="sw"><div class="chip" style="background:var(--ink-900)"><span>Aa</span></div><div class="meta"><div class="name">ink-900</div><div class="hex">#211E18 · body</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--ink-700)"><span>Aa</span></div><div class="meta"><div class="name">ink-700</div><div class="hex">#4A4438</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--ink-500)"><span>Aa</span></div><div class="meta"><div class="name">ink-500</div><div class="hex">#6E675A · 2nd</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--ink-400)"><span>Aa</span></div><div class="meta"><div class="name">ink-400</div><div class="hex">#8C8475 · muted</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--ink-300)"><span>Aa</span></div><div class="meta"><div class="name">ink-300</div><div class="hex">#ABA391 · disabled</div></div></div>
+</div>
+</body>
+</html>

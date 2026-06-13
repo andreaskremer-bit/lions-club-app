@@ -1,0 +1,114 @@
+/* ============================================================
+   COLORS — "Lions 2.0" warm-reduced palette
+   Base values first, then semantic aliases.
+   Light mode is the product default.
+   ============================================================ */
+
+:root {
+  /* ---- Warm neutrals (the source of the warmth) ---- */
+  --cream-50:  #FBF8F1;  /* lightest wash */
+  --cream-100: #F6F1E7;  /* app base surface */
+  --cream-card:#FCFAF4;  /* raised card surface */
+  --cream-200: #EFE8D9;  /* subtle fill / hover on cream */
+  --cream-300: #E4DCCB;  /* hairline / border */
+  --cream-400: #D6CBB4;  /* stronger divider */
+
+  /* ---- Ink (warm near-black, never pure grey) ---- */
+  --ink-900: #211E18;  /* primary text */
+  --ink-700: #4A4438;  /* strong secondary */
+  --ink-500: #6E675A;  /* secondary text */
+  --ink-400: #756C5A;  /* muted / placeholder */
+  --ink-300: #ABA391;  /* disabled text */
+
+  /* ---- Lions Blue (primary / action) ---- */
+  --blue-700: #16407F;  /* pressed */
+  --blue-600: #1E4FA3;  /* primary */
+  --blue-500: #2E62BC;  /* hover */
+  --blue-100: #DEE7F4;  /* tint fill */
+  --blue-50:  #EEF3FA;  /* lightest tint bg */
+
+  /* ---- Lions Gold (accent — sparing) ---- */
+  --gold-700: #9A7218;  /* text-on-light gold */
+  --gold-600: #B98A22;  /* accent */
+  --gold-400: #D2A847;  /* lighter */
+  --gold-100: #F3E8CC;  /* tint fill */
+  --gold-50:  #F9F1DD;  /* lightest tint bg */
+
+  /* ---- Clay / Red (gentle hints & warnings) ---- */
+  --clay-700: #963F22;  /* text-on-light clay */
+  --clay-600: #B4502F;  /* warning / negative */
+  --clay-100: #F3DFD5;  /* tint fill */
+  --clay-50:  #F8EAE2;  /* lightest tint bg */
+
+  /* ---- Sage green (present / success — disciplined use) ---- */
+  --sage-700: #2F5E42;
+  --sage-600: #3F7A53;
+  --sage-100: #DDEADF;
+  --sage-50:  #ECF3ED;
+
+  /* ====================================================
+     SEMANTIC ALIASES — reach for these in components
+     ==================================================== */
+
+  /* Surfaces */
+  --surface-app:    var(--cream-100);
+  --surface-card:   var(--cream-card);
+  --surface-sunken: var(--cream-50);
+  --surface-fill:   var(--cream-200);
+  --surface-blue:   var(--blue-50);
+  --surface-gold:   var(--gold-50);
+  --surface-clay:   var(--clay-50);
+  --surface-sage:   var(--sage-50);
+
+  /* Text */
+  --text-strong:      var(--ink-900);
+  --text-body:        var(--ink-700);
+  --text-secondary:   var(--ink-500);
+  --text-muted:       var(--ink-400);
+  --text-disabled:    var(--ink-300);
+  --text-on-primary:  #FBF8F1;
+  --text-link:        var(--blue-600);
+
+  /* Borders / lines */
+  --border-hairline: var(--cream-300);
+  --border-strong:   var(--cream-400);
+  --border-field:    #CFC6B2;
+  --border-focus:    var(--blue-600);
+
+  /* Primary action */
+  --primary:        var(--blue-600);
+  --primary-hover:  var(--blue-500);
+  --primary-press:  var(--blue-700);
+  --primary-tint:   var(--blue-100);
+
+  /* Accent */
+  --accent:       var(--gold-600);
+  --accent-text:  var(--gold-700);
+  --accent-tint:  var(--gold-100);
+
+  /* Status — event registration */
+  --status-yes-fg:   var(--gold-700);   /* angemeldet */
+  --status-yes-bg:   var(--gold-100);
+  --status-yes-dot:  var(--gold-600);
+  --status-no-fg:    var(--clay-700);   /* abgemeldet */
+  --status-no-bg:    var(--clay-100);
+  --status-no-dot:   var(--clay-600);
+  --status-open-fg:  var(--ink-500);    /* offen / keine Antwort */
+  --status-open-bg:  var(--cream-200);
+  --status-open-dot: var(--ink-400);
+
+  /* Status — attendance / present */
+  --present-fg:  var(--sage-700);
+  --present-bg:  var(--sage-100);
+  --present-dot: var(--sage-600);
+
+  /* Feedback */
+  --danger:   var(--clay-600);
+  --danger-fg:var(--clay-700);
+  --danger-bg:var(--clay-50);
+  --warning:  var(--gold-600);
+  --success:  var(--sage-600);
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(30, 79, 163, 0.30);
+}

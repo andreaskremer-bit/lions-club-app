@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Primary — Lions Blue" subtitle="Action color: buttons, links, active states" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 20px; background: var(--surface-card); }
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .sw { border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-hairline); }
+  .chip { height: 64px; }
+  .meta { padding: 8px 10px; }
+  .name { font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--text-strong); }
+  .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="swatches">
+  <div class="sw"><div class="chip" style="background:var(--blue-700)"></div><div class="meta"><div class="name">blue-700</div><div class="hex">#16407F · press</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--blue-600)"></div><div class="meta"><div class="name">blue-600</div><div class="hex">#1E4FA3 · primary</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--blue-500)"></div><div class="meta"><div class="name">blue-500</div><div class="hex">#2E62BC · hover</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--blue-100)"></div><div class="meta"><div class="name">blue-100</div><div class="hex">#DEE7F4 · tint</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--blue-50)"></div><div class="meta"><div class="name">blue-50</div><div class="hex">#EEF3FA · bg</div></div></div>
+</div>
+</body>
+</html>

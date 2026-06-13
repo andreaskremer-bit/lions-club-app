@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Accent — Lions Gold" subtitle="Sparing highlights: angemeldet status, badges, honors" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 20px; background: var(--surface-card); }
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .sw { border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-hairline); }
+  .chip { height: 64px; }
+  .meta { padding: 8px 10px; }
+  .name { font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--text-strong); }
+  .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="swatches">
+  <div class="sw"><div class="chip" style="background:var(--gold-700)"></div><div class="meta"><div class="name">gold-700</div><div class="hex">#9A7218 · text</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--gold-600)"></div><div class="meta"><div class="name">gold-600</div><div class="hex">#B98A22 · accent</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--gold-400)"></div><div class="meta"><div class="name">gold-400</div><div class="hex">#D2A847</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--gold-100)"></div><div class="meta"><div class="name">gold-100</div><div class="hex">#F3E8CC · tint</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--gold-50)"></div><div class="meta"><div class="name">gold-50</div><div class="hex">#F9F1DD · bg</div></div></div>
+</div>
+</body>
+</html>

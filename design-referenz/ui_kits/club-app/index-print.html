@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lions Club Bonn-Rheinaue — App · Screens (Print)</title>
+<link rel="stylesheet" href="../../styles.css" />
+<link rel="stylesheet" href="app.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="data.js"></script>
+<style>
+  html, body { background: #fff; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #root { display: block; }
+  .page {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    padding: 28px 0 40px; break-inside: avoid; break-after: page;
+  }
+  .page:last-child { break-after: auto; }
+  .cap {
+    font-family: var(--font-display); font-weight: 600; font-size: 20px; color: var(--text-strong);
+    letter-spacing: -0.01em; white-space: nowrap;
+  }
+  .cap small { font-family: var(--font-mono); font-weight: 500; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-right: 10px; }
+
+  /* Expand the phone frame to full content height for documentation */
+  .page .pf { height: auto; max-height: none; box-shadow: 0 0 0 1px rgba(33,30,24,.06); }
+  .page .pf, .page .pf__screen, .page .pf__body,
+  .page .app, .page .app__body,
+  .page .screen, .page .screen__scroll {
+    height: auto !important; min-height: 0 !important; overflow: visible !important;
+  }
+  .page .detail__cta { position: static; }
+
+  @page { size: portrait; margin: 0.8cm; }
+  @media print {
+    *, *::before, *::after {
+      animation-delay: -99s !important; animation-duration: .001s !important;
+      animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+      animation-play-state: running !important; transition-duration: 0s !important;
+    }
+    .page { padding: 8px 0 0; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="helpers.jsx"></script>
+<script type="text/babel" src="QuestionField.jsx"></script>
+<script type="text/babel" src="LoginScreen.jsx"></script>
+<script type="text/babel" src="EventListScreen.jsx"></script>
+<script type="text/babel" src="EventDetailScreen.jsx"></script>
+<script type="text/babel" src="MembersScreen.jsx"></script>
+<script type="text/babel" src="ProfileScreen.jsx"></script>
+<script type="text/babel" src="AttendanceScreen.jsx"></script>
+<script type="text/babel" src="TreasurerScreen.jsx"></script>
+<script type="text/babel" src="AdminScreen.jsx"></script>
+<script type="text/babel">
+const noop = () => {};
+const { PhoneFrame, LoginScreen, EventListScreen, EventDetailScreen, MembersScreen, ProfileScreen, AttendanceScreen, TreasurerScreen, AdminScreen } = window;
+
+function Page({ n, title, children }) {
+  return (
+    <div className="page">
+      <div className="cap"><small>{n}</small>{title}</div>
+      <PhoneFrame>{children}</PhoneFrame>
+    </div>
+  );
+}
+
+function PrintDoc() {
+  return (
+    <React.Fragment>
+      <Page n="01" title="Login (E-Mail-OTP)"><LoginScreen onLogin={noop} /></Page>
+      <Page n="02" title="Terminübersicht"><EventListScreen onOpen={noop} /></Page>
+      <Page n="03" title="Termin-Detail"><EventDetailScreen eventId="e1" onBack={noop} /></Page>
+      <Page n="04" title="Termin-Detail · Reise"><EventDetailScreen eventId="e5" onBack={noop} /></Page>
+      <Page n="05" title="Mitgliederverzeichnis"><MembersScreen onOpen={noop} /></Page>
+      <Page n="06" title="Mein Profil"><ProfileScreen /></Page>
+      <Page n="07" title="Anwesenheit erfassen"><AttendanceScreen onBack={noop} /></Page>
+      <Page n="08" title="Schatzmeister-Auswertung"><TreasurerScreen onBack={noop} /></Page>
+      <Page n="09" title="Jahresplanung (Admin)"><AdminScreen onBack={noop} onOpen={noop} /></Page>
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<PrintDoc />);
+requestAnimationFrame(() => window.lucide && window.lucide.createIcons());
+</script>
+<script type="text/babel">
+window.addEventListener('load', () => {
+  const go = () => setTimeout(() => window.print(), 700);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+});
+</script>
+</body>
+</html>

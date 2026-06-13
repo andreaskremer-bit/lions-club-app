@@ -1,0 +1,89 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Core — Buttons, Cards, Avatars, Tags" subtitle="Primary actions, hairline cards, member avatars & type pills" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { padding: 24px; background: var(--surface-app); }
+  .grid { display: flex; flex-direction: column; gap: 22px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; }
+  .block + .block { border-top: 1px solid var(--border-hairline); padding-top: 18px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Button, IconButton, Card, Avatar, Tag } = window.LionsClubBonnRheinaueDesignSystem_4b530e;
+const Ic = ({ n }) => <i data-lucide={n}></i>;
+
+function Demo() {
+  return (
+    <div className="grid">
+      <div className="block">
+        <div className="lbl">Button — Varianten & Größen</div>
+        <div className="row">
+          <Button variant="primary">Anmelden</Button>
+          <Button variant="secondary">Abmelden</Button>
+          <Button variant="ghost">Mehr</Button>
+          <Button variant="danger">Löschen</Button>
+          <Button variant="primary" disabled>Deaktiviert</Button>
+        </div>
+        <div className="row" style={{ marginTop: 12 }}>
+          <Button size="sm" variant="secondary">Klein</Button>
+          <Button size="md" iconLeft={<Ic n="check" />}>Mittel</Button>
+          <Button size="lg" iconRight={<Ic n="arrow-right" />}>Groß</Button>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="lbl">IconButton</div>
+        <div className="row">
+          <IconButton icon={<Ic n="phone" />} label="Anrufen" tone="primary" bordered />
+          <IconButton icon={<Ic n="mail" />} label="Mail" bordered />
+          <IconButton icon={<Ic n="pencil" />} label="Bearbeiten" />
+          <IconButton icon={<Ic n="bell" />} label="Mitteilungen" />
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="lbl">Card · Avatar · Tag</div>
+        <div className="row" style={{ alignItems: 'stretch' }}>
+          <Card style={{ flex: 1, minWidth: 230 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <Avatar name="Andreas Kremer" size="lg" />
+              <div>
+                <div style={{ fontWeight: 600, color: 'var(--text-strong)' }}>Andreas Kremer</div>
+                <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Präsident</div>
+              </div>
+            </div>
+          </Card>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center' }}>
+            <div className="row">
+              <Avatar name="Maria Vogt" tone="blue" />
+              <Avatar name="Jens Berg" tone="cream" />
+              <Avatar name="L K" size="sm" />
+            </div>
+            <div className="row">
+              <Tag tone="blue">Club-Abend</Tag>
+              <Tag tone="gold" dot>Ehrenmitglied</Tag>
+              <Tag outline icon={<Ic n="map-pin" />}>Bonn</Tag>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+requestAnimationFrame(() => window.lucide && window.lucide.createIcons());
+</script>
+</body>
+</html>

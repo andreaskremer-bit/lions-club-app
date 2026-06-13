@@ -1,0 +1,41 @@
+<!-- @dsCard group="Brand" viewport="700x250" name="Logo lockup" subtitle="Official Lions emblem with the club wordmark — on cream and on Lions Blue" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 28px; background: var(--surface-card); font-family: var(--font-sans); }
+  .stack { display: flex; align-items: stretch; gap: 22px; flex-wrap: wrap; }
+  .panel { flex: 1; min-width: 280px; display: flex; align-items: center; gap: 18px; padding: 22px 24px; border-radius: var(--radius-md); }
+  .panel--cream { background: var(--surface-app); border: 1px solid var(--border-hairline); }
+  .panel--blue { background: var(--blue-700); }
+  .emblem { width: 78px; height: 78px; flex: none; object-fit: contain; }
+  .wm-name { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.08; letter-spacing: -0.01em; color: var(--text-strong); white-space: nowrap; }
+  .wm-rule { width: 30px; height: 3px; border-radius: 2px; background: var(--gold-400); margin: 9px 0 7px; }
+  .wm-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold-700); }
+  .panel--blue .wm-name { color: var(--cream-50); }
+  .panel--blue .wm-sub { color: var(--gold-400); }
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="panel panel--cream">
+    <img class="emblem" src="../assets/lions-emblem.png" alt="Lions Clubs International Emblem" />
+    <div>
+      <div class="wm-name">Lions Club<br/>Bonn-Rheinaue</div>
+      <div class="wm-rule"></div>
+      <div class="wm-sub">We Serve</div>
+    </div>
+  </div>
+  <div class="panel panel--blue">
+    <img class="emblem" src="../assets/lions-emblem.png" alt="Lions Clubs International Emblem" />
+    <div>
+      <div class="wm-name">Lions Club<br/>Bonn-Rheinaue</div>
+      <div class="wm-rule"></div>
+      <div class="wm-sub">We Serve</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

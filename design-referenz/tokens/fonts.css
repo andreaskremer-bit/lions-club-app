@@ -1,0 +1,10 @@
+/* ============================================================
+   Webfonts — Lions Club Bonn-Rheinaue "Lions 2.0"
+   Source superfamily loaded via Google Fonts CDN.
+   Serif display for headlines, clear sans for content,
+   mono (sparingly) for dates / times / uppercase labels.
+   NOTE: CDN-loaded, not self-hosted. Provide TTF/WOFF2 files
+   to self-host (see readme → Visual Foundations / Typography).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
