@@ -1,0 +1,11 @@
+/* ============================================================
+   Lions Club Bonn-Rheinaue — Design System (Tokens)
+   Globaler Einstiegspunkt der App. Schriften werden separat
+   self-hosted importiert (src/lib/styles/fonts.ts), NICHT über
+   das Google-Fonts-CDN (DSGVO).
+   ============================================================ */
+
+@import './tokens/colors.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/base.css';

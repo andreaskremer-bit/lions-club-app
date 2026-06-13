@@ -1,6 +1,7 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-netlify';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 
 export default defineConfig({
 	plugins: [
@@ -11,10 +12,35 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 
-			// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-			// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-			// See https://svelte.dev/docs/kit/adapters for more information about adapters.
+			// Netlify deployment (DPF-zertifiziert); personenbezogene Daten möglichst client -> Supabase.
 			adapter: adapter()
+		}),
+		// PWA-Fundament. Offline-Shell / Reminder-Service-Worker folgen in M5.
+		SvelteKitPWA({
+			registerType: 'autoUpdate',
+			manifest: {
+				name: 'Lions Club Bonn-Rheinaue',
+				short_name: 'Lions BN-Rheinaue',
+				description: 'Clubverwaltung des Lions Club Bonn-Rheinaue',
+				lang: 'de',
+				dir: 'ltr',
+				start_url: '/',
+				scope: '/',
+				display: 'standalone',
+				orientation: 'portrait',
+				background_color: '#F6F1E7',
+				theme_color: '#1E4FA3',
+				icons: [
+					{ src: '/icons/pwa-192.png', sizes: '192x192', type: 'image/png' },
+					{ src: '/icons/pwa-512.png', sizes: '512x512', type: 'image/png' },
+					{
+						src: '/icons/pwa-maskable-512.png',
+						sizes: '512x512',
+						type: 'image/png',
+						purpose: 'maskable'
+					}
+				]
+			}
 		})
 	]
 });

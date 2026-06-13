@@ -1,11 +1,8 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
+	import '$lib/styles/fonts'; // self-hosted Schriften (DSGVO: kein Google-Fonts-CDN)
+	import '$lib/styles/app.css'; // Design-Tokens "Lions 2.0"
 
 	let { children } = $props();
 </script>
-
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
 
 {@render children()}
