@@ -20,34 +20,42 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-avatar-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-avatar-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-avatar-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 function initials(name = '') {
-  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+	return name
+		.trim()
+		.split(/\s+/)
+		.slice(0, 2)
+		.map((w) => w[0] || '')
+		.join('')
+		.toUpperCase();
 }
 
 export function Avatar({
-  name = '',
-  src = null,
-  size = 'md',
-  tone = 'gold',
-  className = '',
-  ...rest
+	name = '',
+	src = null,
+	size = 'md',
+	tone = 'gold',
+	className = '',
+	...rest
 }) {
-  const cls = [
-    'lc-avatar',
-    `lc-avatar--${size}`,
-    tone !== 'gold' ? `lc-avatar--${tone}` : '',
-    className,
-  ].filter(Boolean).join(' ');
+	const cls = [
+		'lc-avatar',
+		`lc-avatar--${size}`,
+		tone !== 'gold' ? `lc-avatar--${tone}` : '',
+		className
+	]
+		.filter(Boolean)
+		.join(' ');
 
-  return (
-    <span className={cls} aria-label={name || undefined} {...rest}>
-      {src ? <img src={src} alt={name} /> : initials(name)}
-    </span>
-  );
+	return (
+		<span className={cls} aria-label={name || undefined} {...rest}>
+			{src ? <img src={src} alt={name} /> : initials(name)}
+		</span>
+	);
 }

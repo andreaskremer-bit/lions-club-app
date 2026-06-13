@@ -1,70 +1,193 @@
 <!-- @dsCard group="Brand" viewport="700x280" name="Signature pattern — event card" subtitle="Date chip · program title · type badge · own status (Zugesagt/Abgesagt/Offen) · ✓✗? counts" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<style>
-  body { margin: 0; padding: 22px; background: var(--surface-app); font-family: var(--font-sans); }
-  .list { display: flex; flex-direction: column; gap: 10px; }
-  .card { display: flex; gap: 14px; background: var(--surface-card); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); padding: 14px; }
-  .date { flex: none; width: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--blue-50); border-radius: var(--radius-sm); padding: 8px 0; color: var(--blue-700); }
-  .date .wd, .date .mon { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
-  .date .d { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1; margin: 1px 0 2px; }
-  .body { flex: 1; min-width: 0; }
-  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-  .title { font-size: 17px; font-weight: 600; color: var(--text-strong); line-height: 1.25; }
-  .meta { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; margin-top: 4px; }
-  .meta i { width: 14px; height: 14px; color: var(--ink-500); }
-  .foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
-  .tag { display: inline-flex; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
-  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px 3px 7px; border-radius: 999px; white-space: nowrap; }
-  .status .pt { width: 7px; height: 7px; border-radius: 50%; }
-  .rc { display: inline-flex; align-items: center; gap: 11px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; }
-  .rc span { display: inline-flex; align-items: center; gap: 3px; }
-  .rc i { width: 14px; height: 14px; }
-</style>
-</head>
-<body>
-<div class="list">
-  <div class="card">
-    <div class="date"><span class="wd">Do</span><span class="d">12</span><span class="mon">Jun</span></div>
-    <div class="body">
-      <div class="head">
-        <span class="title">Thalia Buchhandlung – gestern, heute, morgen</span>
-        <span class="status" style="background:var(--status-yes-bg);color:var(--status-yes-fg)"><span class="pt" style="background:var(--status-yes-dot)"></span>Zugesagt</span>
-      </div>
-      <div class="meta"><i data-lucide="map-pin"></i> Restaurant Rheinblick · <span class="u-mono">19:00</span></div>
-      <div class="foot">
-        <span class="tag" style="background:var(--blue-50);color:var(--blue-700)">Club-Abend</span>
-        <span class="rc">
-          <span style="color:var(--status-yes-fg)"><i data-lucide="check"></i>21</span>
-          <span style="color:var(--status-no-fg)"><i data-lucide="x"></i>4</span>
-          <span style="color:var(--ink-500)"><i data-lucide="circle-help"></i>9</span>
-        </span>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="date"><span class="wd">So</span><span class="d">28</span><span class="mon">Jun</span></div>
-    <div class="body">
-      <div class="head">
-        <span class="title">Distriktversammlung 111-RN</span>
-        <span class="status" style="background:var(--status-no-bg);color:var(--status-no-fg)"><span class="pt" style="background:var(--status-no-dot)"></span>Abgesagt</span>
-      </div>
-      <div class="meta"><i data-lucide="map-pin"></i> Maritim Hotel · <span class="u-mono">10:00</span></div>
-      <div class="foot">
-        <span class="tag" style="background:var(--cream-200);color:var(--ink-700)">Lions-Termin</span>
-        <span class="rc">
-          <span style="color:var(--status-yes-fg)"><i data-lucide="check"></i>6</span>
-          <span style="color:var(--status-no-fg)"><i data-lucide="x"></i>8</span>
-          <span style="color:var(--ink-500)"><i data-lucide="circle-help"></i>20</span>
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
-<script>requestAnimationFrame(() => window.lucide && window.lucide.createIcons());</script>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+		<style>
+			body {
+				margin: 0;
+				padding: 22px;
+				background: var(--surface-app);
+				font-family: var(--font-sans);
+			}
+			.list {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+			.card {
+				display: flex;
+				gap: 14px;
+				background: var(--surface-card);
+				border: 1px solid var(--border-hairline);
+				border-radius: var(--radius-md);
+				padding: 14px;
+			}
+			.date {
+				flex: none;
+				width: 52px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				background: var(--blue-50);
+				border-radius: var(--radius-sm);
+				padding: 8px 0;
+				color: var(--blue-700);
+			}
+			.date .wd,
+			.date .mon {
+				font-family: var(--font-mono);
+				font-size: 11px;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+			}
+			.date .d {
+				font-family: var(--font-display);
+				font-weight: 600;
+				font-size: 24px;
+				line-height: 1;
+				margin: 1px 0 2px;
+			}
+			.body {
+				flex: 1;
+				min-width: 0;
+			}
+			.head {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 10px;
+			}
+			.title {
+				font-size: 17px;
+				font-weight: 600;
+				color: var(--text-strong);
+				line-height: 1.25;
+			}
+			.meta {
+				font-size: 13px;
+				color: var(--text-secondary);
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				margin-top: 4px;
+			}
+			.meta i {
+				width: 14px;
+				height: 14px;
+				color: var(--ink-500);
+			}
+			.foot {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 10px;
+				margin-top: 8px;
+			}
+			.tag {
+				display: inline-flex;
+				font-size: 12px;
+				font-weight: 600;
+				padding: 2px 9px;
+				border-radius: 999px;
+			}
+			.status {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 12px;
+				font-weight: 600;
+				padding: 3px 9px 3px 7px;
+				border-radius: 999px;
+				white-space: nowrap;
+			}
+			.status .pt {
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+			}
+			.rc {
+				display: inline-flex;
+				align-items: center;
+				gap: 11px;
+				font-family: var(--font-mono);
+				font-variant-numeric: tabular-nums;
+				font-size: 13px;
+				font-weight: 600;
+			}
+			.rc span {
+				display: inline-flex;
+				align-items: center;
+				gap: 3px;
+			}
+			.rc i {
+				width: 14px;
+				height: 14px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="list">
+			<div class="card">
+				<div class="date">
+					<span class="wd">Do</span><span class="d">12</span><span class="mon">Jun</span>
+				</div>
+				<div class="body">
+					<div class="head">
+						<span class="title">Thalia Buchhandlung – gestern, heute, morgen</span>
+						<span
+							class="status"
+							style="background: var(--status-yes-bg); color: var(--status-yes-fg)"
+							><span class="pt" style="background: var(--status-yes-dot)"></span>Zugesagt</span
+						>
+					</div>
+					<div class="meta">
+						<i data-lucide="map-pin"></i> Restaurant Rheinblick · <span class="u-mono">19:00</span>
+					</div>
+					<div class="foot">
+						<span class="tag" style="background: var(--blue-50); color: var(--blue-700)"
+							>Club-Abend</span
+						>
+						<span class="rc">
+							<span style="color: var(--status-yes-fg)"><i data-lucide="check"></i>21</span>
+							<span style="color: var(--status-no-fg)"><i data-lucide="x"></i>4</span>
+							<span style="color: var(--ink-500)"><i data-lucide="circle-help"></i>9</span>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="date">
+					<span class="wd">So</span><span class="d">28</span><span class="mon">Jun</span>
+				</div>
+				<div class="body">
+					<div class="head">
+						<span class="title">Distriktversammlung 111-RN</span>
+						<span class="status" style="background: var(--status-no-bg); color: var(--status-no-fg)"
+							><span class="pt" style="background: var(--status-no-dot)"></span>Abgesagt</span
+						>
+					</div>
+					<div class="meta">
+						<i data-lucide="map-pin"></i> Maritim Hotel · <span class="u-mono">10:00</span>
+					</div>
+					<div class="foot">
+						<span class="tag" style="background: var(--cream-200); color: var(--ink-700)"
+							>Lions-Termin</span
+						>
+						<span class="rc">
+							<span style="color: var(--status-yes-fg)"><i data-lucide="check"></i>6</span>
+							<span style="color: var(--status-no-fg)"><i data-lucide="x"></i>8</span>
+							<span style="color: var(--ink-500)"><i data-lucide="circle-help"></i>20</span>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			requestAnimationFrame(() => window.lucide && window.lucide.createIcons());
+		</script>
+	</body>
 </html>

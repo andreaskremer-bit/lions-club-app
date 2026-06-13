@@ -1,25 +1,75 @@
 <!-- @dsCard group="Colors" viewport="700x160" name="Status & Semantic" subtitle="Registration states (gold/clay/neutral), present (sage), warning clay" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<style>
-  body { margin: 0; padding: 20px; background: var(--surface-card); font-family: var(--font-sans); }
-  .rows { display: flex; flex-direction: column; gap: 10px; }
-  .r { display: flex; align-items: center; gap: 12px; }
-  .badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 8px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 600; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; }
-  .desc { font-size: 13px; color: var(--text-secondary); }
-  .desc b { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
-</style>
-</head>
-<body>
-<div class="rows">
-  <div class="r"><span class="badge" style="background:var(--status-yes-bg);color:var(--status-yes-fg)"><span class="dot" style="background:var(--status-yes-dot)"></span>Angemeldet</span><span class="desc">Gold — positive Rückmeldung · <b>--status-yes-*</b></span></div>
-  <div class="r"><span class="badge" style="background:var(--status-no-bg);color:var(--status-no-fg)"><span class="dot" style="background:var(--status-no-dot)"></span>Abgemeldet</span><span class="desc">Clay — Absage · <b>--status-no-*</b></span></div>
-  <div class="r"><span class="badge" style="background:var(--status-open-bg);color:var(--status-open-fg)"><span class="dot" style="background:var(--status-open-dot)"></span>Offen</span><span class="desc">Neutral — keine Antwort · <b>--status-open-*</b></span></div>
-  <div class="r"><span class="badge" style="background:var(--present-bg);color:var(--present-fg)"><span class="dot" style="background:var(--present-dot)"></span>Anwesend</span><span class="desc">Sage — Anwesenheit erfasst · <b>--present-*</b></span></div>
-</div>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<style>
+			body {
+				margin: 0;
+				padding: 20px;
+				background: var(--surface-card);
+				font-family: var(--font-sans);
+			}
+			.rows {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+			.r {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+			.badge {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 4px 12px 4px 8px;
+				border-radius: var(--radius-pill);
+				font-size: 14px;
+				font-weight: 600;
+			}
+			.dot {
+				width: 9px;
+				height: 9px;
+				border-radius: 50%;
+			}
+			.desc {
+				font-size: 13px;
+				color: var(--text-secondary);
+			}
+			.desc b {
+				font-family: var(--font-mono);
+				font-size: 11px;
+				text-transform: uppercase;
+				color: var(--text-muted);
+				font-weight: 500;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="rows">
+			<div class="r">
+				<span class="badge" style="background: var(--status-yes-bg); color: var(--status-yes-fg)"
+					><span class="dot" style="background: var(--status-yes-dot)"></span>Angemeldet</span
+				><span class="desc">Gold — positive Rückmeldung · <b>--status-yes-*</b></span>
+			</div>
+			<div class="r">
+				<span class="badge" style="background: var(--status-no-bg); color: var(--status-no-fg)"
+					><span class="dot" style="background: var(--status-no-dot)"></span>Abgemeldet</span
+				><span class="desc">Clay — Absage · <b>--status-no-*</b></span>
+			</div>
+			<div class="r">
+				<span class="badge" style="background: var(--status-open-bg); color: var(--status-open-fg)"
+					><span class="dot" style="background: var(--status-open-dot)"></span>Offen</span
+				><span class="desc">Neutral — keine Antwort · <b>--status-open-*</b></span>
+			</div>
+			<div class="r">
+				<span class="badge" style="background: var(--present-bg); color: var(--present-fg)"
+					><span class="dot" style="background: var(--present-dot)"></span>Anwesend</span
+				><span class="desc">Sage — Anwesenheit erfasst · <b>--present-*</b></span>
+			</div>
+		</div>
+	</body>
 </html>

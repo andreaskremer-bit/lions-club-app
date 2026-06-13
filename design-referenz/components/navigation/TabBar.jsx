@@ -30,31 +30,35 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-tabbar-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-tabbar-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-tabbar-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function TabBar({ items = [], value, onChange = () => {}, className = '' }) {
-  return (
-    <nav className={['lc-tabbar', className].filter(Boolean).join(' ')}>
-      {items.map(it => {
-        const active = it.id === value;
-        return (
-          <button
-            key={it.id}
-            type="button"
-            className={['lc-tabbar__item', active ? 'lc-tabbar__item--active' : ''].filter(Boolean).join(' ')}
-            aria-current={active ? 'page' : undefined}
-            onClick={() => onChange(it.id)}
-          >
-            <span className="lc-tabbar__icon">{active && it.iconActive ? it.iconActive : it.icon}</span>
-            {it.badge ? <span className="lc-tabbar__badge">{it.badge}</span> : null}
-            <span className="lc-tabbar__label">{it.label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
+	return (
+		<nav className={['lc-tabbar', className].filter(Boolean).join(' ')}>
+			{items.map((it) => {
+				const active = it.id === value;
+				return (
+					<button
+						key={it.id}
+						type="button"
+						className={['lc-tabbar__item', active ? 'lc-tabbar__item--active' : '']
+							.filter(Boolean)
+							.join(' ')}
+						aria-current={active ? 'page' : undefined}
+						onClick={() => onChange(it.id)}
+					>
+						<span className="lc-tabbar__icon">
+							{active && it.iconActive ? it.iconActive : it.icon}
+						</span>
+						{it.badge ? <span className="lc-tabbar__badge">{it.badge}</span> : null}
+						<span className="lc-tabbar__label">{it.label}</span>
+					</button>
+				);
+			})}
+		</nav>
+	);
 }

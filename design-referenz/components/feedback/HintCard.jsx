@@ -25,28 +25,21 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-hint-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-hint-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-hint-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
-export function HintCard({
-  children,
-  title,
-  tone = 'info',
-  icon = null,
-  className = '',
-  ...rest
-}) {
-  const cls = ['lc-hint', `lc-hint--${tone}`, className].filter(Boolean).join(' ');
-  return (
-    <div className={cls} role="note" {...rest}>
-      {icon ? <span className="lc-hint__icon">{icon}</span> : null}
-      <div className="lc-hint__body">
-        {title ? <p className="lc-hint__title">{title}</p> : null}
-        {children ? <p className="lc-hint__text">{children}</p> : null}
-      </div>
-    </div>
-  );
+export function HintCard({ children, title, tone = 'info', icon = null, className = '', ...rest }) {
+	const cls = ['lc-hint', `lc-hint--${tone}`, className].filter(Boolean).join(' ');
+	return (
+		<div className={cls} role="note" {...rest}>
+			{icon ? <span className="lc-hint__icon">{icon}</span> : null}
+			<div className="lc-hint__body">
+				{title ? <p className="lc-hint__title">{title}</p> : null}
+				{children ? <p className="lc-hint__text">{children}</p> : null}
+			</div>
+		</div>
+	);
 }

@@ -23,28 +23,39 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-check-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-check-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-check-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function Checkbox({ label, description, radio = false, name, className = '', ...rest }) {
-  const cls = ['lc-check', radio ? 'lc-check--radio' : '', className].filter(Boolean).join(' ');
-  return (
-    <label className={cls}>
-      <input type={radio ? 'radio' : 'checkbox'} name={name} {...rest} />
-      <span className="lc-check__box">
-        {radio
-          ? <span className="lc-check__dot" />
-          : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
-      </span>
-      {(label || description) ? (
-        <span className="lc-check__text">
-          {label ? <span className="lc-check__label">{label}</span> : null}
-          {description ? <span className="lc-check__desc">{description}</span> : null}
-        </span>
-      ) : null}
-    </label>
-  );
+	const cls = ['lc-check', radio ? 'lc-check--radio' : '', className].filter(Boolean).join(' ');
+	return (
+		<label className={cls}>
+			<input type={radio ? 'radio' : 'checkbox'} name={name} {...rest} />
+			<span className="lc-check__box">
+				{radio ? (
+					<span className="lc-check__dot" />
+				) : (
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="3"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<path d="M20 6 9 17l-5-5" />
+					</svg>
+				)}
+			</span>
+			{label || description ? (
+				<span className="lc-check__text">
+					{label ? <span className="lc-check__label">{label}</span> : null}
+					{description ? <span className="lc-check__desc">{description}</span> : null}
+				</span>
+			) : null}
+		</label>
+	);
 }

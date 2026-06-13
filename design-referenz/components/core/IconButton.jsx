@@ -22,32 +22,34 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-iconbtn-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-iconbtn-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-iconbtn-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function IconButton({
-  icon,
-  label,
-  size = 'md',
-  bordered = false,
-  tone = 'default',
-  className = '',
-  ...rest
+	icon,
+	label,
+	size = 'md',
+	bordered = false,
+	tone = 'default',
+	className = '',
+	...rest
 }) {
-  const cls = [
-    'lc-iconbtn',
-    `lc-iconbtn--${size}`,
-    bordered ? 'lc-iconbtn--bordered' : '',
-    tone === 'primary' ? 'lc-iconbtn--primary' : '',
-    className,
-  ].filter(Boolean).join(' ');
+	const cls = [
+		'lc-iconbtn',
+		`lc-iconbtn--${size}`,
+		bordered ? 'lc-iconbtn--bordered' : '',
+		tone === 'primary' ? 'lc-iconbtn--primary' : '',
+		className
+	]
+		.filter(Boolean)
+		.join(' ');
 
-  return (
-    <button type="button" className={cls} aria-label={label} title={label} {...rest}>
-      {icon}
-    </button>
-  );
+	return (
+		<button type="button" className={cls} aria-label={label} title={label} {...rest}>
+			{icon}
+		</button>
+	);
 }

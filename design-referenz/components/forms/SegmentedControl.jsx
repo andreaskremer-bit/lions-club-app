@@ -20,33 +20,36 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-seg-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-seg-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-seg-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function SegmentedControl({ options = [], value, onChange = () => {}, className = '' }) {
-  return (
-    <div className={['lc-seg', className].filter(Boolean).join(' ')} role="tablist">
-      {options.map(o => {
-        const val = typeof o === 'string' ? o : o.value;
-        const text = typeof o === 'string' ? o : o.label;
-        const icon = typeof o === 'object' ? o.icon : null;
-        const active = val === value;
-        return (
-          <button
-            key={val}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            className={['lc-seg__btn', active ? 'lc-seg__btn--active' : ''].filter(Boolean).join(' ')}
-            onClick={() => onChange(val)}
-          >
-            {icon}{text}
-          </button>
-        );
-      })}
-    </div>
-  );
+	return (
+		<div className={['lc-seg', className].filter(Boolean).join(' ')} role="tablist">
+			{options.map((o) => {
+				const val = typeof o === 'string' ? o : o.value;
+				const text = typeof o === 'string' ? o : o.label;
+				const icon = typeof o === 'object' ? o.icon : null;
+				const active = val === value;
+				return (
+					<button
+						key={val}
+						type="button"
+						role="tab"
+						aria-selected={active}
+						className={['lc-seg__btn', active ? 'lc-seg__btn--active' : '']
+							.filter(Boolean)
+							.join(' ')}
+						onClick={() => onChange(val)}
+					>
+						{icon}
+						{text}
+					</button>
+				);
+			})}
+		</div>
+	);
 }

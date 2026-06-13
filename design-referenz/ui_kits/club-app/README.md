@@ -3,11 +3,13 @@
 Interactive mobile recreation of the Lions Club Bonn-Rheinaue PWA. Open `index.html`.
 
 ## Flow
+
 Login (e-mail → 6-digit OTP) → **Termine** (list / calendar) → tap an event → **Termin-Detail** (An-/Abmelden, Begleitperson, Menüauswahl). Bottom tabs: **Termine · Mitglieder · News · Mehr**. From **Mehr**, board tools open: **Anwesenheit erfassen** and **Schatzmeister-Auswertung**, plus **Mein Profil** (Selbstpflege).
 
 To skip the login on load, the OTP step accepts any 6 digits.
 
 ## Files
+
 - `index.html` — entry; loads `styles.css`, `_ds_bundle.js` (components), Lucide, then the screens.
 - `data.js` — sample members, events, donations (`window.LC_DATA`).
 - `helpers.jsx` — `Ic` (Lucide wrapper) and `PhoneFrame`.

@@ -9,13 +9,13 @@ import { ReactNode } from 'react';
  * @startingPoint section="Feedback" subtitle="Angemeldet / Abgemeldet / Offen status badge" viewport="700x120"
  */
 export interface StatusBadgeProps {
-  /** Registration / attendance state. @default "open" */
-  status?: 'yes' | 'no' | 'open' | 'present';
-  /** Override the default German label. */
-  children?: ReactNode;
-  /** Render only the colored circle (for list-row leading edge). */
-  dotOnly?: boolean;
-  className?: string;
+	/** Registration / attendance state. @default "open" */
+	status?: 'yes' | 'no' | 'open' | 'present';
+	/** Override the default German label. */
+	children?: ReactNode;
+	/** Render only the colored circle (for list-row leading edge). */
+	dotOnly?: boolean;
+	className?: string;
 }
 
 export function StatusBadge(props: StatusBadgeProps): JSX.Element;

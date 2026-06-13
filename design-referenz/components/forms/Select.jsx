@@ -21,37 +21,51 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-select-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-select-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-select-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
-export function Select({
-  label,
-  options = [],
-  placeholder,
-  id,
-  className = '',
-  ...rest
-}) {
-  const fieldId = id || (label ? `s-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
-  return (
-    <div className={['lc-select-wrap', className].filter(Boolean).join(' ')}>
-      {label ? <label className="lc-field__label" htmlFor={fieldId}>{label}</label> : null}
-      <div className="lc-select-field">
-        <select id={fieldId} className="lc-select" {...rest}>
-          {placeholder ? <option value="" disabled>{placeholder}</option> : null}
-          {options.map(o => {
-            const value = typeof o === 'string' ? o : o.value;
-            const text = typeof o === 'string' ? o : o.label;
-            return <option key={value} value={value}>{text}</option>;
-          })}
-        </select>
-        <span className="lc-select__chev">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </span>
-      </div>
-    </div>
-  );
+export function Select({ label, options = [], placeholder, id, className = '', ...rest }) {
+	const fieldId = id || (label ? `s-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+	return (
+		<div className={['lc-select-wrap', className].filter(Boolean).join(' ')}>
+			{label ? (
+				<label className="lc-field__label" htmlFor={fieldId}>
+					{label}
+				</label>
+			) : null}
+			<div className="lc-select-field">
+				<select id={fieldId} className="lc-select" {...rest}>
+					{placeholder ? (
+						<option value="" disabled>
+							{placeholder}
+						</option>
+					) : null}
+					{options.map((o) => {
+						const value = typeof o === 'string' ? o : o.value;
+						const text = typeof o === 'string' ? o : o.label;
+						return (
+							<option key={value} value={value}>
+								{text}
+							</option>
+						);
+					})}
+				</select>
+				<span className="lc-select__chev">
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<path d="m6 9 6 6 6-6" />
+					</svg>
+				</span>
+			</div>
+		</div>
+	);
 }

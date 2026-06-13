@@ -1,38 +1,66 @@
 <!-- @dsCard group="Brand" viewport="700x190" name="Iconography — Lucide" subtitle="Line icons, ~1.9 stroke, rounded caps; CDN-linked" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<style>
-  body { margin: 0; padding: 24px; background: var(--surface-card); }
-  .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 16px 10px; }
-  .ic { display: flex; flex-direction: column; align-items: center; gap: 7px; color: var(--text-strong); }
-  .ic i { width: 26px; height: 26px; display: inline-flex; }
-  .ic i svg { width: 26px; height: 26px; stroke-width: 1.9; }
-  .nm { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
-</style>
-</head>
-<body>
-<div class="grid">
-  <div class="ic"><i data-lucide="calendar-days"></i><span class="nm">calendar</span></div>
-  <div class="ic"><i data-lucide="users"></i><span class="nm">users</span></div>
-  <div class="ic"><i data-lucide="newspaper"></i><span class="nm">news</span></div>
-  <div class="ic"><i data-lucide="menu"></i><span class="nm">menu</span></div>
-  <div class="ic"><i data-lucide="bell"></i><span class="nm">bell</span></div>
-  <div class="ic"><i data-lucide="map-pin"></i><span class="nm">map-pin</span></div>
-  <div class="ic"><i data-lucide="phone"></i><span class="nm">phone</span></div>
-  <div class="ic"><i data-lucide="mail"></i><span class="nm">mail</span></div>
-  <div class="ic"><i data-lucide="check"></i><span class="nm">check</span></div>
-  <div class="ic"><i data-lucide="x"></i><span class="nm">x</span></div>
-  <div class="ic"><i data-lucide="clock"></i><span class="nm">clock</span></div>
-  <div class="ic"><i data-lucide="user-plus"></i><span class="nm">user-plus</span></div>
-  <div class="ic"><i data-lucide="file-text"></i><span class="nm">file-text</span></div>
-  <div class="ic"><i data-lucide="image"></i><span class="nm">image</span></div>
-  <div class="ic"><i data-lucide="download"></i><span class="nm">download</span></div>
-  <div class="ic"><i data-lucide="chevron-right"></i><span class="nm">chevron</span></div>
-</div>
-<script>requestAnimationFrame(() => window.lucide && window.lucide.createIcons());</script>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				background: var(--surface-card);
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(8, 1fr);
+				gap: 16px 10px;
+			}
+			.ic {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 7px;
+				color: var(--text-strong);
+			}
+			.ic i {
+				width: 26px;
+				height: 26px;
+				display: inline-flex;
+			}
+			.ic i svg {
+				width: 26px;
+				height: 26px;
+				stroke-width: 1.9;
+			}
+			.nm {
+				font-family: var(--font-mono);
+				font-size: 10px;
+				color: var(--text-muted);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="grid">
+			<div class="ic"><i data-lucide="calendar-days"></i><span class="nm">calendar</span></div>
+			<div class="ic"><i data-lucide="users"></i><span class="nm">users</span></div>
+			<div class="ic"><i data-lucide="newspaper"></i><span class="nm">news</span></div>
+			<div class="ic"><i data-lucide="menu"></i><span class="nm">menu</span></div>
+			<div class="ic"><i data-lucide="bell"></i><span class="nm">bell</span></div>
+			<div class="ic"><i data-lucide="map-pin"></i><span class="nm">map-pin</span></div>
+			<div class="ic"><i data-lucide="phone"></i><span class="nm">phone</span></div>
+			<div class="ic"><i data-lucide="mail"></i><span class="nm">mail</span></div>
+			<div class="ic"><i data-lucide="check"></i><span class="nm">check</span></div>
+			<div class="ic"><i data-lucide="x"></i><span class="nm">x</span></div>
+			<div class="ic"><i data-lucide="clock"></i><span class="nm">clock</span></div>
+			<div class="ic"><i data-lucide="user-plus"></i><span class="nm">user-plus</span></div>
+			<div class="ic"><i data-lucide="file-text"></i><span class="nm">file-text</span></div>
+			<div class="ic"><i data-lucide="image"></i><span class="nm">image</span></div>
+			<div class="ic"><i data-lucide="download"></i><span class="nm">download</span></div>
+			<div class="ic"><i data-lucide="chevron-right"></i><span class="nm">chevron</span></div>
+		</div>
+		<script>
+			requestAnimationFrame(() => window.lucide && window.lucide.createIcons());
+		</script>
+	</body>
 </html>

@@ -8,19 +8,19 @@ import { ReactNode } from 'react';
  * @startingPoint section="Core" subtitle="Hairline card surface (no shadow)" viewport="700x180"
  */
 export interface CardProps {
-  children?: ReactNode;
-  /** @default "md" */
-  size?: 'md' | 'lg';
-  /** Remove inner padding (for full-bleed list rows / media). */
-  flush?: boolean;
-  /** Slightly recessed cream surface. */
-  sunken?: boolean;
-  /** Make the whole card a button with hover/press feedback. */
-  interactive?: boolean;
-  /** Override the element tag. */
-  as?: keyof JSX.IntrinsicElements;
-  onClick?: (e: React.MouseEvent) => void;
-  className?: string;
+	children?: ReactNode;
+	/** @default "md" */
+	size?: 'md' | 'lg';
+	/** Remove inner padding (for full-bleed list rows / media). */
+	flush?: boolean;
+	/** Slightly recessed cream surface. */
+	sunken?: boolean;
+	/** Make the whole card a button with hover/press feedback. */
+	interactive?: boolean;
+	/** Override the element tag. */
+	as?: keyof JSX.IntrinsicElements;
+	onClick?: (e: React.MouseEvent) => void;
+	className?: string;
 }
 
 export function Card(props: CardProps): JSX.Element;

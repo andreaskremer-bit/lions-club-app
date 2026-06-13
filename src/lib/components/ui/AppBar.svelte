@@ -11,8 +11,15 @@
 		trailing?: Snippet;
 	};
 
-	let { title, eyebrow, bordered = false, center = false, large = false, leading, trailing }: Props =
-		$props();
+	let {
+		title,
+		eyebrow,
+		bordered = false,
+		center = false,
+		large = false,
+		leading,
+		trailing
+	}: Props = $props();
 
 	let cls = $derived(
 		[

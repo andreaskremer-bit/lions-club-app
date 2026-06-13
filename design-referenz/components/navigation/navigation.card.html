@@ -1,60 +1,124 @@
 <!-- @dsCard group="Components" viewport="700x460" name="Navigation — App Bar, List Rows, Tab Bar" subtitle="Serif app bar, status/avatar list rows, and the mobile bottom tabs" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="../../styles.css" />
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<script src="../../_ds_bundle.js"></script>
-<style>
-  body { padding: 24px; background: var(--surface-app); }
-  .cols { display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: start; }
-  .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; }
-  .frame { border: 1px solid var(--border-hairline); border-radius: var(--radius-md); overflow: hidden; background: var(--surface-card); }
-</style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { AppBar, ListRow, TabBar, StatusBadge, Avatar, IconButton } = window.LionsClubBonnRheinaueDesignSystem_4b530e;
-const Ic = ({ n }) => <i data-lucide={n}></i>;
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="../../styles.css" />
+		<script
+			src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+			integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+			integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+			integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+			crossorigin="anonymous"
+		></script>
+		<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+		<script src="../../_ds_bundle.js"></script>
+		<style>
+			body {
+				padding: 24px;
+				background: var(--surface-app);
+			}
+			.cols {
+				display: grid;
+				grid-template-columns: 1.1fr 0.9fr;
+				gap: 24px;
+				align-items: start;
+			}
+			.lbl {
+				font-family: var(--font-mono);
+				font-size: 11px;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: var(--text-muted);
+				margin-bottom: 9px;
+			}
+			.frame {
+				border: 1px solid var(--border-hairline);
+				border-radius: var(--radius-md);
+				overflow: hidden;
+				background: var(--surface-card);
+			}
+		</style>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="text/babel">
+			const { AppBar, ListRow, TabBar, StatusBadge, Avatar, IconButton } =
+				window.LionsClubBonnRheinaueDesignSystem_4b530e;
+			const Ic = ({ n }) => <i data-lucide={n}></i>;
 
-function Demo() {
-  const [tab, setTab] = React.useState('mitglieder');
-  const tabs = [
-    { id:'termine', label:'Termine', icon:<Ic n="calendar-days" /> },
-    { id:'mitglieder', label:'Mitglieder', icon:<Ic n="users" /> },
-    { id:'news', label:'News', icon:<Ic n="newspaper" />, badge:2 },
-    { id:'mehr', label:'Mehr', icon:<Ic n="menu" /> },
-  ];
-  return (
-    <div className="cols">
-      <div>
-        <div className="lbl">AppBar + ListRow</div>
-        <div className="frame">
-          <AppBar large title="Mitglieder" eyebrow="34 aktiv"
-            trailing={<IconButton icon={<Ic n="search" />} label="Suchen" />} />
-          <ListRow lead={<Avatar name="Andreas Kremer" />} title="Andreas Kremer" subtitle="Präsident" chevron />
-          <ListRow lead={<Avatar name="Maria Vogt" tone="blue" />} title="Maria Vogt" subtitle="Schatzmeisterin" chevron />
-          <ListRow lead={<StatusBadge status="yes" dotOnly />} title="Club-Abend Juni" subtitle="Restaurant Rheinblick" date={"12.06.\n19:00"} chevron />
-        </div>
-      </div>
-      <div>
-        <div className="lbl">TabBar</div>
-        <div className="frame">
-          <div style={{ height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Inhalt</div>
-          <TabBar items={tabs} value={tab} onChange={setTab} />
-        </div>
-      </div>
-    </div>
-  );
-}
-ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
-requestAnimationFrame(() => window.lucide && window.lucide.createIcons());
-</script>
-</body>
+			function Demo() {
+				const [tab, setTab] = React.useState('mitglieder');
+				const tabs = [
+					{ id: 'termine', label: 'Termine', icon: <Ic n="calendar-days" /> },
+					{ id: 'mitglieder', label: 'Mitglieder', icon: <Ic n="users" /> },
+					{ id: 'news', label: 'News', icon: <Ic n="newspaper" />, badge: 2 },
+					{ id: 'mehr', label: 'Mehr', icon: <Ic n="menu" /> }
+				];
+				return (
+					<div className="cols">
+						<div>
+							<div className="lbl">AppBar + ListRow</div>
+							<div className="frame">
+								<AppBar
+									large
+									title="Mitglieder"
+									eyebrow="34 aktiv"
+									trailing={<IconButton icon={<Ic n="search" />} label="Suchen" />}
+								/>
+								<ListRow
+									lead={<Avatar name="Andreas Kremer" />}
+									title="Andreas Kremer"
+									subtitle="Präsident"
+									chevron
+								/>
+								<ListRow
+									lead={<Avatar name="Maria Vogt" tone="blue" />}
+									title="Maria Vogt"
+									subtitle="Schatzmeisterin"
+									chevron
+								/>
+								<ListRow
+									lead={<StatusBadge status="yes" dotOnly />}
+									title="Club-Abend Juni"
+									subtitle="Restaurant Rheinblick"
+									date={'12.06.\n19:00'}
+									chevron
+								/>
+							</div>
+						</div>
+						<div>
+							<div className="lbl">TabBar</div>
+							<div className="frame">
+								<div
+									style={{
+										height: 150,
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										color: 'var(--text-muted)',
+										fontSize: 14
+									}}
+								>
+									Inhalt
+								</div>
+								<TabBar items={tabs} value={tab} onChange={setTab} />
+							</div>
+						</div>
+					</div>
+				);
+			}
+			ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+			requestAnimationFrame(() => window.lucide && window.lucide.createIcons());
+		</script>
+	</body>
 </html>

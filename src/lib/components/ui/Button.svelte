@@ -35,6 +35,7 @@
 </script>
 
 {#if href}
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href wird vom Aufrufer (ggf. extern/bereits aufgelöst) übergeben -->
 	<a {href} class={cls} {...rest}>
 		{#if iconLeft}<span class="lc-btn__icon">{@render iconLeft()}</span>{/if}
 		{@render children?.()}

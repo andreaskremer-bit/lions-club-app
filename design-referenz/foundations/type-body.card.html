@@ -1,22 +1,60 @@
 <!-- @dsCard group="Type" viewport="700x250" name="Body — Source Sans 3" subtitle="All content & UI. Base 17px, never smaller in the app" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<style>
-  body { margin: 0; padding: 24px; background: var(--surface-card); font-family: var(--font-sans); color: var(--text-body); }
-  .stack { display: flex; flex-direction: column; gap: 14px; max-width: 560px; }
-  .row { display: flex; align-items: baseline; gap: 12px; }
-  .tag { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-</style>
-</head>
-<body>
-<div class="stack">
-  <div class="row"><span style="font-size:19px;font-weight:600;color:var(--text-strong)">Listentitel, 19 px halbfett</span><span class="tag">md · 19 / 600</span></div>
-  <div><p style="font-size:17px;margin:0">Grundtext mit 17 px für gute Lesbarkeit — bewusst größer und kontrastreicher als das editoriale Vorbild. <span class="tag">base · 17 / 400</span></p></div>
-  <div class="row"><span style="font-size:14px;color:var(--text-secondary)">Sekundärtext / Metadaten, 14 px</span><span class="tag">sm · 14 / 400</span></div>
-  <div class="row"><span style="font-size:12px;color:var(--text-muted)">Caption, 12 px</span><span class="tag">xs · 12 / 400</span></div>
-</div>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				background: var(--surface-card);
+				font-family: var(--font-sans);
+				color: var(--text-body);
+			}
+			.stack {
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+				max-width: 560px;
+			}
+			.row {
+				display: flex;
+				align-items: baseline;
+				gap: 12px;
+			}
+			.tag {
+				font-family: var(--font-mono);
+				font-size: 10px;
+				color: var(--text-muted);
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="stack">
+			<div class="row">
+				<span style="font-size: 19px; font-weight: 600; color: var(--text-strong)"
+					>Listentitel, 19 px halbfett</span
+				><span class="tag">md · 19 / 600</span>
+			</div>
+			<div>
+				<p style="font-size: 17px; margin: 0">
+					Grundtext mit 17 px für gute Lesbarkeit — bewusst größer und kontrastreicher als das
+					editoriale Vorbild. <span class="tag">base · 17 / 400</span>
+				</p>
+			</div>
+			<div class="row">
+				<span style="font-size: 14px; color: var(--text-secondary)"
+					>Sekundärtext / Metadaten, 14 px</span
+				><span class="tag">sm · 14 / 400</span>
+			</div>
+			<div class="row">
+				<span style="font-size: 12px; color: var(--text-muted)">Caption, 12 px</span
+				><span class="tag">xs · 12 / 400</span>
+			</div>
+		</div>
+	</body>
 </html>

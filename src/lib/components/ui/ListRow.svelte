@@ -49,6 +49,7 @@
 {/snippet}
 
 {#if href}
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href wird vom Aufrufer (ggf. extern/bereits aufgelöst) übergeben -->
 	<a {href} class={cls} {...rest}>{@render inner()}</a>
 {:else if interactive}
 	<button type="button" class={cls} {...rest}>{@render inner()}</button>

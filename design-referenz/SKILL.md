@@ -11,6 +11,7 @@ If creating visual artifacts (slides, mocks, throwaway prototypes, etc), copy as
 If the user invokes this skill without any other guidance, ask them what they want to build or design, ask some questions, and act as an expert designer who outputs HTML artifacts _or_ production code, depending on the need.
 
 Key facts to honor:
+
 - The product UI is **German**, addressing the user informally ("du"). No emoji.
 - Warm cream base (`#F6F1E7`), Lions Blue action (`#1E4FA3`), sparing Lions Gold (`#B98A22`), clay hints (`#B4502F`). Hairlines, not shadows. Light mode default.
 - Source Serif 4 (headlines only) + Source Sans 3 (content, base 17px) + Source Code Pro (dates/times/labels). Touch targets ≥ 44px.

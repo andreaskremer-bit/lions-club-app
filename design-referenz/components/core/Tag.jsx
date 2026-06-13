@@ -19,33 +19,35 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-tag-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-tag-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-tag-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function Tag({
-  children,
-  tone = 'neutral',
-  outline = false,
-  dot = false,
-  icon = null,
-  className = '',
-  ...rest
+	children,
+	tone = 'neutral',
+	outline = false,
+	dot = false,
+	icon = null,
+	className = '',
+	...rest
 }) {
-  const cls = [
-    'lc-tag',
-    outline ? 'lc-tag--outline' : '',
-    tone !== 'neutral' ? `lc-tag--${tone}` : '',
-    className,
-  ].filter(Boolean).join(' ');
+	const cls = [
+		'lc-tag',
+		outline ? 'lc-tag--outline' : '',
+		tone !== 'neutral' ? `lc-tag--${tone}` : '',
+		className
+	]
+		.filter(Boolean)
+		.join(' ');
 
-  return (
-    <span className={cls} {...rest}>
-      {dot ? <span className="lc-tag__dot" /> : null}
-      {icon}
-      {children}
-    </span>
-  );
+	return (
+		<span className={cls} {...rest}>
+			{dot ? <span className="lc-tag__dot" /> : null}
+			{icon}
+			{children}
+		</span>
+	);
 }

@@ -1,26 +1,66 @@
 <!-- @dsCard group="Spacing" viewport="700x190" name="Elevation — hairline over shadow" subtitle="Cards use a single hairline; shadow only for sheets & dialogs" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<style>
-  body { margin: 0; padding: 24px; background: var(--surface-app); }
-  .row { display: flex; gap: 18px; flex-wrap: wrap; }
-  .card { background: var(--surface-card); border-radius: var(--radius-md); padding: 16px 18px; width: 190px; }
-  .hair { border: 1px solid var(--border-hairline); }
-  .sm { box-shadow: var(--shadow-sm); }
-  .md { box-shadow: var(--shadow-md); }
-  .lg { box-shadow: var(--shadow-lg); }
-  .t { font-family: var(--font-sans); font-weight: 600; font-size: 15px; color: var(--text-strong); }
-  .d { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-</style>
-</head>
-<body>
-<div class="row">
-  <div class="card hair"><div class="t">Hairline</div><div class="d">cards · default</div></div>
-  <div class="card md"><div class="t">shadow-md</div><div class="d">sheets · popovers</div></div>
-  <div class="card lg"><div class="t">shadow-lg</div><div class="d">dialogs only</div></div>
-</div>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				background: var(--surface-app);
+			}
+			.row {
+				display: flex;
+				gap: 18px;
+				flex-wrap: wrap;
+			}
+			.card {
+				background: var(--surface-card);
+				border-radius: var(--radius-md);
+				padding: 16px 18px;
+				width: 190px;
+			}
+			.hair {
+				border: 1px solid var(--border-hairline);
+			}
+			.sm {
+				box-shadow: var(--shadow-sm);
+			}
+			.md {
+				box-shadow: var(--shadow-md);
+			}
+			.lg {
+				box-shadow: var(--shadow-lg);
+			}
+			.t {
+				font-family: var(--font-sans);
+				font-weight: 600;
+				font-size: 15px;
+				color: var(--text-strong);
+			}
+			.d {
+				font-family: var(--font-mono);
+				font-size: 11px;
+				color: var(--text-muted);
+				margin-top: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="row">
+			<div class="card hair">
+				<div class="t">Hairline</div>
+				<div class="d">cards · default</div>
+			</div>
+			<div class="card md">
+				<div class="t">shadow-md</div>
+				<div class="d">sheets · popovers</div>
+			</div>
+			<div class="card lg">
+				<div class="t">shadow-lg</div>
+				<div class="d">dialogs only</div>
+			</div>
+		</div>
+	</body>
 </html>

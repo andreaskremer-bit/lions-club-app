@@ -48,37 +48,39 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-button-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-button-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-button-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  iconLeft = null,
-  iconRight = null,
-  fullWidth = false,
-  as = 'button',
-  className = '',
-  ...rest
+	children,
+	variant = 'primary',
+	size = 'md',
+	iconLeft = null,
+	iconRight = null,
+	fullWidth = false,
+	as = 'button',
+	className = '',
+	...rest
 }) {
-  const Tag = as;
-  const cls = [
-    'lc-btn',
-    `lc-btn--${variant}`,
-    `lc-btn--${size}`,
-    fullWidth ? 'lc-btn--full' : '',
-    className,
-  ].filter(Boolean).join(' ');
+	const Tag = as;
+	const cls = [
+		'lc-btn',
+		`lc-btn--${variant}`,
+		`lc-btn--${size}`,
+		fullWidth ? 'lc-btn--full' : '',
+		className
+	]
+		.filter(Boolean)
+		.join(' ');
 
-  return (
-    <Tag className={cls} {...rest}>
-      {iconLeft ? <span className="lc-btn__icon">{iconLeft}</span> : null}
-      {children}
-      {iconRight ? <span className="lc-btn__icon">{iconRight}</span> : null}
-    </Tag>
-  );
+	return (
+		<Tag className={cls} {...rest}>
+			{iconLeft ? <span className="lc-btn__icon">{iconLeft}</span> : null}
+			{children}
+			{iconRight ? <span className="lc-btn__icon">{iconRight}</span> : null}
+		</Tag>
+	);
 }

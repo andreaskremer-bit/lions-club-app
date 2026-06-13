@@ -1,25 +1,70 @@
 <!-- @dsCard group="Spacing" viewport="700x170" name="Corner radii" subtitle="Soft, calm rounding; pill for badges & toggles" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<style>
-  body { margin: 0; padding: 24px; background: var(--surface-card); }
-  .row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
-  .item { text-align: center; }
-  .box { width: 84px; height: 64px; background: var(--blue-50); border: 1px solid var(--blue-100); }
-  .name { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-top: 8px; }
-  .px { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
-</style>
-</head>
-<body>
-<div class="row">
-  <div class="item"><div class="box" style="border-radius:var(--radius-sm)"></div><div class="name">sm</div><div class="px">8px</div></div>
-  <div class="item"><div class="box" style="border-radius:var(--radius-md)"></div><div class="name">md · field/card</div><div class="px">12px</div></div>
-  <div class="item"><div class="box" style="border-radius:var(--radius-lg)"></div><div class="name">lg · sheet</div><div class="px">16px</div></div>
-  <div class="item"><div class="box" style="border-radius:var(--radius-xl)"></div><div class="name">xl</div><div class="px">22px</div></div>
-  <div class="item"><div class="box" style="border-radius:var(--radius-pill);width:64px"></div><div class="name">pill</div><div class="px">badges</div></div>
-</div>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				background: var(--surface-card);
+			}
+			.row {
+				display: flex;
+				gap: 16px;
+				align-items: flex-end;
+				flex-wrap: wrap;
+			}
+			.item {
+				text-align: center;
+			}
+			.box {
+				width: 84px;
+				height: 64px;
+				background: var(--blue-50);
+				border: 1px solid var(--blue-100);
+			}
+			.name {
+				font-family: var(--font-mono);
+				font-size: 11px;
+				color: var(--text-secondary);
+				margin-top: 8px;
+			}
+			.px {
+				font-family: var(--font-mono);
+				font-size: 10px;
+				color: var(--text-muted);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="row">
+			<div class="item">
+				<div class="box" style="border-radius: var(--radius-sm)"></div>
+				<div class="name">sm</div>
+				<div class="px">8px</div>
+			</div>
+			<div class="item">
+				<div class="box" style="border-radius: var(--radius-md)"></div>
+				<div class="name">md · field/card</div>
+				<div class="px">12px</div>
+			</div>
+			<div class="item">
+				<div class="box" style="border-radius: var(--radius-lg)"></div>
+				<div class="name">lg · sheet</div>
+				<div class="px">16px</div>
+			</div>
+			<div class="item">
+				<div class="box" style="border-radius: var(--radius-xl)"></div>
+				<div class="name">xl</div>
+				<div class="px">22px</div>
+			</div>
+			<div class="item">
+				<div class="box" style="border-radius: var(--radius-pill); width: 64px"></div>
+				<div class="name">pill</div>
+				<div class="px">badges</div>
+			</div>
+		</div>
+	</body>
 </html>

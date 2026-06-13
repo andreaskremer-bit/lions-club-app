@@ -17,56 +17,65 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-otp-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-otp-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-otp-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function OtpInput({ length = 6, value = '', onChange = () => {}, className = '' }) {
-  const refs = React.useRef([]);
-  const chars = value.padEnd(length, ' ').slice(0, length).split('');
+	const refs = React.useRef([]);
+	const chars = value.padEnd(length, ' ').slice(0, length).split('');
 
-  function setChar(i, ch) {
-    const next = value.padEnd(length, ' ').split('');
-    next[i] = ch || ' ';
-    onChange(next.join('').replace(/ +$/, ''));
-  }
+	function setChar(i, ch) {
+		const next = value.padEnd(length, ' ').split('');
+		next[i] = ch || ' ';
+		onChange(next.join('').replace(/ +$/, ''));
+	}
 
-  function handleKey(i, e) {
-    if (e.key === 'Backspace' && !chars[i].trim() && i > 0) {
-      refs.current[i - 1]?.focus();
-    }
-  }
+	function handleKey(i, e) {
+		if (e.key === 'Backspace' && !chars[i].trim() && i > 0) {
+			refs.current[i - 1]?.focus();
+		}
+	}
 
-  function handleInput(i, e) {
-    const v = e.target.value.replace(/\D/g, '');
-    if (!v) { setChar(i, ''); return; }
-    const digit = v[v.length - 1];
-    setChar(i, digit);
-    if (i < length - 1) refs.current[i + 1]?.focus();
-  }
+	function handleInput(i, e) {
+		const v = e.target.value.replace(/\D/g, '');
+		if (!v) {
+			setChar(i, '');
+			return;
+		}
+		const digit = v[v.length - 1];
+		setChar(i, digit);
+		if (i < length - 1) refs.current[i + 1]?.focus();
+	}
 
-  function handlePaste(e) {
-    const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, length);
-    if (digits) { e.preventDefault(); onChange(digits); refs.current[Math.min(digits.length, length - 1)]?.focus(); }
-  }
+	function handlePaste(e) {
+		const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, length);
+		if (digits) {
+			e.preventDefault();
+			onChange(digits);
+			refs.current[Math.min(digits.length, length - 1)]?.focus();
+		}
+	}
 
-  return (
-    <div className={['lc-otp', className].filter(Boolean).join(' ')} onPaste={handlePaste}>
-      {Array.from({ length }).map((_, i) => (
-        <input
-          key={i}
-          ref={el => (refs.current[i] = el)}
-          className={['lc-otp__cell', chars[i].trim() ? 'lc-otp__cell--filled' : ''].filter(Boolean).join(' ')}
-          inputMode="numeric"
-          maxLength={1}
-          value={chars[i].trim()}
-          aria-label={`Ziffer ${i + 1}`}
-          onChange={e => handleInput(i, e)}
-          onKeyDown={e => handleKey(i, e)}
-        />
-      ))}
-    </div>
-  );
+	return (
+		<div className={['lc-otp', className].filter(Boolean).join(' ')} onPaste={handlePaste}>
+			{Array.from({ length }).map((_, i) => (
+				<input
+					key={i}
+					ref={(el) => (refs.current[i] = el)}
+					className={['lc-otp__cell', chars[i].trim() ? 'lc-otp__cell--filled' : '']
+						.filter(Boolean)
+						.join(' ')}
+					inputMode="numeric"
+					maxLength={1}
+					value={chars[i].trim()}
+					aria-label={`Ziffer ${i + 1}`}
+					onChange={(e) => handleInput(i, e)}
+					onKeyDown={(e) => handleKey(i, e)}
+				/>
+			))}
+		</div>
+	);
 }

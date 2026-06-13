@@ -28,27 +28,44 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-status-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-status-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-status-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 const LABELS = {
-  yes: 'Zugesagt',
-  no: 'Abgesagt',
-  open: 'Offen',
-  present: 'Anwesend',
+	yes: 'Zugesagt',
+	no: 'Abgesagt',
+	open: 'Offen',
+	present: 'Anwesend'
 };
 
-export function StatusBadge({ status = 'open', children, dotOnly = false, className = '', ...rest }) {
-  if (dotOnly) {
-    return <span className={['lc-status-dot', `lc-status-dot--${status}`, className].filter(Boolean).join(' ')} aria-label={LABELS[status]} {...rest} />;
-  }
-  return (
-    <span className={['lc-status', `lc-status--${status}`, className].filter(Boolean).join(' ')} {...rest}>
-      <span className="lc-status__dot" />
-      {children || LABELS[status]}
-    </span>
-  );
+export function StatusBadge({
+	status = 'open',
+	children,
+	dotOnly = false,
+	className = '',
+	...rest
+}) {
+	if (dotOnly) {
+		return (
+			<span
+				className={['lc-status-dot', `lc-status-dot--${status}`, className]
+					.filter(Boolean)
+					.join(' ')}
+				aria-label={LABELS[status]}
+				{...rest}
+			/>
+		);
+	}
+	return (
+		<span
+			className={['lc-status', `lc-status--${status}`, className].filter(Boolean).join(' ')}
+			{...rest}
+		>
+			<span className="lc-status__dot" />
+			{children || LABELS[status]}
+		</span>
+	);
 }

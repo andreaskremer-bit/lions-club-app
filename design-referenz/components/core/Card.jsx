@@ -20,31 +20,37 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-card-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-card-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-card-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function Card({
-  children,
-  size = 'md',
-  flush = false,
-  sunken = false,
-  interactive = false,
-  as,
-  className = '',
-  ...rest
+	children,
+	size = 'md',
+	flush = false,
+	sunken = false,
+	interactive = false,
+	as,
+	className = '',
+	...rest
 }) {
-  const Tag = as || (interactive ? 'button' : 'div');
-  const cls = [
-    'lc-card',
-    size === 'lg' ? 'lc-card--lg' : '',
-    flush ? 'lc-card--flush' : '',
-    sunken ? 'lc-card--sunken' : '',
-    interactive ? 'lc-card--interactive' : '',
-    className,
-  ].filter(Boolean).join(' ');
+	const Tag = as || (interactive ? 'button' : 'div');
+	const cls = [
+		'lc-card',
+		size === 'lg' ? 'lc-card--lg' : '',
+		flush ? 'lc-card--flush' : '',
+		sunken ? 'lc-card--sunken' : '',
+		interactive ? 'lc-card--interactive' : '',
+		className
+	]
+		.filter(Boolean)
+		.join(' ');
 
-  return <Tag className={cls} {...rest}>{children}</Tag>;
+	return (
+		<Tag className={cls} {...rest}>
+			{children}
+		</Tag>
+	);
 }

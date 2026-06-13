@@ -1,19 +1,23 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(npm -v)",
-      "Bash(npx sv@latest --help)",
-      "Bash(npx sv *)",
-      "Bash(git init *)",
-      "Bash(git add *)",
-      "Bash(git commit *)",
-      "Bash(npm i *)",
-      "Bash(node *)",
-      "Bash(head -20 index.css)",
-      "Read(//Users/andreas/Sites/source-sans-3/**)",
-      "Read(//Users/andreas/Sites/source-code-pro/**)",
-      "Bash(sips -z 192 192 design-referenz/assets/pwa-icon.png --out static/icons/pwa-192.png)",
-      "Bash(npm run *)"
-    ]
-  }
+	"permissions": {
+		"allow": [
+			"Bash(npm -v)",
+			"Bash(npx sv@latest --help)",
+			"Bash(npx sv *)",
+			"Bash(git init *)",
+			"Bash(git add *)",
+			"Bash(git commit *)",
+			"Bash(npm i *)",
+			"Bash(node *)",
+			"Bash(head -20 index.css)",
+			"Read(//Users/andreas/Sites/source-sans-3/**)",
+			"Read(//Users/andreas/Sites/source-code-pro/**)",
+			"Bash(sips -z 192 192 design-referenz/assets/pwa-icon.png --out static/icons/pwa-192.png)",
+			"Bash(npm run *)",
+			"Bash(grep -E \"gitignore|\\\\.git$|env\")",
+			"Bash(git -C /Users/andreas/Sites/lions-club-app check-ignore .env .env.example)",
+			"Bash(echo \"exit:$?\")",
+			"Bash(pkill -f \"vite dev\")"
+		]
+	}
 }

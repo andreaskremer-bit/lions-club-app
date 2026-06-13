@@ -8,15 +8,15 @@
 
 ## 1. Stack & Architektur
 
-| Schicht | Wahl | Hinweis |
-|---|---|---|
-| Frontend/App | **SvelteKit** (SSR + SPA-Hybrid), TypeScript | PWA-tauglich, app-orientiert |
-| UI/Styling | CSS-Variablen aus „Lions 2.0", Komponentenbibliothek selbst | keine schweren UI-Frameworks nötig |
-| Backend/DB | **Supabase (Region EU/Frankfurt)** – Postgres, Auth, RLS, Storage, Edge Functions | AV-Vertrag/DPA abschließen |
-| Auth | Supabase Auth – **E-Mail-OTP (6-stelliger Code)** | kein Magic-Link, kein SMS |
-| Hosting | **Netlify** (`adapter-netlify`), DPF-zertifiziert | Frontend; personenbez. Daten möglichst client→Supabase |
-| Push/Reminder | Web-Push (VAPID) + E-Mail-Fallback; geplante Jobs via Supabase (pg_cron/Edge Functions) | siehe §8 |
-| PWA | `vite-plugin-pwa` (Manifest, Service Worker, Offline-Shell) | installierbar |
+| Schicht       | Wahl                                                                                    | Hinweis                                                |
+| ------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Frontend/App  | **SvelteKit** (SSR + SPA-Hybrid), TypeScript                                            | PWA-tauglich, app-orientiert                           |
+| UI/Styling    | CSS-Variablen aus „Lions 2.0", Komponentenbibliothek selbst                             | keine schweren UI-Frameworks nötig                     |
+| Backend/DB    | **Supabase (Region EU/Frankfurt)** – Postgres, Auth, RLS, Storage, Edge Functions       | AV-Vertrag/DPA abschließen                             |
+| Auth          | Supabase Auth – **E-Mail-OTP (6-stelliger Code)**                                       | kein Magic-Link, kein SMS                              |
+| Hosting       | **Netlify** (`adapter-netlify`), DPF-zertifiziert                                       | Frontend; personenbez. Daten möglichst client→Supabase |
+| Push/Reminder | Web-Push (VAPID) + E-Mail-Fallback; geplante Jobs via Supabase (pg_cron/Edge Functions) | siehe §8                                               |
+| PWA           | `vite-plugin-pwa` (Manifest, Service Worker, Offline-Shell)                             | installierbar                                          |
 
 **Architekturprinzip DSGVO:** Datenzugriff bevorzugt **clientseitig direkt gegen Supabase (EU)** mit RLS; SSR-Routen, die personenbezogene Daten über Netlify leiten, sparsam halten.
 

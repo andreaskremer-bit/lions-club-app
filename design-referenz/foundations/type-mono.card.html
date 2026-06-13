@@ -1,35 +1,65 @@
 <!-- @dsCard group="Type" viewport="700x180" name="Mono — Source Code Pro" subtitle="Sparing: dates, times, tabular numbers, uppercase labels" -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="../styles.css" />
-<style>
-  body { margin: 0; padding: 24px; background: var(--surface-card); }
-  .stack { display: flex; flex-direction: column; gap: 16px; }
-  .row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-strong); }
-  .lbl { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
-  .tag { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; }
-</style>
-</head>
-<body>
-<div class="stack">
-  <div class="row">
-    <span class="mono" style="font-size:22px">12.06.2026</span>
-    <span class="mono" style="font-size:22px">19:00</span>
-    <span class="tag">Datum / Uhrzeit</span>
-  </div>
-  <div class="row">
-    <span class="lbl">Club-Abend</span>
-    <span class="lbl">Spendenpflichtig</span>
-    <span class="lbl">34 Mitglieder</span>
-    <span class="tag">Versal-Labels</span>
-  </div>
-  <div class="row">
-    <span class="mono" style="font-size:17px">25,00 € · 4× Abwesenheit = 100,00 €</span>
-    <span class="tag">Tabellenziffern</span>
-  </div>
-</div>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="../styles.css" />
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				background: var(--surface-card);
+			}
+			.stack {
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+			}
+			.row {
+				display: flex;
+				align-items: center;
+				gap: 18px;
+				flex-wrap: wrap;
+			}
+			.mono {
+				font-family: var(--font-mono);
+				font-variant-numeric: tabular-nums;
+				color: var(--text-strong);
+			}
+			.lbl {
+				font-family: var(--font-mono);
+				font-size: 12px;
+				font-weight: 500;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: var(--text-secondary);
+			}
+			.tag {
+				font-family: var(--font-mono);
+				font-size: 10px;
+				color: var(--text-muted);
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="stack">
+			<div class="row">
+				<span class="mono" style="font-size: 22px">12.06.2026</span>
+				<span class="mono" style="font-size: 22px">19:00</span>
+				<span class="tag">Datum / Uhrzeit</span>
+			</div>
+			<div class="row">
+				<span class="lbl">Club-Abend</span>
+				<span class="lbl">Spendenpflichtig</span>
+				<span class="lbl">34 Mitglieder</span>
+				<span class="tag">Versal-Labels</span>
+			</div>
+			<div class="row">
+				<span class="mono" style="font-size: 17px">25,00 € · 4× Abwesenheit = 100,00 €</span>
+				<span class="tag">Tabellenziffern</span>
+			</div>
+		</div>
+	</body>
 </html>

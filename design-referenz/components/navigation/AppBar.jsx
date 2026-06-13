@@ -23,37 +23,39 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-appbar-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-appbar-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-appbar-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function AppBar({
-  title,
-  eyebrow,
-  leading = null,
-  trailing = null,
-  bordered = false,
-  center = false,
-  large = false,
-  className = '',
+	title,
+	eyebrow,
+	leading = null,
+	trailing = null,
+	bordered = false,
+	center = false,
+	large = false,
+	className = ''
 }) {
-  const cls = [
-    'lc-appbar',
-    bordered ? 'lc-appbar--bordered' : '',
-    center ? 'lc-appbar--center' : '',
-    large ? 'lc-appbar--large' : '',
-    className,
-  ].filter(Boolean).join(' ');
-  return (
-    <header className={cls}>
-      {leading ? <div className="lc-appbar__lead">{leading}</div> : null}
-      <div className="lc-appbar__title-wrap">
-        {eyebrow ? <span className="lc-appbar__eyebrow">{eyebrow}</span> : null}
-        {title ? <span className="lc-appbar__title">{title}</span> : null}
-      </div>
-      {trailing ? <div className="lc-appbar__trail">{trailing}</div> : null}
-    </header>
-  );
+	const cls = [
+		'lc-appbar',
+		bordered ? 'lc-appbar--bordered' : '',
+		center ? 'lc-appbar--center' : '',
+		large ? 'lc-appbar--large' : '',
+		className
+	]
+		.filter(Boolean)
+		.join(' ');
+	return (
+		<header className={cls}>
+			{leading ? <div className="lc-appbar__lead">{leading}</div> : null}
+			<div className="lc-appbar__title-wrap">
+				{eyebrow ? <span className="lc-appbar__eyebrow">{eyebrow}</span> : null}
+				{title ? <span className="lc-appbar__title">{title}</span> : null}
+			</div>
+			{trailing ? <div className="lc-appbar__trail">{trailing}</div> : null}
+		</header>
+	);
 }

@@ -8,8 +8,14 @@
 		tone?: 'gold' | 'blue' | 'cream';
 	} & HTMLAttributes<HTMLSpanElement>;
 
-	let { name = '', src = null, size = 'md', tone = 'gold', class: extra = '', ...rest }: Props =
-		$props();
+	let {
+		name = '',
+		src = null,
+		size = 'md',
+		tone = 'gold',
+		class: extra = '',
+		...rest
+	}: Props = $props();
 
 	let initials = $derived(
 		name

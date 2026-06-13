@@ -6,15 +6,15 @@ import { ReactNode } from 'react';
  * attendance, info on official events, or soft warnings.
  */
 export interface HintCardProps {
-  /** Bold first line. */
-  title?: ReactNode;
-  /** Supporting text. */
-  children?: ReactNode;
-  /** Stripe + tint color. @default "info" */
-  tone?: 'info' | 'accent' | 'warning' | 'neutral';
-  /** Optional leading icon (Lucide <svg>). */
-  icon?: ReactNode;
-  className?: string;
+	/** Bold first line. */
+	title?: ReactNode;
+	/** Supporting text. */
+	children?: ReactNode;
+	/** Stripe + tint color. @default "info" */
+	tone?: 'info' | 'accent' | 'warning' | 'neutral';
+	/** Optional leading icon (Lucide <svg>). */
+	icon?: ReactNode;
+	className?: string;
 }
 
 export function HintCard(props: HintCardProps): JSX.Element;

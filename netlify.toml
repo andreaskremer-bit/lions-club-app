@@ -1,0 +1,9 @@
+# Netlify-Deployment (Frontend). Personenbezogene Daten gehen möglichst
+# direkt vom Client an Supabase (EU/Frankfurt), nicht über Netlify.
+# PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_ANON_KEY in den Netlify-Env-Variablen setzen.
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "22"

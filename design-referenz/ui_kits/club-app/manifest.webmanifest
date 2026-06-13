@@ -1,16 +1,26 @@
 {
-  "name": "Lions Club Bonn-Rheinaue",
-  "short_name": "Lions BR",
-  "description": "Clubverwaltung des Lions Club Bonn-Rheinaue — Termine, Mitglieder, Anwesenheit.",
-  "lang": "de",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#F6F1E7",
-  "theme_color": "#1E4FA3",
-  "icons": [
-    { "src": "../../assets/pwa-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "../../assets/pwa-icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+	"name": "Lions Club Bonn-Rheinaue",
+	"short_name": "Lions BR",
+	"description": "Clubverwaltung des Lions Club Bonn-Rheinaue — Termine, Mitglieder, Anwesenheit.",
+	"lang": "de",
+	"start_url": "./index.html",
+	"scope": "./",
+	"display": "standalone",
+	"orientation": "portrait",
+	"background_color": "#F6F1E7",
+	"theme_color": "#1E4FA3",
+	"icons": [
+		{
+			"src": "../../assets/pwa-icon.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "../../assets/pwa-icon-maskable.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
 }

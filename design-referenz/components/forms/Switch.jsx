@@ -22,19 +22,23 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-switch-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-switch-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-switch-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function Switch({ label, tone = 'primary', className = '', ...rest }) {
-  const cls = ['lc-switch', tone === 'present' ? 'lc-switch--present' : '', className].filter(Boolean).join(' ');
-  return (
-    <label className={cls}>
-      <input type="checkbox" {...rest} />
-      <span className="lc-switch__track"><span className="lc-switch__thumb" /></span>
-      {label ? <span className="lc-switch__label">{label}</span> : null}
-    </label>
-  );
+	const cls = ['lc-switch', tone === 'present' ? 'lc-switch--present' : '', className]
+		.filter(Boolean)
+		.join(' ');
+	return (
+		<label className={cls}>
+			<input type="checkbox" {...rest} />
+			<span className="lc-switch__track">
+				<span className="lc-switch__thumb" />
+			</span>
+			{label ? <span className="lc-switch__label">{label}</span> : null}
+		</label>
+	);
 }

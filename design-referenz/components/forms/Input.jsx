@@ -36,38 +36,45 @@ textarea.lc-input{ height: auto; min-height: 96px; padding: var(--space-3) var(-
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-input-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-input-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-input-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function Input({
-  label,
-  hint,
-  error,
-  required = false,
-  icon = null,
-  id,
-  multiline = false,
-  className = '',
-  ...rest
+	label,
+	hint,
+	error,
+	required = false,
+	icon = null,
+	id,
+	multiline = false,
+	className = '',
+	...rest
 }) {
-  const fieldId = id || (label ? `f-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
-  const Tag = multiline ? 'textarea' : 'input';
-  const inputCls = ['lc-input', icon ? 'lc-input--has-icon' : '', error ? 'lc-input--error' : ''].filter(Boolean).join(' ');
-  return (
-    <div className={['lc-field', className].filter(Boolean).join(' ')}>
-      {label ? (
-        <label className="lc-field__label" htmlFor={fieldId}>
-          {label}{required ? <span className="lc-field__req">*</span> : null}
-        </label>
-      ) : null}
-      <div className="lc-input-wrap">
-        {icon ? <span className="lc-input__icon">{icon}</span> : null}
-        <Tag id={fieldId} className={inputCls} aria-invalid={!!error} {...rest} />
-      </div>
-      {error ? <p className="lc-field__error">{error}</p> : hint ? <p className="lc-field__hint">{hint}</p> : null}
-    </div>
-  );
+	const fieldId = id || (label ? `f-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+	const Tag = multiline ? 'textarea' : 'input';
+	const inputCls = ['lc-input', icon ? 'lc-input--has-icon' : '', error ? 'lc-input--error' : '']
+		.filter(Boolean)
+		.join(' ');
+	return (
+		<div className={['lc-field', className].filter(Boolean).join(' ')}>
+			{label ? (
+				<label className="lc-field__label" htmlFor={fieldId}>
+					{label}
+					{required ? <span className="lc-field__req">*</span> : null}
+				</label>
+			) : null}
+			<div className="lc-input-wrap">
+				{icon ? <span className="lc-input__icon">{icon}</span> : null}
+				<Tag id={fieldId} className={inputCls} aria-invalid={!!error} {...rest} />
+			</div>
+			{error ? (
+				<p className="lc-field__error">{error}</p>
+			) : hint ? (
+				<p className="lc-field__hint">{hint}</p>
+			) : null}
+		</div>
+	);
 }

@@ -54,4 +54,5 @@
 ---
 
 ### Bereits stimmig (nur zur Bestätigung – nicht ändern)
+
 Login + OTP-Eingabe · Bottom-Navigation · „Mehr"-Hub mit Vorstand-Bereich · Galerie → Google-Share (Extern-Icon) · Schatzmeister-Auswertung mit konfigurierbarem Satz, Zählung je Mitglied, PDF/CSV-Export und Hinweis „Buchung extern" · Lions-2.0-Look (Creme, Serif, Blau/Gold/Clay).

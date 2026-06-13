@@ -48,7 +48,7 @@
 </script>
 
 <div class="lc-otp" onpaste={handlePaste}>
-	{#each { length } as _, i (i)}
+	{#each Array.from({ length }, (_, n) => n) as i (i)}
 		<input
 			bind:this={refs[i]}
 			class={['lc-otp__cell', chars[i].trim() ? 'lc-otp__cell--filled' : '']

@@ -23,43 +23,52 @@ const CSS = `
 `;
 
 if (typeof document !== 'undefined' && !document.getElementById('lc-row-css')) {
-  const el = document.createElement('style');
-  el.id = 'lc-row-css';
-  el.textContent = CSS;
-  document.head.appendChild(el);
+	const el = document.createElement('style');
+	el.id = 'lc-row-css';
+	el.textContent = CSS;
+	document.head.appendChild(el);
 }
 
 export function ListRow({
-  lead = null,
-  title,
-  subtitle,
-  date,
-  trailing = null,
-  chevron = false,
-  interactive = true,
-  className = '',
-  ...rest
+	lead = null,
+	title,
+	subtitle,
+	date,
+	trailing = null,
+	chevron = false,
+	interactive = true,
+	className = '',
+	...rest
 }) {
-  const Tag = interactive ? 'button' : 'div';
-  const cls = ['lc-row', interactive ? '' : 'lc-row--static', className].filter(Boolean).join(' ');
-  return (
-    <Tag className={cls} type={interactive ? 'button' : undefined} {...rest}>
-      {lead ? <span className="lc-row__lead">{lead}</span> : null}
-      <span className="lc-row__body">
-        {title ? <span className="lc-row__title">{title}</span> : null}
-        {subtitle ? <span className="lc-row__sub">{subtitle}</span> : null}
-      </span>
-      {(date || trailing || chevron) ? (
-        <span className="lc-row__trail">
-          {date ? <span className="lc-row__date">{date}</span> : null}
-          {trailing}
-          {chevron ? (
-            <span className="lc-row__chev">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </span>
-          ) : null}
-        </span>
-      ) : null}
-    </Tag>
-  );
+	const Tag = interactive ? 'button' : 'div';
+	const cls = ['lc-row', interactive ? '' : 'lc-row--static', className].filter(Boolean).join(' ');
+	return (
+		<Tag className={cls} type={interactive ? 'button' : undefined} {...rest}>
+			{lead ? <span className="lc-row__lead">{lead}</span> : null}
+			<span className="lc-row__body">
+				{title ? <span className="lc-row__title">{title}</span> : null}
+				{subtitle ? <span className="lc-row__sub">{subtitle}</span> : null}
+			</span>
+			{date || trailing || chevron ? (
+				<span className="lc-row__trail">
+					{date ? <span className="lc-row__date">{date}</span> : null}
+					{trailing}
+					{chevron ? (
+						<span className="lc-row__chev">
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="m9 18 6-6-6-6" />
+							</svg>
+						</span>
+					) : null}
+				</span>
+			) : null}
+		</Tag>
+	);
 }
