@@ -44,7 +44,7 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 **Offen / als Nächstes**
 
 - Vitest/Playwright (App-/E2E-Tests) — RLS ist über pgTAP abgedeckt, Unit/E2E folgen.
-- Admin-Funktionen Mitglieder (Neumitglied anlegen/einladen, fremde Stammdaten/Ämter pflegen, löschen) — Rechte stehen, UI später.
+- ~~Admin-Funktionen Mitglieder (Neumitglied anlegen/einladen, fremde Stammdaten/Ämter pflegen, löschen)~~ **erledigt 2026-06-17:** `/mitglieder/neu`, Bearbeiten verallgemeinert (Status/Ämter/Löschen, rechte-gated), Einladen via `POST /api/mitglieder/[id]/einladen` (Service-Key serverseitig). Sekretär zusätzlich `manage_roles`+`delete_member`.
 - Foto-Upload (Storage-Bucket für `photo_path`).
 - Geburtstagsübersicht (Spec §4.1).
 
