@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, Card, Button, IconButton } from '$lib/components/ui';
-	import { LogOut, Users, CalendarDays, ArrowRight } from '@lucide/svelte';
+	import { LogOut, Users, CalendarDays, BarChart3, ArrowRight } from '@lucide/svelte';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -47,6 +47,14 @@
 			Mitgliederverzeichnis
 			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 		</Button>
+
+		{#if data.permissions.includes('view_donations')}
+			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/auswertung'))}>
+				{#snippet iconLeft()}<BarChart3 size={18} />{/snippet}
+				Auswertung (Schatzmeister)
+				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+			</Button>
+		{/if}
 
 		<Button variant="secondary" fullWidth onclick={signOut} disabled={loading}>
 			{loading ? 'Abmelden …' : 'Abmelden'}

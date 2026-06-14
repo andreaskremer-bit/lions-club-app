@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Button, Card, Tag, Input } from '$lib/components/ui';
-	import { ChevronLeft, Check, X, UserPlus, Trash2 } from '@lucide/svelte';
+	import { ChevronLeft, Check, X, UserPlus, Trash2, ClipboardCheck } from '@lucide/svelte';
 	import type { EventType } from '../+page';
 
 	let { data } = $props();
@@ -110,6 +110,17 @@
 
 		{#if e.description}
 			<Card><p class="desc">{e.description}</p></Card>
+		{/if}
+
+		{#if e.donation_required && data.permissions.includes('record_attendance')}
+			<Button
+				fullWidth
+				variant="secondary"
+				onclick={() => goto(resolve('/termine/[id]/anwesenheit', { id: e.id }))}
+			>
+				{#snippet iconLeft()}<ClipboardCheck size={18} />{/snippet}
+				Anwesenheit erfassen
+			</Button>
 		{/if}
 
 		<!-- Eigene Rückmeldung -->

@@ -26,5 +26,27 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		data: { user }
 	} = await supabase.auth.getUser();
 
-	return { supabase, session, user };
+	// Eigene Member-ID + Rechte (aus Ämtern) zentral bereitstellen — für rechte-
+	// abhängige UI (z. B. Anwesenheit erfassen, Schatzmeister-Auswertung).
+	let memberId: string | null = null;
+	let permissions: string[] = [];
+	if (user) {
+		const { data } = await supabase
+			.from('member')
+			.select('id, member_amt(amt(amt_permission(permission)))')
+			.eq('user_id', user.id)
+			.maybeSingle();
+		const m = data as {
+			id: string;
+			member_amt: { amt: { amt_permission: { permission: string }[] } | null }[];
+		} | null;
+		memberId = m?.id ?? null;
+		const set = new Set<string>();
+		for (const ma of m?.member_amt ?? []) {
+			for (const p of ma.amt?.amt_permission ?? []) set.add(p.permission);
+		}
+		permissions = [...set];
+	}
+
+	return { supabase, session, user, memberId, permissions };
 };
