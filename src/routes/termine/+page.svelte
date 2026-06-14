@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, SegmentedControl, Tag, StatusBadge } from '$lib/components/ui';
 	import type { Status } from '$lib/components/ui';
-	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, X } from '@lucide/svelte';
 	import type { EventListItem, EventType } from './+page';
 
 	let { data } = $props();
@@ -31,6 +31,11 @@
 	});
 	const formatWhen = (iso: string) => dateFmt.format(new Date(iso)) + ' Uhr';
 
+	let nameById = $derived(
+		new Map(data.members.map((m) => [m.id, `${m.first_name} ${m.last_name}`]))
+	);
+	let activeCount = $derived(data.members.filter((m) => m.status === 'aktiv').length);
+
 	function ownStatus(e: EventListItem): Status {
 		const r = e.event_response.find((x) => x.member_id === data.myMemberId);
 		if (!r) return 'open';
@@ -40,7 +45,7 @@
 	function counts(e: EventListItem) {
 		const zu = e.event_response.filter((r) => r.status === 'zugesagt').length;
 		const ab = e.event_response.filter((r) => r.status === 'abgesagt').length;
-		const offen = Math.max(0, data.activeCount - zu - ab);
+		const offen = Math.max(0, activeCount - zu - ab);
 		return { zu, ab, offen };
 	}
 
@@ -55,10 +60,48 @@
 			.sort((a, b) => {
 				const ta = new Date(a.starts_at).getTime();
 				const tb = new Date(b.starts_at).getTime();
-				return view === 'anstehend' ? ta - tb : tb - ta; // anstehend: nächster oben; vergangen: jüngster oben
+				return view === 'anstehend' ? ta - tb : tb - ta;
 			})
 	);
+
+	// ── Meldungen-Sheet ──────────────────────────────────────────────────────
+	let sheetEvent = $state<EventListItem | null>(null);
+	let sheetTab = $state<'zugesagt' | 'abgesagt' | 'offen'>('zugesagt');
+
+	function openSheet(e: EventListItem) {
+		sheetEvent = e;
+		sheetTab = 'zugesagt';
+	}
+	function closeSheet() {
+		sheetEvent = null;
+	}
+
+	let sheetNames = $derived.by(() => {
+		if (!sheetEvent) return [];
+		const responders = new Set(sheetEvent.event_response.map((r) => r.member_id));
+		if (sheetTab === 'offen') {
+			return data.members
+				.filter((m) => m.status === 'aktiv' && !responders.has(m.id))
+				.map((m) => `${m.first_name} ${m.last_name}`);
+		}
+		return sheetEvent.event_response
+			.filter((r) => r.status === sheetTab)
+			.map((r) => nameById.get(r.member_id) ?? 'Unbekannt')
+			.sort((a, b) => a.localeCompare(b, 'de'));
+	});
+
+	let sheetTabs = $derived.by(() => {
+		if (!sheetEvent) return [];
+		const c = counts(sheetEvent);
+		return [
+			{ value: 'zugesagt', label: `Zugesagt ${c.zu}` },
+			{ value: 'abgesagt', label: `Abgesagt ${c.ab}` },
+			{ value: 'offen', label: `Offen ${c.offen}` }
+		];
+	});
 </script>
+
+<svelte:window onkeydown={(ev) => ev.key === 'Escape' && closeSheet()} />
 
 <div class="shell">
 	<AppBar title="Termine" eyebrow="Programm" bordered>
@@ -75,22 +118,24 @@
 		<div class="list">
 			{#each list as e (e.id)}
 				{@const c = counts(e)}
-				<a class="termin" href={resolve('/termine/[id]', { id: e.id })}>
-					<div class="termin__row">
-						<span class="termin__title">{e.title}</span>
-						<StatusBadge status={ownStatus(e)} />
-					</div>
-					<div class="termin__when">
-						{formatWhen(e.starts_at)}{e.location ? ` · ${e.location}` : ''}
-					</div>
-					<div class="termin__foot">
-						<Tag tone="blue" outline>{typeLabel[e.type]}</Tag>
-						<span class="termin__counts">
-							{c.zu} angemeldet · {c.ab} abgemeldet · {c.offen} offen
-						</span>
-						<ChevronRight size={18} class="termin__chev" />
-					</div>
-				</a>
+				<div class="termin">
+					<button class="termin__main" onclick={() => goto(resolve('/termine/[id]', { id: e.id }))}>
+						<div class="termin__row">
+							<span class="termin__title">{e.title}</span>
+							<StatusBadge status={ownStatus(e)} />
+						</div>
+						<div class="termin__when">
+							{formatWhen(e.starts_at)}{e.location ? ` · ${e.location}` : ''}
+						</div>
+						<div class="termin__type">
+							<Tag tone="blue" outline>{typeLabel[e.type]}</Tag>
+							<ChevronRight size={18} class="termin__chev" />
+						</div>
+					</button>
+					<button class="termin__counts" onclick={() => openSheet(e)}>
+						{c.zu} angemeldet · {c.ab} abgemeldet · {c.offen} offen
+					</button>
+				</div>
 			{:else}
 				<p class="empty">
 					{view === 'anstehend' ? 'Keine anstehenden Termine.' : 'Keine vergangenen Termine.'}
@@ -99,6 +144,26 @@
 		</div>
 	</main>
 </div>
+
+{#if sheetEvent}
+	<button class="sheet__backdrop" aria-label="Schließen" onclick={closeSheet}></button>
+	<div class="sheet" role="dialog" aria-modal="true" aria-label="Meldungen">
+		<div class="sheet__head">
+			<span class="sheet__title">{sheetEvent.title}</span>
+			<IconButton label="Schließen" onclick={closeSheet}>
+				{#snippet icon()}<X />{/snippet}
+			</IconButton>
+		</div>
+		<SegmentedControl options={sheetTabs} bind:value={sheetTab} />
+		<ul class="sheet__names">
+			{#each sheetNames as n (n)}
+				<li>{n}</li>
+			{:else}
+				<li class="muted">Niemand</li>
+			{/each}
+		</ul>
+	</div>
+{/if}
 
 <style>
 	.shell {
@@ -121,15 +186,23 @@
 		gap: var(--space-3);
 	}
 	.termin {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-		padding: var(--space-3);
 		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
 		border-radius: var(--radius-md, 12px);
 		background: var(--surface, #fff);
-		text-decoration: none;
+		overflow: hidden;
+	}
+	.termin__main {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		width: 100%;
+		padding: var(--space-3);
+		background: none;
+		border: none;
+		text-align: left;
+		cursor: pointer;
 		color: inherit;
+		font: inherit;
 	}
 	.termin__row {
 		display: flex;
@@ -147,18 +220,79 @@
 		font-size: var(--text-sm);
 		color: var(--text-secondary);
 	}
-	.termin__foot {
+	.termin__type {
 		display: flex;
 		align-items: center;
-		gap: var(--space-2);
-	}
-	.termin__counts {
-		font-size: var(--text-sm);
-		color: var(--text-secondary);
 	}
 	.termin :global(.termin__chev) {
 		margin-left: auto;
 		color: var(--text-secondary);
-		flex: none;
+	}
+	.termin__counts {
+		width: 100%;
+		padding: var(--space-2) var(--space-3);
+		border: none;
+		border-top: 1px solid var(--hairline, rgba(0, 0, 0, 0.08));
+		background: var(--surface-sunken, rgba(0, 0, 0, 0.02));
+		text-align: left;
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
+		cursor: pointer;
+	}
+	.empty {
+		font-size: var(--text-base);
+		color: var(--text-secondary);
+		text-align: center;
+		padding: var(--space-5) 0;
+	}
+	.sheet__backdrop {
+		position: fixed;
+		inset: 0;
+		border: none;
+		background: rgba(0, 0, 0, 0.35);
+		z-index: 40;
+	}
+	.sheet {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 41;
+		max-width: var(--content-max);
+		margin: 0 auto;
+		background: var(--surface, #fff);
+		border-radius: var(--radius-lg, 16px) var(--radius-lg, 16px) 0 0;
+		padding: var(--space-4) var(--screen-pad)
+			calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		max-height: 70dvh;
+	}
+	.sheet__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+	}
+	.sheet__title {
+		font-size: var(--text-lg);
+		font-weight: 600;
+		color: var(--text-strong);
+	}
+	.sheet__names {
+		margin: 0;
+		padding-left: var(--space-4);
+		overflow-y: auto;
+	}
+	.sheet__names li {
+		font-size: var(--text-base);
+		color: var(--text-body);
+		padding: var(--space-1) 0;
+	}
+	.muted {
+		color: var(--text-secondary);
+		list-style: none;
+		margin-left: calc(-1 * var(--space-4));
 	}
 </style>

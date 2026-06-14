@@ -3,6 +3,13 @@ import type { PageLoad } from './$types';
 export type EventType = 'clubabend' | 'versammlung' | 'reise' | 'gesellig' | 'lions_termin';
 export type RsvpStatus = 'zugesagt' | 'abgesagt';
 
+export type MemberLite = {
+	id: string;
+	first_name: string;
+	last_name: string;
+	status: 'aktiv' | 'inaktiv' | 'ehrenmitglied';
+};
+
 export type EventListItem = {
 	id: string;
 	title: string;
@@ -17,7 +24,7 @@ export type EventListItem = {
 export const load: PageLoad = async ({ parent }) => {
 	const { supabase, user } = await parent();
 
-	const [eventsRes, meRes, activeRes] = await Promise.all([
+	const [eventsRes, meRes, membersRes] = await Promise.all([
 		supabase
 			.from('event')
 			.select(
@@ -29,12 +36,12 @@ export const load: PageLoad = async ({ parent }) => {
 			.select('id')
 			.eq('user_id', user?.id ?? '')
 			.maybeSingle(),
-		supabase.from('member').select('id', { count: 'exact', head: true }).eq('status', 'aktiv')
+		supabase.from('member').select('id, first_name, last_name, status').order('last_name')
 	]);
 
 	return {
 		events: (eventsRes.data ?? []) as unknown as EventListItem[],
 		myMemberId: (meRes.data?.id ?? null) as string | null,
-		activeCount: activeRes.count ?? 0
+		members: (membersRes.data ?? []) as MemberLite[]
 	};
 };
