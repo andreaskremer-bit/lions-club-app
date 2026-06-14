@@ -42,3 +42,43 @@ join (values
   ('heinrich.ehren@example.com',  'past_praesident')
 ) as map(email, amt_key) on map.email = m.email
 join public.amt a on a.key = map.amt_key;
+
+-- 4) Termine (vergangen + anstehend, verschiedene Typen). Feste IDs für Seed-Rückmeldungen.
+insert into public.event (id, title, type, location, starts_at) values
+  ('00000000-0000-0000-0000-0000000a1001', 'Jahresauftakt im Club',                       'clubabend',    'Hotel Königshof, Bonn',  now() - interval '21 days' + interval '19 hours'),
+  ('00000000-0000-0000-0000-0000000a1002', 'Weihnachtsfeier',                              'gesellig',     'Restaurant Rheinblick',  now() - interval '40 days' + interval '18 hours'),
+  ('00000000-0000-0000-0000-0000000a1003', 'Thalia Buchhandlung – gestern, heute, morgen', 'clubabend',    'Thalia Bonn',            now() + interval '5 days' + interval '19 hours'),
+  ('00000000-0000-0000-0000-0000000a1004', 'Mitgliederversammlung Frühjahr',               'versammlung',  'Hotel Königshof, Bonn',  now() + interval '20 days' + interval '19 hours'),
+  ('00000000-0000-0000-0000-0000000a1005', 'Club-Reise an die Mosel',                      'reise',        'Bernkastel-Kues',        now() + interval '42 days' + interval '9 hours'),
+  ('00000000-0000-0000-0000-0000000a1006', 'Zonentreffen Distrikt',                        'lions_termin', 'Köln',                   now() + interval '15 days' + interval '18 hours');
+
+-- 5) Rückmeldungen zum anstehenden Club-Abend (Thalia): 4 zugesagt, 2 abgesagt, Rest offen.
+insert into public.event_response (event_id, member_id, status)
+select '00000000-0000-0000-0000-0000000a1003', m.id, v.status::public.rsvp_status
+from public.member m
+join (values
+  ('webmaster@lions-bonn-rheinaue.de', 'zugesagt'),
+  ('praesident@example.com',      'zugesagt'),
+  ('sekretaer@example.com',       'zugesagt'),
+  ('heinrich.ehren@example.com',  'zugesagt'),
+  ('schatzmeister@example.com',   'abgesagt'),
+  ('clubmaster@example.com',      'abgesagt')
+) as v(email, status) on v.email = m.email;
+
+-- Begleitperson (Club-Abend erlaubt es): Partnerin des Präsidenten
+insert into public.companion (event_response_id, name)
+select r.id, 'Elke Vorsteher'
+from public.event_response r
+join public.member m on m.id = r.member_id
+where r.event_id = '00000000-0000-0000-0000-0000000a1003' and m.email = 'praesident@example.com';
+
+-- Finalisierte Rückmeldungen am vergangenen Jahresauftakt (für Vergangen-Ansicht)
+insert into public.event_response (event_id, member_id, status)
+select '00000000-0000-0000-0000-0000000a1001', m.id, v.status::public.rsvp_status
+from public.member m
+join (values
+  ('webmaster@lions-bonn-rheinaue.de', 'zugesagt'),
+  ('praesident@example.com',      'zugesagt'),
+  ('maria.mitglied@example.com',  'zugesagt'),
+  ('clubmaster@example.com',      'abgesagt')
+) as v(email, status) on v.email = m.email;

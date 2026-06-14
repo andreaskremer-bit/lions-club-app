@@ -13,15 +13,18 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: REST-Ping gegen Supabase
+      - name: Ping gegen Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
+          # auth/v1/health mit apikey liefert verlässlich 200 (unabhängig vom DB-Schema)
+          # und hält das Projekt wach.
           code=$(curl -s -o /dev/null -w '%{http_code}' \
             -H "apikey: $SUPABASE_ANON_KEY" \
-            "$SUPABASE_URL/rest/v1/")
-          echo "REST-Ping HTTP $code"
+            "$SUPABASE_URL/auth/v1/health")
+          echo "Health-Ping HTTP $code"
           if [ "$code" != "200" ]; then
             echo "::warning::Unerwarteter Status $code – Projekt evtl. pausiert oder reaktiviert gerade."
+            exit 1
           fi
