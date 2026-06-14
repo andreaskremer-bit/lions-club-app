@@ -58,8 +58,24 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 - **Dev-Seed:** 6 Termine (vergangen + anstehend, alle Typen) + Rückmeldungen + Begleitperson.
 - Qualität: `npm run check` 0/0; eigene Dateien prettier-konform.
 
-**Offen / als Nächstes (M3 – Anwesenheit & Finanzen)**
+**Offen / als Nächstes**
 
 - Kalenderansicht der Termine (Listenansicht steht; Kalender ist „Soll").
 - Echtzeit-Aktualisierung der Teilnehmerlisten (optional, Supabase Realtime).
-- Dann M3: Anwesenheitserfassung (spendenpflichtige Termine), Abwesenheits-Spenden, Schatzmeister-Auswertung + Export.
+
+## M3 – Anwesenheit (ohne Beträge) — erledigt
+
+**Erledigt (2026-06-17)** — Scope durch Club präzisiert: **keine Beträge/Spenden-Datensätze** in der App; der Schatzmeister rechnet den (allen bekannten, per MV-Beschluss änderbaren) Betrag **einmal jährlich extern** ab. Die App erfasst nur **anwesend/abwesend**.
+
+- **Schema:** `attendance` (Termin × Mitglied: `present`, `recorded_by`/`recorded_at`). KEIN `donation_entry`, KEIN `setting`.
+- **RLS + Tests:** Erfassen nur mit `record_attendance` (Sekretär/Präsident/Vize) **und nur für spendenpflichtige Termine**; Anwesenheitsdaten sichtbar nur für `record_attendance`/`view_donations` (nicht normale Mitglieder). 7 pgTAP-Tests (gesamt **35 grün**).
+- **Erfassung-UI:** `/termine/[id]/anwesenheit` — alle Mitglieder (auch inaktiv/Ehren fürs Protokoll), anwesend/abwesend je Person, „Alle anwesend", Speichern (upsert). Button im Termin-Detail nur bei spendenpflichtigem Typ + Recht.
+- **Schatzmeister-Auswertung:** `/auswertung` (nur `view_donations`) — Lions-Jahr-Auswahl (1.7.–30.6., Default laufendes Jahr), Abwesenheiten je **aktivem** Mitglied (inaktiv/Ehren befreit), **CSV-Export**. Keine Geldbeträge.
+- **Layout:** Root-`+layout.ts` liefert `memberId` + `permissions` für rechte-abhängige UI.
+- Dev-Seed: Anwesenheit am vergangenen Club-Abend (3 aktive Abwesenheiten).
+
+**Offen / als Nächstes**
+
+- PDF-Export der Auswertung (CSV steht; PDF „Soll").
+- M4 – Abfragen & Admin: Zusatzabfragen je Person (Frage-Engine), Admin-Jahresplanung/Massenpflege.
+- Mitschleppen: Vitest/Playwright, Mitglieder-Admin-UI, Foto-Upload, Geburtstagsübersicht, Kalenderansicht.
