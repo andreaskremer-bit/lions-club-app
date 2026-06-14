@@ -1,12 +1,30 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Avatar, Tag, Card, ListRow } from '$lib/components/ui';
-	import { ChevronLeft, Phone, Smartphone, Mail, MapPin } from '@lucide/svelte';
+	import { AppBar, IconButton, Avatar, Tag, Card, ListRow, Button } from '$lib/components/ui';
+	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send } from '@lucide/svelte';
 	import type { MemberStatus } from '../+page';
 
 	let { data } = $props();
 	let m = $derived(data.member);
+
+	let inviting = $state(false);
+	let inviteMsg = $state('');
+
+	async function einladen() {
+		if (inviting) return;
+		inviting = true;
+		inviteMsg = '';
+		const res = await fetch(`/api/mitglieder/${m.id}/einladen`, { method: 'POST' });
+		inviting = false;
+		if (!res.ok) {
+			const body = await res.json().catch(() => ({}));
+			inviteMsg = 'Einladen fehlgeschlagen: ' + (body.message ?? res.status);
+			return;
+		}
+		inviteMsg = 'Konto angelegt – Login per E-Mail-Code möglich.';
+		await invalidateAll();
+	}
 
 	const statusLabel: Record<MemberStatus, string> = {
 		aktiv: 'aktiv',
@@ -108,6 +126,24 @@
 			</dl>
 		</Card>
 
+		{#if data.permissions.includes('manage_members')}
+			<Card>
+				<h2 class="sec">Zugang</h2>
+				{#if m.user_id}
+					<p class="muted">Login aktiv.</p>
+				{:else}
+					<p class="muted">
+						Noch kein Login. Lade das Mitglied ein, um den Anmelde-Code per E-Mail zu aktivieren.
+					</p>
+					<Button variant="secondary" disabled={inviting} onclick={einladen}>
+						{#snippet iconLeft()}<Send size={18} />{/snippet}
+						{inviting ? 'Einladen …' : 'Einladen'}
+					</Button>
+				{/if}
+				{#if inviteMsg}<p class="muted">{inviteMsg}</p>{/if}
+			</Card>
+		{/if}
+
 		{#if m.partner_name}
 			<Card>
 				<h2 class="sec">Partner/in</h2>
@@ -183,6 +219,11 @@
 		color: var(--text-secondary);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
+		margin: 0 0 var(--space-2);
+	}
+	.muted {
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
 		margin: 0 0 var(--space-2);
 	}
 	.facts {

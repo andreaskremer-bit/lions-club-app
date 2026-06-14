@@ -75,6 +75,8 @@ join (values
   ('sekretaer',     'record_attendance'),
   ('sekretaer',     'manage_members'),
   ('sekretaer',     'export_lions'),
+  ('sekretaer',     'manage_roles'),
+  ('sekretaer',     'delete_member'),
   ('schatzmeister', 'view_donations'),
   ('clubmaster',    'manage_events'),
   ('webmaster',     'manage_roles'),
