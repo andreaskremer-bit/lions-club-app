@@ -37,12 +37,10 @@
 	);
 
 	let eventsByDay = $derived.by(() => {
-		const map = new Map<string, EventListItem[]>();
+		const map: Record<string, EventListItem[]> = {};
 		for (const e of data.events) {
 			const k = dayKey(new Date(e.starts_at));
-			const arr = map.get(k);
-			if (arr) arr.push(e);
-			else map.set(k, [e]);
+			(map[k] ??= []).push(e);
 		}
 		return map;
 	});
@@ -58,7 +56,7 @@
 		return arr;
 	});
 
-	let selectedEvents = $derived(selectedDay ? (eventsByDay.get(selectedDay) ?? []) : []);
+	let selectedEvents = $derived(selectedDay ? (eventsByDay[selectedDay] ?? []) : []);
 
 	const typeLabel: Record<EventType, string> = {
 		clubabend: 'Club-Abend',
@@ -209,7 +207,7 @@
 				{#each weekdays as wd (wd)}<span class="cal__wd">{wd}</span>{/each}
 				{#each cells as cell, i (i)}
 					{#if cell}
-						{@const evs = eventsByDay.get(cell.key) ?? []}
+						{@const evs = eventsByDay[cell.key] ?? []}
 						<button
 							class={[
 								'cal__day',

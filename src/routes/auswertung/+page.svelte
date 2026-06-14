@@ -3,11 +3,9 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
+	import { lionsStartYear } from '$lib/dates';
 
 	let { data } = $props();
-
-	// Lions-Jahr = 1. Juli bis 30. Juni. Startjahr aus einem Datum bestimmen.
-	const lionsStartYear = (d: Date) => (d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1);
 
 	let selectedYear = $state(lionsStartYear(new Date()));
 

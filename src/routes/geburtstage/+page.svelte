@@ -3,35 +3,20 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Avatar, Tag } from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
+	import { nextBirthdayInfo, type BirthdayInfo } from '$lib/dates';
 	import type { BdayMember } from './+page';
 
 	let { data } = $props();
 
 	const dayFmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long' });
 
-	const MS_DAY = 86_400_000;
+	type Row = BdayMember & BirthdayInfo;
 
-	type Row = BdayMember & { date: Date; days: number; turning: number; today: boolean };
-
-	let rows = $derived.by((): Row[] => {
-		const now = new Date();
-		const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-		return data.members
-			.map((m) => {
-				const bd = new Date(m.birthday);
-				let next = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
-				if (next < today) next = new Date(today.getFullYear() + 1, bd.getMonth(), bd.getDate());
-				const days = Math.round((next.getTime() - today.getTime()) / MS_DAY);
-				return {
-					...m,
-					date: next,
-					days,
-					turning: next.getFullYear() - bd.getFullYear(),
-					today: days === 0
-				};
-			})
-			.sort((a, b) => a.days - b.days);
-	});
+	let rows = $derived.by((): Row[] =>
+		data.members
+			.map((m) => ({ ...m, ...nextBirthdayInfo(m.birthday) }))
+			.sort((a, b) => a.days - b.days)
+	);
 
 	function whenLabel(r: Row): string {
 		if (r.today) return 'heute';

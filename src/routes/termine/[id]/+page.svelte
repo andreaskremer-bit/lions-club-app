@@ -29,15 +29,11 @@
 	let myResponse = $derived(e.event_response.find((r) => r.member_id === data.myMemberId) ?? null);
 	let ownStatus = $derived(myResponse?.status ?? null);
 
-	let comment = $state('');
+	// Schreibbares $derived: startet beim geladenen Kommentar, bleibt editierbar.
+	let comment = $derived(myResponse?.comment ?? '');
 	let newCompanion = $state('');
 	let busy = $state(false);
 	let err = $state('');
-
-	// Kommentar-Feld mit geladenem Wert initialisieren (einmalig je Response)
-	$effect(() => {
-		comment = myResponse?.comment ?? '';
-	});
 
 	let zugesagt = $derived(e.event_response.filter((r) => r.status === 'zugesagt'));
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));

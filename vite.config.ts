@@ -1,6 +1,6 @@
 import adapter from '@sveltejs/adapter-netlify';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 
 export default defineConfig({
@@ -42,5 +42,10 @@ export default defineConfig({
 				]
 			}
 		})
-	]
+	],
+	test: {
+		// Reine Unit-Tests (Pure-Funktionen ohne SvelteKit-/DOM-Abhängigkeiten).
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		environment: 'node'
+	}
 });
