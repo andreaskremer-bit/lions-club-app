@@ -76,7 +76,7 @@
 
 	<main class="shell__body">
 		<header class="head">
-			<Avatar name={`${m.first_name} ${m.last_name}`} size="xl" />
+			<Avatar name={`${m.first_name} ${m.last_name}`} src={data.photoUrl} size="xl" />
 			<h1 class="head__name">{fullName}</h1>
 			<div class="head__tags">
 				<Tag tone={statusTone[m.status]} dot>{statusLabel[m.status]}</Tag>

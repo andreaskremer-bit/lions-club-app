@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Button, Card, Avatar } from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { MemberStatus } from '../../+page';
 
@@ -34,9 +34,56 @@
 	let amtBusy = $state(false);
 
 	let saving = $state(false);
+	let uploading = $state(false);
 	let error = $state('');
 
 	const orNull = (v: string) => (v.trim() === '' ? null : v.trim());
+
+	async function onFile(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		uploading = true;
+		error = '';
+		const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+		const path = `${m.id}/avatar_${Date.now()}.${ext}`;
+		const { error: upErr } = await supabase.storage
+			.from('member-photos')
+			.upload(path, file, { contentType: file.type, upsert: true });
+		if (upErr) {
+			uploading = false;
+			error = 'Upload fehlgeschlagen: ' + upErr.message;
+			return;
+		}
+		const { error: updErr } = await supabase
+			.from('member')
+			.update({ photo_path: path })
+			.eq('id', m.id);
+		uploading = false;
+		input.value = '';
+		if (updErr) {
+			error = 'Speichern fehlgeschlagen: ' + updErr.message;
+			return;
+		}
+		await invalidateAll();
+	}
+
+	async function removePhoto() {
+		if (!m.photo_path) return;
+		uploading = true;
+		error = '';
+		await supabase.storage.from('member-photos').remove([m.photo_path]);
+		const { error: updErr } = await supabase
+			.from('member')
+			.update({ photo_path: null })
+			.eq('id', m.id);
+		uploading = false;
+		if (updErr) {
+			error = 'Entfernen fehlgeschlagen: ' + updErr.message;
+			return;
+		}
+		await invalidateAll();
+	}
 
 	async function save(e: SubmitEvent) {
 		e.preventDefault();
@@ -121,6 +168,22 @@
 	</AppBar>
 
 	<main class="shell__body">
+		<Card>
+			<h2 class="sec">Foto</h2>
+			<div class="photo">
+				<Avatar name={`${m.first_name} ${m.last_name}`} src={data.photoUrl} size="xl" />
+				<div class="photo__actions">
+					<label class="filebtn">
+						<input type="file" accept="image/*" onchange={onFile} disabled={uploading} />
+						<span>{uploading ? 'Lädt …' : 'Foto wählen'}</span>
+					</label>
+					{#if m.photo_path}
+						<Button variant="ghost" disabled={uploading} onclick={removePhoto}>Entfernen</Button>
+					{/if}
+				</div>
+			</div>
+		</Card>
+
 		<form onsubmit={save} class="form">
 			<Card>
 				<h2 class="sec">Stammdaten</h2>
@@ -250,6 +313,32 @@
 		background: var(--surface, #fff);
 		color: var(--text-strong);
 		min-height: 44px;
+	}
+	.photo {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+	}
+	.photo__actions {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+	.filebtn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: 0 var(--space-4);
+		border: 1px solid var(--lions-blue, #1e4fa3);
+		border-radius: var(--radius-sm, 8px);
+		color: var(--lions-blue, #1e4fa3);
+		font-size: var(--text-base);
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.filebtn input {
+		display: none;
 	}
 	.aemter {
 		display: flex;

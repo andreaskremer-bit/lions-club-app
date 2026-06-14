@@ -17,6 +17,7 @@ export type EditMember = {
 	city: string | null;
 	birthday: string | null;
 	joined_on: string | null;
+	photo_path: string | null;
 	partner_name: string | null;
 	partner_birthday: string | null;
 	partner_email: string | null;
@@ -34,7 +35,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 		supabase
 			.from('member')
 			.select(
-				'id, user_id, first_name, last_name, title, status, email, phone, mobile, street, zip, city, birthday, joined_on, partner_name, partner_birthday, partner_email, partner_mobile, member_amt(amt_id)'
+				'id, user_id, first_name, last_name, title, status, email, phone, mobile, street, zip, city, birthday, joined_on, photo_path, partner_name, partner_birthday, partner_email, partner_mobile, member_amt(amt_id)'
 			)
 			.eq('id', params.id)
 			.maybeSingle(),
@@ -50,8 +51,17 @@ export const load: PageLoad = async ({ parent, params }) => {
 	// Bearbeiten darf: man selbst (Selbstpflege) ODER edit_member_master.
 	if (!isSelf && !canEditMaster) throw redirect(303, `/mitglieder/${member.id}`);
 
+	let photoUrl: string | null = null;
+	if (member.photo_path) {
+		const { data: signed } = await supabase.storage
+			.from('member-photos')
+			.createSignedUrl(member.photo_path, 3600);
+		photoUrl = signed?.signedUrl ?? null;
+	}
+
 	return {
 		member,
+		photoUrl,
 		isSelf,
 		canEditMaster,
 		canManageRoles: permissions.includes('manage_roles'),

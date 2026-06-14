@@ -95,7 +95,10 @@
 						subtitle={primaryAmt(m)}
 						chevron
 					>
-						{#snippet lead()}<Avatar name={`${m.first_name} ${m.last_name}`} />{/snippet}
+						{#snippet lead()}<Avatar
+								name={`${m.first_name} ${m.last_name}`}
+								src={(m.photo_path && data.photoUrls[m.photo_path]) || null}
+							/>{/snippet}
 						{#snippet trailing()}
 							<Tag tone={statusTone[m.status]} dot>{statusLabel[m.status]}</Tag>
 						{/snippet}

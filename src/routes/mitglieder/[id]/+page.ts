@@ -43,5 +43,14 @@ export const load: PageLoad = async ({ parent, params }) => {
 	if (!data) throw error(404, 'Mitglied nicht gefunden');
 
 	const member = data as unknown as MemberDetail;
-	return { member, isSelf: !!user && member.user_id === user.id };
+
+	let photoUrl: string | null = null;
+	if (member.photo_path) {
+		const { data: signed } = await supabase.storage
+			.from('member-photos')
+			.createSignedUrl(member.photo_path, 3600);
+		photoUrl = signed?.signedUrl ?? null;
+	}
+
+	return { member, photoUrl, isSelf: !!user && member.user_id === user.id };
 };
