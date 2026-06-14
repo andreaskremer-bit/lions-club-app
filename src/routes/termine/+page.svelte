@@ -14,6 +14,52 @@
 		{ value: 'vergangen', label: 'Vergangen' }
 	];
 
+	let viewMode = $state<'liste' | 'kalender'>('liste');
+	const modeOptions = [
+		{ value: 'liste', label: 'Liste' },
+		{ value: 'kalender', label: 'Kalender' }
+	];
+
+	// ── Kalender ────────────────────────────────────────────────────────────────
+	const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+	const todayKey = dayKey(new Date());
+	const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+	const timeFmt = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+	let calMonth = $state(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+	let selectedDay = $state<string | null>(null);
+	function shiftMonth(delta: number) {
+		calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
+		selectedDay = null;
+	}
+	let monthLabel = $derived(
+		new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' }).format(calMonth)
+	);
+
+	let eventsByDay = $derived.by(() => {
+		const map = new Map<string, EventListItem[]>();
+		for (const e of data.events) {
+			const k = dayKey(new Date(e.starts_at));
+			const arr = map.get(k);
+			if (arr) arr.push(e);
+			else map.set(k, [e]);
+		}
+		return map;
+	});
+
+	let cells = $derived.by(() => {
+		const y = calMonth.getFullYear();
+		const mo = calMonth.getMonth();
+		const startWeekday = (new Date(y, mo, 1).getDay() + 6) % 7; // Montag = 0
+		const daysInMonth = new Date(y, mo + 1, 0).getDate();
+		const arr: ({ day: number; key: string } | null)[] = [];
+		for (let i = 0; i < startWeekday; i++) arr.push(null);
+		for (let d = 1; d <= daysInMonth; d++) arr.push({ day: d, key: dayKey(new Date(y, mo, d)) });
+		return arr;
+	});
+
+	let selectedEvents = $derived(selectedDay ? (eventsByDay.get(selectedDay) ?? []) : []);
+
 	const typeLabel: Record<EventType, string> = {
 		clubabend: 'Club-Abend',
 		versammlung: 'Mitglieder-Versammlung',
@@ -113,35 +159,91 @@
 	</AppBar>
 
 	<main class="shell__body">
-		<SegmentedControl options={viewOptions} bind:value={view} />
+		<SegmentedControl options={modeOptions} bind:value={viewMode} />
 
-		<div class="list">
-			{#each list as e (e.id)}
-				{@const c = counts(e)}
-				<div class="termin">
-					<button class="termin__main" onclick={() => goto(resolve('/termine/[id]', { id: e.id }))}>
-						<div class="termin__row">
-							<span class="termin__title">{e.title}</span>
+		{#if viewMode === 'liste'}
+			<SegmentedControl options={viewOptions} bind:value={view} />
+
+			<div class="list">
+				{#each list as e (e.id)}
+					{@const c = counts(e)}
+					<div class="termin">
+						<button
+							class="termin__main"
+							onclick={() => goto(resolve('/termine/[id]', { id: e.id }))}
+						>
+							<div class="termin__row">
+								<span class="termin__title">{e.title}</span>
+								<StatusBadge status={ownStatus(e)} />
+							</div>
+							<div class="termin__when">
+								{formatWhen(e.starts_at)}{e.location ? ` · ${e.location}` : ''}
+							</div>
+							<div class="termin__type">
+								<Tag tone="blue" outline>{typeLabel[e.type]}</Tag>
+								<ChevronRight size={18} class="termin__chev" />
+							</div>
+						</button>
+						<button class="termin__counts" onclick={() => openSheet(e)}>
+							{c.zu} angemeldet · {c.ab} abgemeldet · {c.offen} offen
+						</button>
+					</div>
+				{:else}
+					<p class="empty">
+						{view === 'anstehend' ? 'Keine anstehenden Termine.' : 'Keine vergangenen Termine.'}
+					</p>
+				{/each}
+			</div>
+		{:else}
+			<div class="cal__nav">
+				<IconButton label="Vorheriger Monat" onclick={() => shiftMonth(-1)}>
+					{#snippet icon()}<ChevronLeft />{/snippet}
+				</IconButton>
+				<span class="cal__month">{monthLabel}</span>
+				<IconButton label="Nächster Monat" onclick={() => shiftMonth(1)}>
+					{#snippet icon()}<ChevronRight />{/snippet}
+				</IconButton>
+			</div>
+
+			<div class="cal__grid">
+				{#each weekdays as wd (wd)}<span class="cal__wd">{wd}</span>{/each}
+				{#each cells as cell, i (i)}
+					{#if cell}
+						{@const evs = eventsByDay.get(cell.key) ?? []}
+						<button
+							class={[
+								'cal__day',
+								cell.key === todayKey ? 'cal__day--today' : '',
+								cell.key === selectedDay ? 'cal__day--sel' : ''
+							]
+								.filter(Boolean)
+								.join(' ')}
+							onclick={() => (selectedDay = cell.key)}
+							disabled={evs.length === 0}
+						>
+							{cell.day}
+							{#if evs.length}<span class="cal__dot"></span>{/if}
+						</button>
+					{:else}
+						<span class="cal__day cal__day--empty"></span>
+					{/if}
+				{/each}
+			</div>
+
+			{#if selectedDay}
+				<div class="list">
+					{#each selectedEvents as e (e.id)}
+						<a class="day-ev" href={resolve('/termine/[id]', { id: e.id })}>
+							<span class="day-ev__time">{timeFmt.format(new Date(e.starts_at))}</span>
+							<span class="day-ev__title">{e.title}</span>
 							<StatusBadge status={ownStatus(e)} />
-						</div>
-						<div class="termin__when">
-							{formatWhen(e.starts_at)}{e.location ? ` · ${e.location}` : ''}
-						</div>
-						<div class="termin__type">
-							<Tag tone="blue" outline>{typeLabel[e.type]}</Tag>
-							<ChevronRight size={18} class="termin__chev" />
-						</div>
-					</button>
-					<button class="termin__counts" onclick={() => openSheet(e)}>
-						{c.zu} angemeldet · {c.ab} abgemeldet · {c.offen} offen
-					</button>
+						</a>
+					{/each}
 				</div>
 			{:else}
-				<p class="empty">
-					{view === 'anstehend' ? 'Keine anstehenden Termine.' : 'Keine vergangenen Termine.'}
-				</p>
-			{/each}
-		</div>
+				<p class="empty">Tippe einen markierten Tag an.</p>
+			{/if}
+		{/if}
 	</main>
 </div>
 
@@ -244,6 +346,92 @@
 		color: var(--text-secondary);
 		text-align: center;
 		padding: var(--space-5) 0;
+	}
+	.cal__nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.cal__month {
+		font-size: var(--text-base);
+		font-weight: 600;
+		color: var(--text-strong);
+		text-transform: capitalize;
+	}
+	.cal__grid {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: var(--space-1);
+	}
+	.cal__wd {
+		text-align: center;
+		font-size: var(--text-xs);
+		color: var(--text-secondary);
+		padding-bottom: var(--space-1);
+	}
+	.cal__day {
+		position: relative;
+		aspect-ratio: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		border-radius: var(--radius-sm, 8px);
+		background: none;
+		font: inherit;
+		font-size: var(--text-sm);
+		color: var(--text-strong);
+	}
+	.cal__day--empty {
+		visibility: hidden;
+	}
+	.cal__day:disabled {
+		color: var(--text-secondary);
+		opacity: 0.6;
+	}
+	.cal__day:not(:disabled) {
+		cursor: pointer;
+	}
+	.cal__day--today {
+		outline: 1px solid var(--gold, #b98a22);
+	}
+	.cal__day--sel {
+		background: var(--lions-blue, #1e4fa3);
+		color: #fff;
+	}
+	.cal__dot {
+		position: absolute;
+		bottom: 6px;
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--lions-blue, #1e4fa3);
+	}
+	.cal__day--sel .cal__dot {
+		background: #fff;
+	}
+	.day-ev {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3);
+		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
+		border-radius: var(--radius-md, 12px);
+		background: var(--surface, #fff);
+		text-decoration: none;
+		color: inherit;
+	}
+	.day-ev__time {
+		font-variant-numeric: tabular-nums;
+		color: var(--text-secondary);
+		font-size: var(--text-sm);
+		flex: none;
+	}
+	.day-ev__title {
+		flex: 1;
+		font-weight: 600;
+		color: var(--text-strong);
+		min-width: 0;
 	}
 	.sheet__backdrop {
 		position: fixed;
