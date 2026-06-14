@@ -18,10 +18,12 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 - Icons als Platzhalter aus `design-referenz/assets` (PWA-Icon, „LC"-Monogramm). **Offizielles Lions-Emblem bewusst NICHT eingebaut** (markenrechtlich, Freigabe ausstehend) — Login nutzt das Monogramm.
 - Qualität: `npm run check` 0 Fehler, `npm run lint` sauber, `npm run build` erfolgreich.
 
+- **OTP-Login end-to-end verifiziert (2026-06-15):** Echtes Supabase-Projekt (EU/Frankfurt, ref `qfxtyqippdrcrhwbkhwx`) verdrahtet, `.env` mit echten Keys. Club-eigener SMTP (`webmaster@lions-bonn-rheinaue.de` via `smtp.gmail.com:587`, Google-App-Passwort) sendet erfolgreich; Template auf `{{ .Token }}`, OTP-Länge auf 6 gestellt. Browser-Login `/login` → geschützte Startseite funktioniert.
+
 **Offen / als Nächstes**
 
-- **Echtes Supabase-Projekt (EU/Frankfurt) anlegen** und `.env` füllen (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`) — aktuell Platzhalter in `.env`. AV-Vertrag/DPA. Erst dann ist der OTP-Flow end-to-end testbar.
-- E-Mail-Template in Supabase auf 6-stelligen Code (`{{ .Token }}`) statt Magic-Link stellen.
 - Offizielles Lions-Emblem nach Freigabe durch den Club einsetzen (`static/icons/`, Login-Brand).
 - Mapping `auth.users` ↔ `member` (kommt mit M1-Datenmodell).
 - Vitest/Playwright-Setup (Tests ab M1 für RLS verpflichtend).
+- **Go-live:** SMTP-Versand von App-Passwort auf OAuth2/Gmail-API (Supabase „Send Email Hook") umstellen.
+- **Dev-Stolperstein dokumentiert:** PWA-Service-Worker cachte ein altes Bundle mit Platzhalter-Keys → Login schlug fehl, bis SW deregistriert wurde. Vor M-Tests SW in Dev zähmen (`devOptions`/`registerType`), siehe Memo.
