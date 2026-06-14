@@ -41,9 +41,25 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 - **Dev-Seed** (`supabase/seed.sql`): 8 Beispiel-Mitglieder + Ämter + lokale Auth-User. Login lokal über Mailpit verifiziert.
 - Qualität: `npm run check` 0 Fehler/0 Warnungen, eigene Dateien prettier-konform.
 
-**Offen / als Nächstes (M2 – Termine)**
+**Offen / als Nächstes**
 
 - Vitest/Playwright (App-/E2E-Tests) — RLS ist über pgTAP abgedeckt, Unit/E2E folgen.
 - Admin-Funktionen Mitglieder (Neumitglied anlegen/einladen, fremde Stammdaten/Ämter pflegen, löschen) — Rechte stehen, UI später.
 - Foto-Upload (Storage-Bucket für `photo_path`).
 - Geburtstagsübersicht (Spec §4.1).
+
+## M2 – Termine — erledigt
+
+**Erledigt (2026-06-16)**
+
+- **Schema (Migrationen):** `event` (Typ-Enum; aus `type` generierte Spalten `companion_allowed`/`donation_required` = Matrix Spec §4.2), `event_response` (RSVP `zugesagt`/`abgesagt`; „Offen" = keine Zeile), `companion` (Begleitperson je Rückmeldung).
+- **RLS + Tests:** eigene Rückmeldung schreibbar, **Vergangenheits-Sperre** (`starts_at > now()`), Begleitperson nur bei erlaubtem Typ; Termine verwalten mit `manage_events`. **11 pgTAP-Tests** (gesamt 28 grün).
+- **UI:** `/termine` (Übersicht Anstehend/Vergangen, eigener Status als Badge, Zähler angemeldet/abgemeldet/offen, **antippbar → Meldungen-Sheet** mit Namensliste je Status; „Offen" = aktive ohne Rückmeldung), `/termine/[id]` (Detail: Anmelden/Abmelden beide sichtbar, Kommentar, Begleitpersonen hinzufügen/entfernen, Meldungen-Listen). Startseiten-Link.
+- **Dev-Seed:** 6 Termine (vergangen + anstehend, alle Typen) + Rückmeldungen + Begleitperson.
+- Qualität: `npm run check` 0/0; eigene Dateien prettier-konform.
+
+**Offen / als Nächstes (M3 – Anwesenheit & Finanzen)**
+
+- Kalenderansicht der Termine (Listenansicht steht; Kalender ist „Soll").
+- Echtzeit-Aktualisierung der Teilnehmerlisten (optional, Supabase Realtime).
+- Dann M3: Anwesenheitserfassung (spendenpflichtige Termine), Abwesenheits-Spenden, Schatzmeister-Auswertung + Export.
