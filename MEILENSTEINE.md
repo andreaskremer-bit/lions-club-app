@@ -89,6 +89,22 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 
 - **Admin-Jahresplanung:** `/termine/planung` (manage_events) — Einzeltermin oder Serie (wöchentlich/14-täglich/monatlich + Anzahl) mit Vorschau + Bulk-Insert; „+" in der Übersicht. `seriesDates()` (+4 Unit-Tests). Zugleich die einzige Event-Erstellungs-UI.
 
-**Offen / als Nächstes**
+## M5 – Engagement — teilweise erledigt
 
-- M5 – Engagement (Push/Reminder-Automatik via pg_cron/Edge Function, PWA-Offline, Geburtstags-Reminder), M6 – Rest & Launch (News, Dokumente, Galerie-Link, Deploy).
+**Erledigt (2026-06-17) — Reminder-Logik + In-App-Zustellung**
+
+- **Outbox `notification`** (je Empfänger) + `push_subscription` + `event.reminder_days_before` (Vorlauf je Termin, Default 3).
+- **`enqueue_due_reminders(p_today)`** (idempotent): Termin-Reminder an aktive Nicht-Rückmelder (Vorlauf je Termin), Geburtstags-Reminder an alle, Vorstand-Erinnerung zur Anwesenheitserfassung. **6 pgTAP-Tests** (gesamt 50 grün).
+- **pg_cron-Tagesplan** (07:00 UTC, guarded — lokal inaktiv, auf Supabase nach Extension-Aktivierung).
+- **In-App:** `/benachrichtigungen` (Liste, „Alle als gelesen", Reminder verlinken ins Termin-Detail) + Glocke mit Ungelesen-Badge auf der Startseite.
+
+**Offen / als Nächstes (Go-live-Infrastruktur)**
+
+- **Web-Push-Versand:** VAPID-Keys erzeugen; Service-Worker `push`-Handler; Client-Subscribe-Flow (Permission → `pushManager.subscribe` → in `push_subscription` speichern); Edge Function liest Outbox (`sent_at is null`) und sendet Push (web-push lib) + **E-Mail-Fallback** über den Club-SMTP. iOS: nur installierte PWA (ab 16.4).
+- **pg_cron auf Supabase aktivieren** (Dashboard → Database → Extensions) — Migration legt den Job dann an.
+- **PWA-Offline-Shell:** `@vite-pwa/sveltekit` Workbox-Precaching + Navigation-Fallback.
+- Optional: UI zum Überschreiben von `reminder_days_before` je Termin (kommt mit Event-Bearbeiten).
+
+## M6 – Rest & Launch — offen
+
+- News, Dokumente, Galerie-Link; Deploy (Netlify + Migrationen aufs Remote via `supabase db push`); Pro-Plan; OAuth2-Mailversand.
