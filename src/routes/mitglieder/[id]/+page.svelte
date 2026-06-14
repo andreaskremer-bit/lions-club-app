@@ -48,7 +48,7 @@
 			</IconButton>
 		{/snippet}
 		{#snippet trailing()}
-			{#if data.isSelf}
+			{#if data.isSelf || data.permissions.includes('edit_member_master')}
 				<a class="edit-link" href={resolve('/mitglieder/[id]/bearbeiten', { id: m.id })}
 					>Bearbeiten</a
 				>

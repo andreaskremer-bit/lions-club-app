@@ -10,7 +10,7 @@
 		Avatar,
 		Tag
 	} from '$lib/components/ui';
-	import { ChevronLeft, Search } from '@lucide/svelte';
+	import { ChevronLeft, Search, UserPlus } from '@lucide/svelte';
 	import type { MemberListItem, MemberStatus } from './+page';
 
 	let { data } = $props();
@@ -65,6 +65,13 @@
 			<IconButton label="Zurück" onclick={() => goto(resolve('/'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
+		{/snippet}
+		{#snippet trailing()}
+			{#if data.permissions.includes('manage_members')}
+				<IconButton label="Neues Mitglied" onclick={() => goto(resolve('/mitglieder/neu'))}>
+					{#snippet icon()}<UserPlus />{/snippet}
+				</IconButton>
+			{/if}
 		{/snippet}
 	</AppBar>
 
