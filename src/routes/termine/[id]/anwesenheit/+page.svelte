@@ -13,11 +13,24 @@
 		{ value: 'ab', label: 'Abwesend' }
 	];
 
-	// Markierungen je Mitglied, initial aus bereits erfasster Anwesenheit.
+	// Markierungen je Mitglied. Vorrang: bereits erfasste Anwesenheit; sonst aus
+	// der Rückmeldung vorbelegt (zugesagt→anwesend, abgesagt→abwesend); offen bleibt leer.
+	const snap = untrack(() => ({
+		members: data.members,
+		attendance: data.attendance,
+		rsvp: data.rsvp
+	}));
 	const initial: Record<string, 'an' | 'ab'> = {};
-	const att = untrack(() => data.attendance);
-	for (const [mid, present] of Object.entries(att)) initial[mid] = present ? 'an' : 'ab';
+	for (const m of snap.members) {
+		if (m.id in snap.attendance) initial[m.id] = snap.attendance[m.id] ? 'an' : 'ab';
+		else if (snap.rsvp[m.id] === 'zugesagt') initial[m.id] = 'an';
+		else if (snap.rsvp[m.id] === 'abgesagt') initial[m.id] = 'ab';
+	}
 	let marks = $state<Record<string, 'an' | 'ab'>>(initial);
+
+	// Hinweis nur, wenn überhaupt aus Rückmeldungen vorbelegt wurde (und noch nichts erfasst war).
+	const prefilledFromRsvp =
+		Object.keys(snap.attendance).length === 0 && Object.keys(snap.rsvp).length > 0;
 
 	let saving = $state(false);
 	let err = $state('');
@@ -68,9 +81,12 @@
 
 	<main class="shell__body">
 		<div class="bulk">
-			<span class="bulk__label">{markedCount} von {data.members.length} erfasst</span>
+			<span class="bulk__label">{markedCount} von {data.members.length} markiert</span>
 			<Button variant="ghost" onclick={() => setAll('an')}>Alle anwesend</Button>
 		</div>
+		{#if prefilledFromRsvp}
+			<p class="hint">Aus den Rückmeldungen vorbelegt – bitte prüfen und speichern.</p>
+		{/if}
 
 		<div class="rows">
 			{#each data.members as m (m.id)}
@@ -125,6 +141,11 @@
 	.bulk__label {
 		font-size: var(--text-sm);
 		color: var(--text-secondary);
+	}
+	.hint {
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
+		margin: 0;
 	}
 	.rows {
 		display: flex;

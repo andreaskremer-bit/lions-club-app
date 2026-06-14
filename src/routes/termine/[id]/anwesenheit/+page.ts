@@ -15,14 +15,15 @@ export const load: PageLoad = async ({ parent, params }) => {
 		throw redirect(303, `/termine/${params.id}`);
 	}
 
-	const [evRes, memRes, attRes] = await Promise.all([
+	const [evRes, memRes, attRes, rsvpRes] = await Promise.all([
 		supabase
 			.from('event')
 			.select('id, title, type, starts_at, donation_required')
 			.eq('id', params.id)
 			.maybeSingle(),
 		supabase.from('member').select('id, first_name, last_name, status').order('last_name'),
-		supabase.from('attendance').select('member_id, present').eq('event_id', params.id)
+		supabase.from('attendance').select('member_id, present').eq('event_id', params.id),
+		supabase.from('event_response').select('member_id, status').eq('event_id', params.id)
 	]);
 
 	if (evRes.error) throw error(500, evRes.error.message);
@@ -43,5 +44,14 @@ export const load: PageLoad = async ({ parent, params }) => {
 		attendance[a.member_id] = a.present;
 	}
 
-	return { event, members: (memRes.data ?? []) as AttMember[], attendance };
+	// Rückmeldungen für die Vorbelegung (zugesagt→anwesend, abgesagt→abwesend).
+	const rsvp: Record<string, 'zugesagt' | 'abgesagt'> = {};
+	for (const r of (rsvpRes.data ?? []) as {
+		member_id: string;
+		status: 'zugesagt' | 'abgesagt';
+	}[]) {
+		rsvp[r.member_id] = r.status;
+	}
+
+	return { event, members: (memRes.data ?? []) as AttMember[], attendance, rsvp };
 };
