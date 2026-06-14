@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, Card, Button, IconButton } from '$lib/components/ui';
-	import { LogOut } from '@lucide/svelte';
+	import { LogOut, Users, ArrowRight } from '@lucide/svelte';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -35,6 +35,12 @@
 			</p>
 			<p class="welcome__hint">Die Module Termine, Mitglieder und mehr folgen ab M1.</p>
 		</Card>
+
+		<Button fullWidth onclick={() => goto(resolve('/mitglieder'))}>
+			{#snippet iconLeft()}<Users size={18} />{/snippet}
+			Mitgliederverzeichnis
+			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+		</Button>
 
 		<Button variant="secondary" fullWidth onclick={signOut} disabled={loading}>
 			{loading ? 'Abmelden …' : 'Abmelden'}
