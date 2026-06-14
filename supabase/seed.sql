@@ -82,3 +82,20 @@ join (values
   ('maria.mitglied@example.com',  'zugesagt'),
   ('clubmaster@example.com',      'abgesagt')
 ) as v(email, status) on v.email = m.email;
+
+-- 6) Erfasste Anwesenheit am vergangenen Club-Abend (Jahresauftakt, spendenpflichtig).
+-- Aktive Abwesende: Kasse, Reise (clubmaster), Mitglied -> 3 Abwesenheiten im Lions-Jahr.
+insert into public.attendance (event_id, member_id, present, recorded_by)
+select '00000000-0000-0000-0000-0000000a1001', m.id, v.present,
+       (select id from public.member where email = 'sekretaer@example.com')
+from public.member m
+join (values
+  ('webmaster@lions-bonn-rheinaue.de', true),
+  ('praesident@example.com',      true),
+  ('sekretaer@example.com',       true),
+  ('heinrich.ehren@example.com',  true),   -- Ehrenmitglied: anwesend, zählt nicht
+  ('schatzmeister@example.com',   false),
+  ('clubmaster@example.com',      false),
+  ('maria.mitglied@example.com',  false),
+  ('inge.inaktiv@example.com',    false)   -- inaktiv: zählt nicht
+) as v(email, present) on v.email = m.email;
