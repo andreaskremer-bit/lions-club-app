@@ -2,7 +2,12 @@
 -- Prüft die Policies aus Sicht verschiedener Rollen + Auth-Link-Trigger + Spaltenschutz.
 
 begin;
+create extension if not exists pgtap with schema extensions;
 select plan(17);
+
+-- Saubere Ausgangslage unabhängig vom Dev-Seed (wird durch rollback wiederhergestellt).
+-- auth.users cascaded auf member → member_amt/event_response/companion.
+truncate auth.users, public.event cascade;
 
 -- ── Fixtures (als Superuser, RLS wird umgangen) ─────────────────────────────
 -- Member zuerst, dann auth.users → der Link-Trigger verbindet sie per E-Mail.
