@@ -104,3 +104,10 @@ join (values
 insert into public.question (event_id, label, qtype, options, required, sort_order) values
   ('00000000-0000-0000-0000-0000000a1003', 'Menü-Wahl', 'single', '{Fleisch,Fisch,Vegetarisch}', true, 10),
   ('00000000-0000-0000-0000-0000000a1003', 'Allergien / Unverträglichkeiten', 'text', null, false, 20);
+
+-- 8) Termin in genau 3 Tagen (Default-Vorlauf) — für M5-Reminder ohne Rückmeldungen.
+insert into public.event (id, title, type, location, starts_at) values
+  ('00000000-0000-0000-0000-0000000a1007', 'Vortrag: Stadtgeschichte Bonn', 'clubabend', 'Thalia Bonn', now()::date + interval '3 days' + interval '19 hours');
+
+-- Fällige Reminder einmal erzeugen (lokaler Demo-Stand; in Produktion via pg_cron täglich).
+select public.enqueue_due_reminders();
