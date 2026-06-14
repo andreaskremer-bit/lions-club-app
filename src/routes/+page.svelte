@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, Card, Button, IconButton } from '$lib/components/ui';
-	import { LogOut, Users, CalendarDays, Cake, BarChart3, ArrowRight } from '@lucide/svelte';
+	import { LogOut, Users, CalendarDays, Cake, BarChart3, ArrowRight, Bell } from '@lucide/svelte';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -20,9 +20,19 @@
 <div class="shell">
 	<AppBar title="Lions Club Bonn-Rheinaue" eyebrow="Clubverwaltung" bordered>
 		{#snippet trailing()}
-			<IconButton label="Abmelden" onclick={signOut} disabled={loading}>
-				{#snippet icon()}<LogOut />{/snippet}
-			</IconButton>
+			<div class="appbar-actions">
+				<button
+					class="bell"
+					aria-label="Benachrichtigungen"
+					onclick={() => goto(resolve('/benachrichtigungen'))}
+				>
+					<Bell size={22} />
+					{#if data.unread > 0}<span class="bell__badge">{data.unread}</span>{/if}
+				</button>
+				<IconButton label="Abmelden" onclick={signOut} disabled={loading}>
+					{#snippet icon()}<LogOut />{/snippet}
+				</IconButton>
+			</div>
 		{/snippet}
 	</AppBar>
 
@@ -70,6 +80,39 @@
 </div>
 
 <style>
+	.appbar-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+	.bell {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border: none;
+		background: none;
+		color: var(--text-strong);
+		cursor: pointer;
+	}
+	.bell__badge {
+		position: absolute;
+		top: 4px;
+		right: 2px;
+		min-width: 18px;
+		height: 18px;
+		padding: 0 4px;
+		border-radius: 9px;
+		background: var(--clay, #b4502f);
+		color: #fff;
+		font-size: 11px;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 	.shell {
 		display: flex;
 		flex-direction: column;
