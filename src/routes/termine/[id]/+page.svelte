@@ -1,9 +1,20 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Button, Card, Tag, Input } from '$lib/components/ui';
-	import { ChevronLeft, Check, X, UserPlus, Trash2, ClipboardCheck } from '@lucide/svelte';
+	import AnswerField from '$lib/components/AnswerField.svelte';
+	import {
+		ChevronLeft,
+		Check,
+		X,
+		UserPlus,
+		Trash2,
+		ClipboardCheck,
+		ListChecks,
+		Users
+	} from '@lucide/svelte';
 	import type { EventType } from '../+page';
 
 	let { data } = $props();
@@ -85,6 +96,55 @@
 		}
 		await invalidateAll();
 	}
+
+	// ── Zusatzabfragen beantworten ──────────────────────────────────────────────
+	// Respondenten: das Mitglied selbst (id = null) + eigene Begleitpersonen.
+	let respondents = $derived([
+		{ id: null as string | null, label: 'Du' },
+		...(myResponse?.companion ?? []).map((c) => ({ id: c.id, label: c.name }))
+	]);
+
+	const answerKey = (qid: string, companionId: string | null) => `${qid}:${companionId ?? 'self'}`;
+
+	// Lokaler Antwort-Status (mit Zeilen-IDs), initial aus den geladenen Antworten.
+	let answersMap = $state<Record<string, { id: string; value: unknown }>>(
+		untrack(() => {
+			const m: Record<string, { id: string; value: unknown }> = {};
+			for (const a of data.myAnswers)
+				m[answerKey(a.question_id, a.companion_id)] = { id: a.id, value: a.value };
+			return m;
+		})
+	);
+	let answerErr = $state('');
+
+	const valueFor = (qid: string, companionId: string | null): unknown =>
+		answersMap[answerKey(qid, companionId)]?.value ?? null;
+
+	async function saveAnswer(qid: string, companionId: string | null, value: unknown) {
+		if (!data.myMemberId) return;
+		answerErr = '';
+		const key = answerKey(qid, companionId);
+		const cur = answersMap[key];
+		if (cur?.id) {
+			const { error } = await supabase.from('answer').update({ value }).eq('id', cur.id);
+			if (error) {
+				answerErr = 'Antwort konnte nicht gespeichert werden.';
+				return;
+			}
+			answersMap[key] = { id: cur.id, value };
+		} else {
+			const { data: row, error } = await supabase
+				.from('answer')
+				.insert({ question_id: qid, member_id: data.myMemberId, companion_id: companionId, value })
+				.select('id')
+				.single();
+			if (error || !row) {
+				answerErr = 'Antwort konnte nicht gespeichert werden.';
+				return;
+			}
+			answersMap[key] = { id: row.id, value };
+		}
+	}
 </script>
 
 <div class="shell">
@@ -117,6 +177,25 @@
 				{#snippet iconLeft()}<ClipboardCheck size={18} />{/snippet}
 				Anwesenheit erfassen
 			</Button>
+		{/if}
+
+		{#if data.permissions.includes('manage_events')}
+			<div class="admin-actions">
+				<Button
+					variant="secondary"
+					onclick={() => goto(resolve('/termine/[id]/fragen', { id: e.id }))}
+				>
+					{#snippet iconLeft()}<ListChecks size={18} />{/snippet}
+					Fragen verwalten
+				</Button>
+				<Button
+					variant="secondary"
+					onclick={() => goto(resolve('/termine/[id]/teilnehmer', { id: e.id }))}
+				>
+					{#snippet iconLeft()}<Users size={18} />{/snippet}
+					Teilnehmerliste
+				</Button>
+			</div>
 		{/if}
 
 		<!-- Eigene Rückmeldung -->
@@ -191,6 +270,34 @@
 				{:else}
 					<p class="muted">Sage zuerst zu, um Begleitpersonen einzutragen.</p>
 				{/if}
+			</Card>
+		{/if}
+
+		<!-- Zusatzabfragen -->
+		{#if data.questions.length}
+			<Card>
+				<h2 class="sec">Fragen</h2>
+				{#if data.isPast}
+					<p class="muted">Vergangener Termin – Antworten sind schreibgeschützt.</p>
+				{/if}
+				{#each data.questions as q (q.id)}
+					<div class="q-block">
+						<p class="q-label">{q.label}{q.required ? ' *' : ''}</p>
+						{#each respondents as r (r.id ?? 'self')}
+							<div class="q-resp">
+								{#if respondents.length > 1}<span class="q-resp__who">{r.label}</span>{/if}
+								<AnswerField
+									qtype={q.qtype}
+									options={q.options}
+									value={valueFor(q.id, r.id)}
+									disabled={data.isPast}
+									onsave={(v) => saveAnswer(q.id, r.id, v)}
+								/>
+							</div>
+						{/each}
+					</div>
+				{/each}
+				{#if answerErr}<p class="err">{answerErr}</p>{/if}
 			</Card>
 		{/if}
 
@@ -306,6 +413,35 @@
 	.muted {
 		color: var(--text-secondary);
 		font-size: var(--text-sm);
+	}
+	.admin-actions {
+		display: flex;
+		gap: var(--space-3);
+	}
+	.admin-actions :global(.lc-btn) {
+		flex: 1;
+	}
+	.q-block {
+		padding: var(--space-2) 0;
+		border-bottom: 1px solid var(--hairline, rgba(0, 0, 0, 0.06));
+	}
+	.q-block:last-child {
+		border-bottom: none;
+	}
+	.q-label {
+		font-size: var(--text-base);
+		font-weight: 600;
+		color: var(--text-strong);
+		margin: 0 0 var(--space-2);
+	}
+	.q-resp {
+		margin-bottom: var(--space-2);
+	}
+	.q-resp__who {
+		display: block;
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
+		margin-bottom: var(--space-1);
 	}
 	.err {
 		color: var(--clay, #b4502f);

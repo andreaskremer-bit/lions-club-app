@@ -99,3 +99,8 @@ join (values
   ('maria.mitglied@example.com',  false),
   ('inge.inaktiv@example.com',    false)   -- inaktiv: zählt nicht
 ) as v(email, present) on v.email = m.email;
+
+-- 7) Zusatzabfragen am anstehenden Club-Abend (Thalia) — Beispiel für die Abfrage-Engine.
+insert into public.question (event_id, label, qtype, options, required, sort_order) values
+  ('00000000-0000-0000-0000-0000000a1003', 'Menü-Wahl', 'single', '{Fleisch,Fisch,Vegetarisch}', true, 10),
+  ('00000000-0000-0000-0000-0000000a1003', 'Allergien / Unverträglichkeiten', 'text', null, false, 20);

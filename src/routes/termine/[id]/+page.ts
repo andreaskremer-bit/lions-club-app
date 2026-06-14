@@ -24,10 +24,26 @@ export type EventDetail = {
 	event_response: ResponseRow[];
 };
 
+export type QuestionType = 'single' | 'multi' | 'text' | 'boolean' | 'number';
+export type Question = {
+	id: string;
+	label: string;
+	qtype: QuestionType;
+	options: string[] | null;
+	required: boolean;
+	sort_order: number;
+};
+export type MyAnswer = {
+	id: string;
+	question_id: string;
+	companion_id: string | null;
+	value: unknown;
+};
+
 export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase, user } = await parent();
 
-	const [eventRes, meRes] = await Promise.all([
+	const [eventRes, meRes, qRes, aRes] = await Promise.all([
 		supabase
 			.from('event')
 			.select(
@@ -39,7 +55,19 @@ export const load: PageLoad = async ({ parent, params }) => {
 			.from('member')
 			.select('id')
 			.eq('user_id', user?.id ?? '')
-			.maybeSingle()
+			.maybeSingle(),
+		supabase
+			.from('question')
+			.select('id, label, qtype, options, required, sort_order')
+			.eq('event_id', params.id)
+			.order('sort_order'),
+		supabase
+			.from('answer')
+			.select(
+				'id, question_id, companion_id, value, member!inner(user_id), question!inner(event_id)'
+			)
+			.eq('member.user_id', user?.id ?? '')
+			.eq('question.event_id', params.id)
 	]);
 
 	if (eventRes.error) throw error(500, eventRes.error.message);
@@ -49,6 +77,8 @@ export const load: PageLoad = async ({ parent, params }) => {
 	return {
 		event,
 		myMemberId: (meRes.data?.id ?? null) as string | null,
-		isPast: new Date(event.starts_at).getTime() < Date.now()
+		isPast: new Date(event.starts_at).getTime() < Date.now(),
+		questions: (qRes.data ?? []) as Question[],
+		myAnswers: (aRes.data ?? []) as unknown as MyAnswer[]
 	};
 };
