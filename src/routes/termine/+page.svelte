@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, SegmentedControl, Tag, StatusBadge } from '$lib/components/ui';
 	import type { Status } from '$lib/components/ui';
-	import { ChevronLeft, ChevronRight, X } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, X, Plus } from '@lucide/svelte';
 	import type { EventListItem, EventType } from './+page';
 
 	let { data } = $props();
@@ -153,6 +153,13 @@
 			<IconButton label="Zurück" onclick={() => goto(resolve('/'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
+		{/snippet}
+		{#snippet trailing()}
+			{#if data.permissions.includes('manage_events')}
+				<IconButton label="Termine planen" onclick={() => goto(resolve('/termine/planung'))}>
+					{#snippet icon()}<Plus />{/snippet}
+				</IconButton>
+			{/if}
 		{/snippet}
 	</AppBar>
 

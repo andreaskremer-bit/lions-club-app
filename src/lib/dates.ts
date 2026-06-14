@@ -14,6 +14,27 @@ export function lionsStartYear(d: Date): number {
 	return d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1;
 }
 
+export type Rhythm = 'weekly' | 'biweekly' | 'monthly';
+
+/** Serientermine ab `start`: wöchentlich/14-täglich/monatlich (gleiches Datum), `count` Termine. */
+export function seriesDates(start: Date, rhythm: Rhythm, count: number): Date[] {
+	const out: Date[] = [];
+	const y = start.getFullYear();
+	const mo = start.getMonth();
+	const d = start.getDate();
+	const h = start.getHours();
+	const mi = start.getMinutes();
+	for (let i = 0; i < count; i++) {
+		if (rhythm === 'monthly') {
+			out.push(new Date(y, mo + i, d, h, mi));
+		} else {
+			const step = rhythm === 'weekly' ? 7 : 14;
+			out.push(new Date(y, mo, d + i * step, h, mi));
+		}
+	}
+	return out;
+}
+
 export type BirthdayInfo = { date: Date; days: number; turning: number; today: boolean };
 
 /**
