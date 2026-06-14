@@ -76,6 +76,18 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 
 **Offen / als Nächstes**
 
-- PDF-Export der Auswertung (CSV steht; PDF „Soll").
-- M4 – Abfragen & Admin: Zusatzabfragen je Person (Frage-Engine), Admin-Jahresplanung/Massenpflege.
-- Mitschleppen: Vitest/Playwright, Mitglieder-Admin-UI, Foto-Upload, Geburtstagsübersicht, Kalenderansicht.
+- PDF-Export der Auswertung — **optional** (Club: CSV reicht).
+- ~~Mitschleppen: Vitest/Playwright, Mitglieder-Admin-UI, Foto-Upload, Geburtstagsübersicht, Kalenderansicht~~ **alle erledigt (2026-06-17).**
+
+## M4 – Abfragen — erledigt (Admin-Jahresplanung offen)
+
+**Erledigt (2026-06-17)**
+
+- **Engine:** `question` (single/multi/text/boolean/number je Termin) + `answer` (value jsonb, Antwort pro Person — Mitglied oder einzelne Begleitperson; partielle Unique-Indizes). RLS: Fragen verwalten mit `manage_events`; Antworten nur eigene + Zukunft + gültige eigene Begleitperson (Helper `may_answer`); lesen eigene + `manage_events`. **9 pgTAP-Tests** (gesamt 44 grün).
+- **UI:** `/termine/[id]/fragen` (Builder), Beantworten im Termin-Detail via `AnswerField` (Mitglied + je Begleitperson, schreibgeschützt bei vergangenen Terminen), `/termine/[id]/teilnehmer` (Antworten je Person + **CSV**). Seed: Beispiel-Fragen.
+- **Tests/Infra:** Vitest (`src/lib/dates.ts` + 6 Unit-Tests) + Playwright (E2E-Smoke), Skripte `test:unit`/`test:e2e`.
+
+**Offen / als Nächstes**
+
+- **Admin-Jahresplanung / Serientermine** (Massenpflege mehrerer Termine) — Rest von M4.
+- M5 – Engagement (Push/Reminder-Automatik, PWA-Offline, Geburtstags-Reminder), M6 – Rest & Launch.
