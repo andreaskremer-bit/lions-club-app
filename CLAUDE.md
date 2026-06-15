@@ -65,13 +65,14 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 
 Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-17):
 
-**M0–M5 vollständig (M5-Versand gebaut, aber NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
+**M0–M5 vollständig + M6-Dokumente fertig (Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
 
 - **Live:** `https://app.lions-bonn-rheinaue.de` (Netlify, Club-Account, Auto-Deploy bei Push). OTP-Login über Club-Gmail-SMTP verifiziert; als PWA aufs iPhone installierbar.
-- **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260617…` via `supabase db push` angewendet; Admin-Bootstrap `webmaster@lions-bonn-rheinaue.de` = Präsident + Webmaster. **Neu (M5-Gate) `20260618120100_notifications_gate.sql` noch NICHT gepusht** (Geheim-Phase; bewusst lokal).
-- **Umgesetzt:** Auth · Mitglieder (+Admin) · Termine (Liste+Kalender, RSVP, Begleitpersonen, Meldungen, Jahresplanung/Serien, `reminder_days_before`) · Anwesenheit + Schatzmeister-Auswertung (CSV) · Zusatzabfragen · Geburtstage · Foto-Upload · In-App-Benachrichtigungen + Reminder-Engine · **Web-Push (Service Worker, Subscribe-Flow), Edge Function `send-notifications` (Push + SMTP-Fallback, Dry-Run-gated), PWA-Offline-Shell, Empfänger-Gate `notifications_enabled`**.
-- **Tests:** 52 pgTAP (2 neue Gate-Tests, lokal noch via Docker zu verifizieren) + 14 Vitest-Unit + 2 Playwright-E2E.
+- **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260618120100` (M5-Gate) via `supabase db push` angewendet; Admin-Bootstrap `webmaster@lions-bonn-rheinaue.de` = Präsident + Webmaster; remote nur Andreas `notifications_enabled=true`. **M6-Migrationen `20260619…` committet (`bd566e7`), aber noch NICHT gepusht.**
+- **Umgesetzt:** Auth · Mitglieder (+Admin) · Termine (Liste+Kalender, RSVP, Begleitpersonen, Meldungen, Jahresplanung/Serien, `reminder_days_before`) · Anwesenheit + Schatzmeister-Auswertung (CSV) · Zusatzabfragen · Geburtstage · Foto-Upload · In-App-Benachrichtigungen + Reminder-Engine · Web-Push + Edge Function `send-notifications` (Push + SMTP-Fallback, Dry-Run-gated) + Empfänger-Gate `notifications_enabled` · **Dokumente (`/dokumente`: Ablage + deutsche Volltextsuche via Edge Function `extract-document-text`, Kategorien/Sortierung, Upload/Bearbeiten, Push-Benachrichtigung bei Veröffentlichung)**.
+- **Tests:** 60 pgTAP + 14 Vitest-Unit + 2 Playwright-E2E.
+- **`service_role`-Grant-Falle:** Edge Functions laufen als `service_role` — RLS-Bypass ersetzt NICHT die Tabellen-Grants. Bei neuen Tabellen, die eine Edge Function direkt liest/schreibt, immer auch `grant … to service_role` (sonst `permission denied 42501`).
 
-**Offen:** **M5 scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`) · M6-Inhalte (News, Dokumente, Galerie-Link) · zum echten Go-live: **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
+**Offen:** **M5 scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`) · M6: **News** + **Galerie-Link** (Google-Share) · M6-Migrationen + Edge Functions aufs Remote pushen/deployen · zum echten Go-live: **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
 
 **Abweichungen von den Quelldokumenten (bewusst beschlossen):** M3 erfasst **keine Spendenbeträge** (nur an-/abwesend; Schatzmeister rechnet jährlich extern, Export CSV). Sekretär hat zusätzlich `manage_roles` + `delete_member`. Region ist **eu-west-1 (Irland)**, nicht Frankfurt.
