@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { PUBLIC_VAPID_KEY } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	import { AppBar, IconButton, Button } from '$lib/components/ui';
 	import { pushSupported, subscriptionToRow, urlBase64ToUint8Array } from '$lib/push';
 	import { ChevronLeft } from '@lucide/svelte';
@@ -10,18 +10,28 @@
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
 
+	// VAPID-Public-Key zur Laufzeit (Netlify-Env). Dynamic statt static, damit der
+	// Build nicht bricht, wenn die Variable (noch) nicht gesetzt ist.
+	const vapidKey = env.PUBLIC_VAPID_KEY ?? '';
+
 	let unreadCount = $derived(data.notifications.filter((n) => !n.read_at).length);
 	let busy = $state(false);
 
 	// --- Push-Abo (Web-Push) ---------------------------------------------------
-	// Zustand: 'unsupported' | 'denied' | 'on' | 'off' | 'loading'
-	let pushState = $state<'loading' | 'unsupported' | 'denied' | 'on' | 'off'>('loading');
+	// Zustand: 'unsupported' | 'unconfigured' | 'denied' | 'on' | 'off' | 'loading'
+	let pushState = $state<'loading' | 'unsupported' | 'unconfigured' | 'denied' | 'on' | 'off'>(
+		'loading'
+	);
 	let pushBusy = $state(false);
 	let pushError = $state<string | null>(null);
 
 	onMount(async () => {
 		if (!pushSupported()) {
 			pushState = 'unsupported';
+			return;
+		}
+		if (!vapidKey) {
+			pushState = 'unconfigured';
 			return;
 		}
 		if (Notification.permission === 'denied') {
@@ -46,7 +56,7 @@
 			const reg = await navigator.serviceWorker.ready;
 			const sub = await reg.pushManager.subscribe({
 				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+				applicationServerKey: urlBase64ToUint8Array(vapidKey)
 			});
 			const { error } = await supabase
 				.from('push_subscription')
@@ -158,6 +168,11 @@
 				<p class="push__hint">
 					Dieses Gerät unterstützt keine Push-Benachrichtigungen. Auf dem iPhone funktioniert Push
 					nur, wenn die App über „Zum Home-Bildschirm" installiert ist (ab iOS 16.4).
+				</p>
+			{:else if pushState === 'unconfigured'}
+				<p class="push__hint">
+					Push ist serverseitig noch nicht konfiguriert (VAPID-Schlüssel fehlt). In-App-Erinnerungen
+					funktionieren trotzdem.
 				</p>
 			{:else if pushState === 'denied'}
 				<p class="push__hint">
