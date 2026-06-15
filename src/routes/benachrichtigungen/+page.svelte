@@ -38,9 +38,15 @@
 			pushState = 'denied';
 			return;
 		}
-		const reg = await navigator.serviceWorker.ready;
-		const sub = await reg.pushManager.getSubscription();
-		pushState = sub ? 'on' : 'off';
+		// getRegistration() löst sofort auf (undefined, wenn noch kein SW registriert) —
+		// im Gegensatz zu serviceWorker.ready, das bis zum aktiven SW blockieren kann.
+		try {
+			const reg = await navigator.serviceWorker.getRegistration();
+			const sub = reg ? await reg.pushManager.getSubscription() : null;
+			pushState = sub ? 'on' : 'off';
+		} catch {
+			pushState = 'off';
+		}
 	});
 
 	async function enablePush() {
