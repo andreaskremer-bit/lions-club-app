@@ -55,21 +55,23 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 
 ## Env / Secrets
 
-- `.env` (git-ignoriert): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (neues Key-System: `sb_publishable_…`, client-sicher mit RLS).
-- `.env.local` (git-ignoriert): DB-Passwort, lokale Stack-Overrides, **`SUPABASE_SERVICE_ROLE_KEY`** (lokal) — nie committen, nie ins Memory.
-- **Service-Key serverseitig:** `SUPABASE_SERVICE_ROLE_KEY` nur in Server-Routen (z. B. `/api/mitglieder/[id]/einladen`, Admin-API); in Produktion als **Netlify-Env-Var**. `sb_secret_…` **niemals** in den Client.
+- `.env` (git-ignoriert): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (neues Key-System: `sb_publishable_…`, client-sicher mit RLS), **`PUBLIC_VAPID_KEY`** (öffentlicher Web-Push-Schlüssel, client-sicher).
+- `.env.local` (git-ignoriert): DB-Passwort, lokale Stack-Overrides, **`SUPABASE_SERVICE_ROLE_KEY`** (lokal), **`VAPID_PRIVATE_KEY`** + `VAPID_SUBJECT`, **`REMINDERS_ARMED`** (Dry-Run-Schalter) — nie committen, nie ins Memory.
+- **Service-Key serverseitig:** `SUPABASE_SERVICE_ROLE_KEY` nur in Server-Routen (z. B. `/api/mitglieder/[id]/einladen`, `/api/admin/reminders/run`); in Produktion als **Netlify-Env-Var**. `sb_secret_…` **niemals** in den Client.
+- **Edge Function `send-notifications`** (Deno): Secrets via `supabase secrets set` bzw. lokal `supabase/functions/.env` — `REMINDERS_ARMED` (Default false = Dry-Run), `REMINDERS_ALLOWLIST`, `VAPID_*`, `SMTP_HOST/PORT/USER/PASS/FROM`.
+- **Versand-Sicherung (Geheim-Phase):** Reminder werden nur für `member.notifications_enabled=true` ERZEUGT (Default false); zusätzlich sendet die Edge Function nur bei `REMINDERS_ARMED=true`. Go-live-Schalter siehe `MEILENSTEINE.md` (M5).
 
 ## Aktueller Stand
 
 Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-17):
 
-**M0–M4 vollständig, M5 im Kern fertig, Prototyp LIVE.**
+**M0–M5 vollständig (M5-Versand gebaut, aber NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
 
 - **Live:** `https://app.lions-bonn-rheinaue.de` (Netlify, Club-Account, Auto-Deploy bei Push). OTP-Login über Club-Gmail-SMTP verifiziert; als PWA aufs iPhone installierbar.
-- **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): alle Migrationen via `supabase db push` angewendet; Admin-Bootstrap `webmaster@lions-bonn-rheinaue.de` = Präsident + Webmaster.
-- **Umgesetzt:** Auth · Mitglieder (+Admin: anlegen/einladen/Ämter/löschen) · Termine (Liste+Kalender, RSVP, Begleitpersonen, Meldungen, Jahresplanung/Serien) · Anwesenheit + Schatzmeister-Auswertung (CSV, ohne Beträge) · Zusatzabfragen (Builder/Beantworten/Teilnehmer+CSV) · Geburtstage · Foto-Upload (privater Bucket) · In-App-Benachrichtigungen + Reminder-Engine (`enqueue_due_reminders`, pg_cron guarded).
-- **Tests:** 50 pgTAP + 10 Vitest-Unit + 2 Playwright-E2E, alle grün.
+- **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260617…` via `supabase db push` angewendet; Admin-Bootstrap `webmaster@lions-bonn-rheinaue.de` = Präsident + Webmaster. **Neu (M5-Gate) `20260618120100_notifications_gate.sql` noch NICHT gepusht** (Geheim-Phase; bewusst lokal).
+- **Umgesetzt:** Auth · Mitglieder (+Admin) · Termine (Liste+Kalender, RSVP, Begleitpersonen, Meldungen, Jahresplanung/Serien, `reminder_days_before`) · Anwesenheit + Schatzmeister-Auswertung (CSV) · Zusatzabfragen · Geburtstage · Foto-Upload · In-App-Benachrichtigungen + Reminder-Engine · **Web-Push (Service Worker, Subscribe-Flow), Edge Function `send-notifications` (Push + SMTP-Fallback, Dry-Run-gated), PWA-Offline-Shell, Empfänger-Gate `notifications_enabled`**.
+- **Tests:** 52 pgTAP (2 neue Gate-Tests, lokal noch via Docker zu verifizieren) + 14 Vitest-Unit + 2 Playwright-E2E.
 
-**Offen:** M5-Versandkanäle (Web-Push + E-Mail-Reminder + pg_cron auf Supabase aktivieren, PWA-Offline-Shell) · M6-Inhalte (News, Dokumente, Galerie-Link) · zum echten Go-live: **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
+**Offen:** **M5 scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`) · M6-Inhalte (News, Dokumente, Galerie-Link) · zum echten Go-live: **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
 
 **Abweichungen von den Quelldokumenten (bewusst beschlossen):** M3 erfasst **keine Spendenbeträge** (nur an-/abwesend; Schatzmeister rechnet jährlich extern, Export CSV). Sekretär hat zusätzlich `manage_roles` + `delete_member`. Region ist **eu-west-1 (Irland)**, nicht Frankfurt.

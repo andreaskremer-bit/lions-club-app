@@ -2,15 +2,17 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(6);
+select plan(8);
 
 truncate auth.users, public.event cascade;
 
 -- Fixtures relativ zu einem festen "heute" = 2026-09-15.
-insert into public.member (email, first_name, last_name, status, birthday) values
-  ('a@r.example',   'Anna',  'Aktiv',     'aktiv', '1980-09-15'), -- Geburtstag heute
-  ('b@r.example',   'Bert',  'Beispiel',  'aktiv', null),
-  ('sek@r.example', 'Sina',  'Sekretär',  'aktiv', null);
+-- notifications_enabled=true: Empfänger-Gate freigeschaltet (Default ist false).
+insert into public.member (email, first_name, last_name, status, birthday, notifications_enabled) values
+  ('a@r.example',   'Anna',  'Aktiv',     'aktiv', '1980-09-15', true), -- Geburtstag heute
+  ('b@r.example',   'Bert',  'Beispiel',  'aktiv', null,         true),
+  ('sek@r.example', 'Sina',  'Sekretär',  'aktiv', null,         true),
+  ('off@r.example', 'Olaf',  'Ohne',      'aktiv', null,         false); -- Gate aus
 
 insert into public.member_amt (member_id, amt_id)
 select m.id, a.id from public.member m, public.amt a
@@ -60,7 +62,22 @@ select is(
   1, 'Anwesenheits-Erinnerung nur an Berechtigte'
 );
 
--- (6) Idempotent: erneuter Lauf erzeugt keine Duplikate.
+-- (6) Empfänger-Gate: Olaf (notifications_enabled=false) ist aktiver Nicht-Rückmelder,
+--     bekommt aber KEINEN Termin-Reminder.
+select is(
+  (select count(*)::int from public.notification n
+   join public.member m on m.id = n.recipient_id
+   where m.email = 'off@r.example'),
+  0, 'Gate aus: nicht freigeschaltetes Mitglied bekommt nichts'
+);
+
+-- (7) Trotz des nicht freigeschalteten aktiven Mitglieds bleiben die Termin-Reminder bei 2.
+select is(
+  (select count(*)::int from public.notification where kind = 'event_reminder'),
+  2, 'Gate filtert beim Erzeugen, nicht erst beim Versand'
+);
+
+-- (8) Idempotent: erneuter Lauf erzeugt keine Duplikate.
 select public.enqueue_due_reminders(date '2026-09-15');
 select is(
   (select count(*)::int from public.notification),

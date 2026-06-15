@@ -13,11 +13,27 @@ export default defineConfig({
 			},
 
 			// Netlify deployment (DPF-zertifiziert); personenbezogene Daten möglichst client -> Supabase.
-			adapter: adapter()
+			adapter: adapter(),
+
+			// Eigene Registrierung von src/service-worker.ts abschalten — @vite-pwa/sveltekit
+			// übernimmt Build (injectManifest) UND Registrierung. Sonst doppelte Registrierung.
+			serviceWorker: { register: false }
 		}),
-		// PWA-Fundament. Offline-Shell / Reminder-Service-Worker folgen in M5.
+		// PWA mit eigenem Service Worker (M5): Offline-Shell + Web-Push.
+		// injectManifest -> unser src/sw.ts wird gebündelt und zu /sw.js; Workbox
+		// injiziert die Precache-Liste in self.__WB_MANIFEST.
 		SvelteKitPWA({
+			strategies: 'injectManifest',
 			registerType: 'autoUpdate',
+			injectManifest: {
+				globPatterns: ['client/**/*.{js,css,html,ico,png,svg,webp,woff,woff2}']
+			},
+			// Service Worker auch im Dev-Server aktiv (für lokales Push-/Offline-Testen).
+			devOptions: {
+				enabled: true,
+				type: 'module',
+				navigateFallback: '/'
+			},
 			manifest: {
 				name: 'Lions Club Bonn-Rheinaue',
 				short_name: 'Lions BN-Rheinaue',

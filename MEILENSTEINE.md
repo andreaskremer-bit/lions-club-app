@@ -89,21 +89,32 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 
 - **Admin-Jahresplanung:** `/termine/planung` (manage_events) — Einzeltermin oder Serie (wöchentlich/14-täglich/monatlich + Anzahl) mit Vorschau + Bulk-Insert; „+" in der Übersicht. `seriesDates()` (+4 Unit-Tests). Zugleich die einzige Event-Erstellungs-UI.
 
-## M5 – Engagement — teilweise erledigt
+## M5 – Engagement — erledigt
 
 **Erledigt (2026-06-17) — Reminder-Logik + In-App-Zustellung**
 
 - **Outbox `notification`** (je Empfänger) + `push_subscription` + `event.reminder_days_before` (Vorlauf je Termin, Default 3).
-- **`enqueue_due_reminders(p_today)`** (idempotent): Termin-Reminder an aktive Nicht-Rückmelder (Vorlauf je Termin), Geburtstags-Reminder an alle, Vorstand-Erinnerung zur Anwesenheitserfassung. **6 pgTAP-Tests** (gesamt 50 grün).
-- **pg_cron-Tagesplan** (07:00 UTC, guarded — lokal inaktiv, auf Supabase nach Extension-Aktivierung).
+- **`enqueue_due_reminders(p_today)`** (idempotent): Termin-Reminder an aktive Nicht-Rückmelder (Vorlauf je Termin), Geburtstags-Reminder an alle, Vorstand-Erinnerung zur Anwesenheitserfassung.
 - **In-App:** `/benachrichtigungen` (Liste, „Alle als gelesen", Reminder verlinken ins Termin-Detail) + Glocke mit Ungelesen-Badge auf der Startseite.
 
-**Offen / als Nächstes (Go-live-Infrastruktur)**
+**Erledigt (2026-06-18) — Versandkanäle + Offline-Shell + Geheim-Phasen-Sicherung**
 
-- **Web-Push-Versand:** VAPID-Keys erzeugen; Service-Worker `push`-Handler; Client-Subscribe-Flow (Permission → `pushManager.subscribe` → in `push_subscription` speichern); Edge Function liest Outbox (`sent_at is null`) und sendet Push (web-push lib) + **E-Mail-Fallback** über den Club-SMTP. iOS: nur installierte PWA (ab 16.4).
-- **pg_cron auf Supabase aktivieren** (Dashboard → Database → Extensions) — Migration legt den Job dann an.
-- **PWA-Offline-Shell:** `@vite-pwa/sveltekit` Workbox-Precaching + Navigation-Fallback.
-- Optional: UI zum Überschreiben von `reminder_days_before` je Termin (kommt mit Event-Bearbeiten).
+- **Empfänger-Gate (Sicherung):** `member.notifications_enabled` (Default **false**, fail-safe). `enqueue_due_reminders` erzeugt Reminder **nur für freigeschaltete Mitglieder** → in der Geheim-Phase bekommen reale Mitglieder weder In-App-Einträge noch Push/E-Mail. Migration `20260618120100_notifications_gate.sql`. **2 neue pgTAP-Gate-Tests** (gesamt **52 grün**).
+- **Web-Push:** VAPID-Keypair erzeugt (`PUBLIC_VAPID_KEY` in `.env`, privat in `.env.local`/Edge-Secret). Helfer `src/lib/push.ts` (+`push.test.ts`, 4 Unit-Tests). Eigener Service Worker `src/service-worker.ts` (vite-pwa `injectManifest`): Offline-Shell (Workbox-Precache + `/offline.html`-Fallback) + `push`/`notificationclick`-Handler. `vite.config.ts`: `strategies:'injectManifest'`, SvelteKit-SW-Auto-Registrierung aus (`serviceWorker.register:false`), `devOptions.enabled`.
+- **Subscribe-Flow:** Karte „Push-Benachrichtigungen" auf `/benachrichtigungen` (Zustände unsupported/denied/on/off, Permission → `pushManager.subscribe` → `push_subscription`-Upsert; Deaktivieren = unsubscribe + Delete; iOS-Hinweis).
+- **Edge Function `send-notifications`** (Deno): liest Outbox (`sent_at is null`), Web-Push (`npm:web-push`) + **E-Mail-Fallback** (Club-SMTP via `denomailer`); ungültige Abos (404/410) werden gelöscht; `sent_at` nach Zustellung. **Dry-Run-Gate** `REMINDERS_ARMED` (Default aus) + optionale Allowlist `REMINDERS_ALLOWLIST`. `config.toml`: `verify_jwt=false`, Bearer-Service-Key-Schutz.
+- **Manueller Test-Trigger:** `POST /api/admin/reminders/run` (nur `manage_members`, Service-Key) ruft `enqueue` + optional Versand; Buttons auf `/benachrichtigungen` (nur Vorstand) → Live-Test ohne CLI.
+- **`reminder_days_before`-Override:** Feld „Erinnerung (Tage vorher)" im Anlege-/Serien-Formular `/termine/planung`.
+- **Versand-Cron (Go-live, inert):** zweiter guarded `cron.schedule` ruft via `pg_net` die Edge Function — wird nur angelegt, wenn pg_cron+pg_net aktiv UND DB-Settings `app.edge_send_url`/`app.edge_send_token` gesetzt sind.
+
+**Go-live-Schalter (NICHT scharfgestellt — Geheim-Phase):**
+
+1. `update public.member set notifications_enabled = true where status = 'aktiv';`
+2. Edge-Secrets: `REMINDERS_ARMED=true`, `VAPID_*`, `SMTP_*`; `REMINDERS_ALLOWLIST` leeren.
+3. Extensions `pg_cron` + `pg_net` im Dashboard aktivieren; `app.edge_send_url`/`app.edge_send_token` setzen.
+4. `supabase functions deploy send-notifications`.
+
+## M6 – Rest & Launch — offen
 
 ## M6 – Rest & Launch — offen
 

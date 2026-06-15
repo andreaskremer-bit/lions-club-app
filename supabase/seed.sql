@@ -16,6 +16,10 @@ values
   ('heinrich.ehren@example.com',  'Heinrich', 'Ehrenfels',  null,  'ehrenmitglied', '+49 175 7778899', 'Bonn',     '1945-12-01', '1980-01-10', null, null, null, null),
   ('inge.inaktiv@example.com',    'Inge',     'Ruhend',     null,  'inaktiv',       '+49 176 8889900', 'Köln',     '1958-07-19', '1995-06-05', null, null, null, null);
 
+-- Empfänger-Gate: lokal alle Test-Mitglieder freischalten (in-App-Reminder sichtbar).
+-- Auf dem Remote bleibt der Default false und nur einzelne werden manuell freigeschaltet.
+update public.member set notifications_enabled = true;
+
 -- 2) Auth-User (lokal). Member zuerst → Link-Trigger verknüpft per E-Mail.
 -- Token-Spalten MÜSSEN '' sein (nicht NULL): GoTrue scannt sie in Go-Strings
 -- und wirft sonst beim Login "converting NULL to string is unsupported" (HTTP 500).

@@ -32,6 +32,12 @@
 	let description = $state('');
 	let dateStr = $state('');
 	let timeStr = $state('19:00');
+	let reminderDays = $state('3');
+	let reminderDaysNum = $derived(
+		reminderDays.trim() === ''
+			? 3
+			: Math.max(0, Math.min(60, Math.floor(Number(reminderDays)) || 0))
+	);
 	let rhythm = $state<Rhythm>('monthly');
 	let count = $state('6');
 	let countNum = $derived(Math.max(1, Math.min(52, Math.floor(Number(count)) || 1)));
@@ -91,7 +97,8 @@
 				type,
 				location: orNull(location),
 				description: orNull(description),
-				starts_at: s.toISOString()
+				starts_at: s.toISOString(),
+				reminder_days_before: reminderDaysNum
 			})
 			.select('id')
 			.single();
@@ -112,7 +119,8 @@
 			title: title.trim(),
 			type,
 			location: orNull(location),
-			starts_at: d.toISOString()
+			starts_at: d.toISOString(),
+			reminder_days_before: reminderDaysNum
 		}));
 		const { error } = await supabase.from('event').insert(rows);
 		busy = false;
@@ -150,6 +158,13 @@
 				<Input label="Datum" type="date" bind:value={dateStr} class="d" />
 				<Input label="Uhrzeit" type="time" bind:value={timeStr} class="t" />
 			</div>
+			<Input
+				label="Erinnerung (Tage vorher)"
+				type="number"
+				min="0"
+				max="60"
+				bind:value={reminderDays}
+			/>
 			{#if mode === 'einzeln'}
 				<Input label="Beschreibung" multiline bind:value={description} />
 			{/if}

@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { PUBLIC_VAPID_KEY } from '$env/static/public';
 	import { AppBar, IconButton, Button } from '$lib/components/ui';
+	import { pushSupported, subscriptionToRow, urlBase64ToUint8Array } from '$lib/push';
 	import { ChevronLeft } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -9,6 +12,77 @@
 
 	let unreadCount = $derived(data.notifications.filter((n) => !n.read_at).length);
 	let busy = $state(false);
+
+	// --- Push-Abo (Web-Push) ---------------------------------------------------
+	// Zustand: 'unsupported' | 'denied' | 'on' | 'off' | 'loading'
+	let pushState = $state<'loading' | 'unsupported' | 'denied' | 'on' | 'off'>('loading');
+	let pushBusy = $state(false);
+	let pushError = $state<string | null>(null);
+
+	onMount(async () => {
+		if (!pushSupported()) {
+			pushState = 'unsupported';
+			return;
+		}
+		if (Notification.permission === 'denied') {
+			pushState = 'denied';
+			return;
+		}
+		const reg = await navigator.serviceWorker.ready;
+		const sub = await reg.pushManager.getSubscription();
+		pushState = sub ? 'on' : 'off';
+	});
+
+	async function enablePush() {
+		if (pushBusy) return;
+		pushBusy = true;
+		pushError = null;
+		try {
+			const permission = await Notification.requestPermission();
+			if (permission !== 'granted') {
+				pushState = permission === 'denied' ? 'denied' : 'off';
+				return;
+			}
+			const reg = await navigator.serviceWorker.ready;
+			const sub = await reg.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+			});
+			const { error } = await supabase
+				.from('push_subscription')
+				.upsert(
+					{ member_id: data.memberId, ...subscriptionToRow(sub) },
+					{ onConflict: 'endpoint' }
+				);
+			if (error) throw error;
+			pushState = 'on';
+		} catch (e) {
+			pushError = 'Aktivierung fehlgeschlagen. Bitte erneut versuchen.';
+			console.error('Push-Abo fehlgeschlagen:', e);
+		} finally {
+			pushBusy = false;
+		}
+	}
+
+	async function disablePush() {
+		if (pushBusy) return;
+		pushBusy = true;
+		pushError = null;
+		try {
+			const reg = await navigator.serviceWorker.ready;
+			const sub = await reg.pushManager.getSubscription();
+			if (sub) {
+				await supabase.from('push_subscription').delete().eq('endpoint', sub.endpoint);
+				await sub.unsubscribe();
+			}
+			pushState = 'off';
+		} catch (e) {
+			pushError = 'Deaktivierung fehlgeschlagen. Bitte erneut versuchen.';
+			console.error('Push-Abmeldung fehlgeschlagen:', e);
+		} finally {
+			pushBusy = false;
+		}
+	}
 
 	const fmt = new Intl.DateTimeFormat('de-DE', {
 		day: '2-digit',
@@ -31,6 +105,31 @@
 	function open(n: (typeof data.notifications)[number]) {
 		if (n.event_id) goto(resolve('/termine/[id]', { id: n.event_id }));
 	}
+
+	// --- Test-Trigger (nur manage_members) -------------------------------------
+	let canTrigger = $derived((data.permissions ?? []).includes('manage_members'));
+	let triggerBusy = $state(false);
+	let triggerMsg = $state<string | null>(null);
+
+	async function runReminders(send: boolean) {
+		if (triggerBusy) return;
+		triggerBusy = true;
+		triggerMsg = null;
+		try {
+			const res = await fetch('/api/admin/reminders/run', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ send })
+			});
+			if (!res.ok) throw new Error(await res.text());
+			triggerMsg = send ? 'Reminder erzeugt und Versand angestoßen.' : 'Fällige Reminder erzeugt.';
+			await invalidateAll();
+		} catch (e) {
+			triggerMsg = 'Fehlgeschlagen: ' + (e as Error).message;
+		} finally {
+			triggerBusy = false;
+		}
+	}
 </script>
 
 <div class="shell">
@@ -43,6 +142,57 @@
 	</AppBar>
 
 	<main class="shell__body">
+		<section class="push">
+			<div class="push__head">
+				<span class="push__title">Push-Benachrichtigungen</span>
+				{#if pushState === 'on'}
+					<span class="push__status push__status--on">aktiv</span>
+				{:else if pushState === 'off'}
+					<span class="push__status">inaktiv</span>
+				{/if}
+			</div>
+
+			{#if pushState === 'loading'}
+				<p class="push__hint">Wird geprüft …</p>
+			{:else if pushState === 'unsupported'}
+				<p class="push__hint">
+					Dieses Gerät unterstützt keine Push-Benachrichtigungen. Auf dem iPhone funktioniert Push
+					nur, wenn die App über „Zum Home-Bildschirm" installiert ist (ab iOS 16.4).
+				</p>
+			{:else if pushState === 'denied'}
+				<p class="push__hint">
+					Benachrichtigungen sind in den Browser-/Geräteeinstellungen blockiert. Bitte dort für
+					diese App erlauben und die Seite neu laden.
+				</p>
+			{:else if pushState === 'on'}
+				<p class="push__hint">Du erhältst Erinnerungen auch als Push auf dieses Gerät.</p>
+				<Button variant="ghost" disabled={pushBusy} onclick={disablePush}>Deaktivieren</Button>
+			{:else}
+				<p class="push__hint">
+					Erinnerungen zusätzlich als Push auf dieses Gerät erhalten – auch wenn die App geschlossen
+					ist.
+				</p>
+				<Button disabled={pushBusy} onclick={enablePush}>Push aktivieren</Button>
+			{/if}
+
+			{#if pushError}<p class="push__error">{pushError}</p>{/if}
+		</section>
+
+		{#if canTrigger}
+			<section class="trigger">
+				<span class="trigger__label">Test (nur Vorstand): Reminder-Engine manuell starten.</span>
+				<div class="trigger__actions">
+					<Button variant="ghost" disabled={triggerBusy} onclick={() => runReminders(false)}>
+						Reminder erzeugen
+					</Button>
+					<Button variant="ghost" disabled={triggerBusy} onclick={() => runReminders(true)}>
+						+ Versand anstoßen
+					</Button>
+				</div>
+				{#if triggerMsg}<span class="trigger__msg">{triggerMsg}</span>{/if}
+			</section>
+		{/if}
+
 		{#if unreadCount > 0}
 			<div class="bar">
 				<span class="bar__label">{unreadCount} ungelesen</span>
@@ -87,6 +237,65 @@
 		flex-direction: column;
 		gap: var(--space-2);
 		padding: var(--screen-pad);
+	}
+	.push {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.08));
+		border-radius: var(--radius-md, 12px);
+		align-items: flex-start;
+	}
+	.push__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+	.push__title {
+		font-size: var(--text-base);
+		font-weight: 700;
+		color: var(--text-strong);
+	}
+	.push__status {
+		font-size: var(--text-xs);
+		color: var(--text-secondary);
+	}
+	.push__status--on {
+		color: var(--sage, #4f7a5b);
+		font-weight: 700;
+	}
+	.push__hint {
+		font-size: var(--text-sm);
+		color: var(--text-body);
+		margin: 0;
+	}
+	.push__error {
+		font-size: var(--text-sm);
+		color: var(--clay, #b4502f);
+		margin: 0;
+	}
+	.trigger {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		border: 1px dashed var(--hairline, rgba(0, 0, 0, 0.16));
+		border-radius: var(--radius-md, 12px);
+	}
+	.trigger__label {
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
+	}
+	.trigger__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+	.trigger__msg {
+		font-size: var(--text-sm);
+		color: var(--text-body);
 	}
 	.bar {
 		display: flex;
