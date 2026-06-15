@@ -63,16 +63,20 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 
 ## Aktueller Stand
 
-Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-17):
+Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-15):
 
-**M0–M6 inhaltlich vollständig (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
+**M0–M6 + P1 + P2 vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
 
 - **Live:** `https://app.lions-bonn-rheinaue.de` (Netlify, Club-Account, Auto-Deploy bei Push). OTP-Login über Club-Gmail-SMTP verifiziert; als PWA aufs iPhone installierbar.
-- **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260618120100` (M5-Gate) via `supabase db push` angewendet; Admin-Bootstrap `admin@example.com` = Präsident + Webmaster; remote nur Andreas `notifications_enabled=true`. **M6-Migrationen `20260619…` committet (`bd566e7`), aber noch NICHT gepusht.**
-- **Umgesetzt:** Auth · Mitglieder (+Admin) · Termine (Liste+Kalender, RSVP, Begleitpersonen, Meldungen, Jahresplanung/Serien, `reminder_days_before`) · Anwesenheit + Schatzmeister-Auswertung (CSV) · Zusatzabfragen · Geburtstage · Foto-Upload · In-App-Benachrichtigungen + Reminder-Engine · Web-Push + Edge Function `send-notifications` (Push + SMTP-Fallback, Dry-Run-gated) + Empfänger-Gate `notifications_enabled` · **Dokumente (`/dokumente`: Ablage + deutsche Volltextsuche via Edge Function `extract-document-text`, Kategorien/Sortierung, Upload/Bearbeiten, Push-Benachrichtigung)** · **News (`/news`: Feed, Klartext+Linkify, Anpinnen, Push-Benachrichtigung)** · **Galerie (`/galerie`: Link aufs geteilte Google-Drive via `PUBLIC_GALLERY_URL`)**.
-- **Tests:** 67 pgTAP + 18 Vitest-Unit + 2 Playwright-E2E.
+- **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260620120500` (P2) via `supabase db push` angewendet; Edge Functions `extract-document-text` + `send-notifications` deployed; Admin-Bootstrap `admin@example.com` = Präsident + Webmaster; remote nur Andreas `notifications_enabled=true`.
+- **Umgesetzt:** Auth · Mitglieder (+Admin, volle Adresse, `phone_office`, Partner-Vor/Nachname) · Termine (Liste+Kalender, RSVP, Begleitpersonen, Meldungen, Jahresplanung/Serien, `reminder_days_before`, Bearbeiten/Löschen, `ends_at`+2h-Default, .ics-Export) · Anwesenheit + Schatzmeister-Auswertung (CSV) · Zusatzabfragen · Geburtstage · Foto-Upload · In-App-Benachrichtigungen + Reminder-Engine · Web-Push + Edge Function `send-notifications` (Push + SMTP-Fallback, Dry-Run-gated) + Empfänger-Gate `notifications_enabled` · **Dokumente (`/dokumente`: Ablage + deutsche Volltextsuche via Edge Function `extract-document-text`, Kategorien/Sortierung, Upload/Bearbeiten, Push-Benachrichtigung)** · **News (`/news`: Feed, Klartext+Linkify, Anpinnen, Push-Benachrichtigung)** · **Galerie (`/galerie`: Link aufs geteilte Google-Drive via `PUBLIC_GALLERY_URL`)** · **Vorstand/Ämter (`/vorstand`, `manage_roles`): Lions-Jahr-Dimension (1.7.–30.6., Auto-Umstellung ohne Cron), zeitabhängige `has_permission`, Ämter-Cluster + display_only-Beauftragte, abgeleiteter Past-Präsident, Vereinslokal-Default für Clubabend/MV)**.
+- **Tests:** 78 pgTAP + 23 Vitest-Unit + 2 Playwright-E2E.
+- **LJ-Rechte-Lehre (P2):** Bei zeitabhängigen Ämtern MÜSSEN alle Rechte-Leser denselben LJ-Filter wie `has_permission` nutzen — Client-`+layout.ts` UND `/api`-Routen auf `.eq('member_amt.lions_year', lionsStartYear(new Date()))`. Sonst bietet die UI LJ-fremde Aktionen an (RLS blockt zwar, aber Gate ist falsch).
+- **Push-Reihenfolge (P2-Lehre):** Root-Layout fragt `member_amt.lions_year` auf JEDER Seite ab → bei schema-relevanten Migrationen **immer `supabase db push` ZUERST, dann `git push`**.
 - **`service_role`-Grant-Falle:** Edge Functions laufen als `service_role` — RLS-Bypass ersetzt NICHT die Tabellen-Grants. Bei neuen Tabellen, die eine Edge Function direkt liest/schreibt, immer auch `grant … to service_role` (sonst `permission denied 42501`).
 
-**Offen (Go-live):** M5/M6 **scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`) · M6-Migrationen + Edge Functions aufs Remote pushen/deployen · `PUBLIC_GALLERY_URL` als Netlify-Env · **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
+**Offener Backlog:** P3 Lions-Deutschland-Export (`export_lions` existiert, Feature fehlt) · P4 Benachrichtigungs-Präferenzen (Push/Mail/beide, kein Voll-Opt-out) · großer Block **Design „Lions 2.0"** (volle design-referenz-Treue + echte Lions-Icons, Logo ist nutzbar; TabBar/IA).
+
+**Offen (echtes Go-live):** M5/M6 **scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`: alle aktiven Mitglieder `notifications_enabled=true`, `REMINDERS_ARMED=true` + VAPID-Private/SMTP-Secrets, pg_cron+pg_net) · **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
 
 **Abweichungen von den Quelldokumenten (bewusst beschlossen):** M3 erfasst **keine Spendenbeträge** (nur an-/abwesend; Schatzmeister rechnet jährlich extern, Export CSV). Sekretär hat zusätzlich `manage_roles` + `delete_member`. Region ist **eu-west-1 (Irland)**, nicht Frankfurt.
