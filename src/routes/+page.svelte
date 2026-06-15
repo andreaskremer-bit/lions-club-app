@@ -2,7 +2,16 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, Card, Button, IconButton } from '$lib/components/ui';
-	import { LogOut, Users, CalendarDays, Cake, BarChart3, ArrowRight, Bell } from '@lucide/svelte';
+	import {
+		LogOut,
+		Users,
+		CalendarDays,
+		Cake,
+		BarChart3,
+		ArrowRight,
+		Bell,
+		FileText
+	} from '@lucide/svelte';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -61,6 +70,12 @@
 		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/geburtstage'))}>
 			{#snippet iconLeft()}<Cake size={18} />{/snippet}
 			Geburtstage
+			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+		</Button>
+
+		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/dokumente'))}>
+			{#snippet iconLeft()}<FileText size={18} />{/snippet}
+			Dokumente
 			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 		</Button>
 

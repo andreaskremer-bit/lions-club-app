@@ -114,8 +114,15 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 3. Extensions `pg_cron` + `pg_net` im Dashboard aktivieren; `app.edge_send_url`/`app.edge_send_token` setzen.
 4. `supabase functions deploy send-notifications`.
 
-## M6 – Rest & Launch — offen
+## M6 – Rest & Launch — in Arbeit
 
-## M6 – Rest & Launch — offen
+**Dokumente — erledigt (2026-06-19)** — zentrale Ablage mit deutscher Volltextsuche, löst den E-Mail-Versand der Protokolle ab.
 
-- News, Dokumente, Galerie-Link; Deploy (Netlify + Migrationen aufs Remote via `supabase db push`); Pro-Plan; OAuth2-Mailversand.
+- **Schema** (`20260619120100_document.sql`): Tabelle `document` (Kategorie-Enum `protokoll_clubabend`/`protokoll_mv`/`satzung`/`sonstige`, `doc_date`, optionaler `event_id`-Link, `content_text`, generierte `search_tsv` (deutsch) + GIN-Index). RLS: alle lesen, `publish_content` schreibt. Privater Bucket `documents` + Storage-RLS (Muster `member-photos`).
+- **Volltext serverseitig:** Edge Function `extract-document-text` (PDF via `unpdf`, DOCX via ZIP+XML) füllt `content_text`; ausgelöst per Client-`functions.invoke` nach Upload (Abweichung vom Plan: statt DB-Webhook — robuster, kein Setup). Suche im UI per `textSearch(websearch, german)`. PDF/DOCX inhaltlich indiziert; XLSX/Bilder nur Metadaten.
+- **Benachrichtigung:** `notification_kind` um `document` erweitert + `notification.document_id` (Dedupe-Index angepasst); `notify_document()` (SECURITY DEFINER, Empfänger-Gate) erzeugt In-App/Push für aktive, freigeschaltete Mitglieder. Checkbox „Mitglieder benachrichtigen" beim Upload (Default an bei Protokollen). `send-notifications` + In-App-`open()` verlinken Dokumente.
+- **UI:** `/dokumente` (Liste, Kategorie-Chips, Sortierung Datum/Titel/Kategorie, Suchfeld, Download via signierte URL), `/dokumente/neu`, `/dokumente/[id]/bearbeiten`; Startseiten-Button. Verwalten nur `publish_content` (Präsident/Vize/Sekretär — bereits im Seed).
+- **Tests:** `document_rls_test.sql` (8 pgTAP: Lesen für alle, Schreiben/notify nur mit Recht, Gate, deutsche FTS) → **gesamt 60 pgTAP grün**. `check`/`lint`/Build grün.
+- **Go-live-Setup:** Edge Function deployen; Volltext-Extraktion läuft über Client-Invoke (kein DB-Webhook nötig). Optional alternativ DB-Webhook.
+
+**Offen:** News, Galerie-Link (Verlinkung Google-Share); Pro-Plan; OAuth2-Mailversand; M5/M6 scharfstellen (Go-live).

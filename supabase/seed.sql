@@ -115,3 +115,23 @@ insert into public.event (id, title, type, location, starts_at) values
 
 -- Fällige Reminder einmal erzeugen (lokaler Demo-Stand; in Produktion via pg_cron täglich).
 select public.enqueue_due_reminders();
+
+-- 9) Beispiel-Dokumente (M6). file_path zeigt auf (lokal nicht vorhandene) Dateien —
+-- Liste/Sortierung/Suche/FTS sind damit testbar; echter Download braucht einen Upload.
+-- content_text ist hier vorbefüllt (sonst käme er von der Edge Function extract-document-text).
+insert into public.document
+  (title, category, doc_date, description, event_id, file_name, mime_type, content_text)
+values
+  ('Protokoll Clubabend Mai 2026', 'protokoll_clubabend', date '2026-05-14',
+   'Beschlüsse zum Sommerfest und Kassenbericht.',
+   '00000000-0000-0000-0000-0000000a1003',
+   'protokoll-2026-05.pdf', 'application/pdf',
+   'Protokoll des Clubabends. Anwesend waren 18 Mitglieder. Beschlossen wurde das Sommerfest im Juli sowie der Kassenbericht des Schatzmeisters.'),
+  ('Protokoll Mitgliederversammlung 2026', 'protokoll_mv', date '2026-03-20',
+   'Wahl des Vorstands, Jahresbericht.', null,
+   'mv-protokoll-2026.pdf', 'application/pdf',
+   'Protokoll der Mitgliederversammlung. Tagesordnung: Jahresbericht des Präsidenten, Entlastung des Vorstands, Neuwahlen.'),
+  ('Satzung Lions Club Bonn-Rheinaue', 'satzung', date '2020-01-01',
+   'Gültige Vereinssatzung.', null,
+   'satzung.pdf', 'application/pdf',
+   'Satzung des Lions Club Bonn-Rheinaue. Zweck des Vereins ist die Foerderung gemeinnuetziger Zwecke und des buergerschaftlichen Engagements.');
