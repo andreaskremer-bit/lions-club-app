@@ -1,29 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import {
-		AppBar,
-		IconButton,
-		Input,
-		SegmentedControl,
-		ListRow,
-		Avatar,
-		Tag
-	} from '$lib/components/ui';
+	import { AppBar, IconButton, Input, ListRow, Avatar, Tag } from '$lib/components/ui';
 	import { ChevronLeft, Search, UserPlus } from '@lucide/svelte';
 	import type { MemberListItem, MemberStatus } from './+page';
 
 	let { data } = $props();
 
 	let query = $state('');
-	let statusFilter = $state<'alle' | MemberStatus>('alle');
-
-	const statusOptions = [
-		{ value: 'alle', label: 'Alle' },
-		{ value: 'aktiv', label: 'Aktiv' },
-		{ value: 'ehrenmitglied', label: 'Ehrenmitglied' },
-		{ value: 'inaktiv', label: 'Inaktiv' }
-	];
+	// Standard: nur aktive Mitglieder. Inaktive + Ehrenmitglieder (selten) sind
+	// per Schalter zuschaltbar; der Status bleibt als Badge sichtbar.
+	let showInactive = $state(false);
 
 	const statusLabel: Record<MemberStatus, string> = {
 		aktiv: 'aktiv',
@@ -51,7 +38,7 @@
 
 	let filtered = $derived(
 		data.members.filter((m) => {
-			if (statusFilter !== 'alle' && m.status !== statusFilter) return false;
+			if (!showInactive && m.status !== 'aktiv') return false;
 			const q = query.trim().toLowerCase();
 			if (!q) return true;
 			return `${m.first_name} ${m.last_name}`.toLowerCase().includes(q);
@@ -80,7 +67,10 @@
 			{#snippet icon()}<Search size={18} />{/snippet}
 		</Input>
 
-		<SegmentedControl options={statusOptions} bind:value={statusFilter} />
+		<label class="show-inactive">
+			<input type="checkbox" bind:checked={showInactive} />
+			<span>Auch inaktive &amp; Ehrenmitglieder anzeigen</span>
+		</label>
 
 		{#if data.loadError}
 			<p class="state state--error">Mitglieder konnten nicht geladen werden: {data.loadError}</p>
@@ -112,6 +102,14 @@
 </div>
 
 <style>
+	.show-inactive {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
+		min-height: 44px;
+	}
 	.shell {
 		display: flex;
 		flex-direction: column;

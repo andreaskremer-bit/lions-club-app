@@ -17,12 +17,14 @@
 	let first_name = $state(init.first_name);
 	let last_name = $state(init.last_name);
 	let phone = $state(init.phone ?? '');
+	let phone_office = $state(init.phone_office ?? '');
 	let mobile = $state(init.mobile ?? '');
 	let street = $state(init.street ?? '');
 	let zip = $state(init.zip ?? '');
 	let city = $state(init.city ?? '');
 	let birthday = $state(init.birthday ?? '');
-	let partner_name = $state(init.partner_name ?? '');
+	let partner_first_name = $state(init.partner_first_name ?? '');
+	let partner_last_name = $state(init.partner_last_name ?? '');
 	let partner_birthday = $state(init.partner_birthday ?? '');
 	let partner_email = $state(init.partner_email ?? '');
 	let partner_mobile = $state(init.partner_mobile ?? '');
@@ -98,12 +100,14 @@
 			first_name: first_name.trim(),
 			last_name: last_name.trim(),
 			phone: orNull(phone),
+			phone_office: orNull(phone_office),
 			mobile: orNull(mobile),
 			street: orNull(street),
 			zip: orNull(zip),
 			city: orNull(city),
 			birthday: orNull(birthday),
-			partner_name: orNull(partner_name),
+			partner_first_name: orNull(partner_first_name),
+			partner_last_name: orNull(partner_last_name),
 			partner_birthday: orNull(partner_birthday),
 			partner_email: orNull(partner_email),
 			partner_mobile: orNull(partner_mobile)
@@ -207,6 +211,7 @@
 				<h2 class="sec">Kontakt</h2>
 				<Input label="Handy" type="tel" bind:value={mobile} />
 				<Input label="Festnetz" type="tel" bind:value={phone} />
+				<Input label="Büro" type="tel" bind:value={phone_office} />
 				<Input label="Straße" bind:value={street} />
 				<div class="row">
 					<Input label="PLZ" bind:value={zip} class="zip" />
@@ -216,7 +221,8 @@
 
 			<Card>
 				<h2 class="sec">Partner/in</h2>
-				<Input label="Name" bind:value={partner_name} />
+				<Input label="Vorname" bind:value={partner_first_name} />
+				<Input label="Nachname" bind:value={partner_last_name} />
 				<Input label="Geburtstag" type="date" bind:value={partner_birthday} />
 				<Input label="Handy" type="tel" bind:value={partner_mobile} />
 				<Input label="E-Mail" type="email" bind:value={partner_email} />

@@ -13,6 +13,7 @@ export type MemberDetail = {
 	status: MemberStatus;
 	email: string;
 	phone: string | null;
+	phone_office: string | null;
 	mobile: string | null;
 	street: string | null;
 	zip: string | null;
@@ -20,7 +21,8 @@ export type MemberDetail = {
 	birthday: string | null;
 	joined_on: string | null;
 	photo_path: string | null;
-	partner_name: string | null;
+	partner_first_name: string | null;
+	partner_last_name: string | null;
 	partner_birthday: string | null;
 	partner_email: string | null;
 	partner_mobile: string | null;
@@ -34,7 +36,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 	const { data, error: err } = await supabase
 		.from('member')
 		.select(
-			'id, user_id, first_name, last_name, title, status, email, phone, mobile, street, zip, city, birthday, joined_on, photo_path, partner_name, partner_birthday, partner_email, partner_mobile, notes, member_amt(amt(label, sort_order, display_only))'
+			'id, user_id, first_name, last_name, title, status, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_first_name, partner_last_name, partner_birthday, partner_email, partner_mobile, notes, member_amt(amt(label, sort_order, display_only))'
 		)
 		.eq('id', params.id)
 		.maybeSingle();

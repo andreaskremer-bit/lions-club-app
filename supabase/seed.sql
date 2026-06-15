@@ -4,17 +4,23 @@
 
 -- 1) Mitglieder (Partner exemplarisch bei einer Person)
 insert into public.member
-  (email, first_name, last_name, title, status, mobile, city, birthday, joined_on,
-   partner_name, partner_birthday, partner_email, partner_mobile)
+  (email, first_name, last_name, title, status, mobile, city, birthday, joined_on)
 values
-  ('admin@example.com',           'Alex',     'Admin',      null,  'aktiv',         '+49 170 1112233', 'Bonn',     '1980-01-15', '2015-09-01', null, null, null, null),
-  ('praesident@example.com',      'Friedrich','Vorsteher',  'Dr.', 'aktiv',         '+49 170 2223344', 'Bonn',     '1962-06-20', '1998-04-15', 'Elke Vorsteher', '1964-02-02', null, '+49 170 9998877'),
-  ('sekretaer@example.com',       'Sabine',   'Schrift',    null,  'aktiv',         '+49 171 3334455', 'Bonn',     '1970-11-05', '2005-10-01', null, null, null, null),
-  ('schatzmeister@example.com',   'Klaus',    'Kasse',      null,  'aktiv',         '+49 172 4445566', 'Königswinter', '1968-01-30', '2001-03-20', null, null, null, null),
-  ('clubmaster@example.com',      'Petra',    'Reise',      null,  'aktiv',         '+49 173 5556677', 'Bad Honnef', '1972-08-14', '2010-05-11', null, null, null, null),
-  ('maria.mitglied@example.com',  'Maria',    'Mitglied',   null,  'aktiv',         '+49 174 6667788', 'Bonn',     '1980-04-25', '2018-09-01', null, null, null, null),
-  ('heinrich.ehren@example.com',  'Heinrich', 'Ehrenfels',  null,  'ehrenmitglied', '+49 175 7778899', 'Bonn',     '1945-12-01', '1980-01-10', null, null, null, null),
-  ('inge.inaktiv@example.com',    'Inge',     'Ruhend',     null,  'inaktiv',       '+49 176 8889900', 'Köln',     '1958-07-19', '1995-06-05', null, null, null, null);
+  ('admin@example.com',           'Alex',     'Admin',      null,  'aktiv',         '+49 170 1112233', 'Bonn',     '1980-01-15', '2015-09-01'),
+  ('praesident@example.com',      'Friedrich','Vorsteher',  'Dr.', 'aktiv',         '+49 170 2223344', 'Bonn',     '1962-06-20', '1998-04-15'),
+  ('sekretaer@example.com',       'Sabine',   'Schrift',    null,  'aktiv',         '+49 171 3334455', 'Bonn',     '1970-11-05', '2005-10-01'),
+  ('schatzmeister@example.com',   'Klaus',    'Kasse',      null,  'aktiv',         '+49 172 4445566', 'Königswinter', '1968-01-30', '2001-03-20'),
+  ('clubmaster@example.com',      'Petra',    'Reise',      null,  'aktiv',         '+49 173 5556677', 'Bad Honnef', '1972-08-14', '2010-05-11'),
+  ('maria.mitglied@example.com',  'Maria',    'Mitglied',   null,  'aktiv',         '+49 174 6667788', 'Bonn',     '1980-04-25', '2018-09-01'),
+  ('heinrich.ehren@example.com',  'Heinrich', 'Ehrenfels',  null,  'ehrenmitglied', '+49 175 7778899', 'Bonn',     '1945-12-01', '1980-01-10'),
+  ('inge.inaktiv@example.com',    'Inge',     'Ruhend',     null,  'inaktiv',       '+49 176 8889900', 'Köln',     '1958-07-19', '1995-06-05');
+
+-- Partner + Festnetz/Büro exemplarisch beim Präsidenten.
+update public.member
+set partner_first_name = 'Elke', partner_last_name = 'Vorsteher',
+    partner_birthday = '1964-02-02', partner_mobile = '+49 170 9998877',
+    phone = '+49 228 111222', phone_office = '+49 228 555000'
+where email = 'praesident@example.com';
 
 -- Empfänger-Gate: lokal alle Test-Mitglieder freischalten (in-App-Reminder sichtbar).
 -- Auf dem Remote bleibt der Default false und nur einzelne werden manuell freigeschaltet.

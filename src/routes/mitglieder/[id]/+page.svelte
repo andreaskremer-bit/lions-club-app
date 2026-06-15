@@ -2,7 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Avatar, Tag, Card, ListRow, Button } from '$lib/components/ui';
-	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send } from '@lucide/svelte';
+	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send, Building2 } from '@lucide/svelte';
 	import type { MemberStatus } from '../+page';
 
 	let { data } = $props();
@@ -98,6 +98,11 @@
 					{#snippet lead()}<Phone size={20} />{/snippet}
 				</ListRow>
 			{/if}
+			{#if m.phone_office}
+				<ListRow href={`tel:${m.phone_office}`} title={m.phone_office} subtitle="Büro">
+					{#snippet lead()}<Building2 size={20} />{/snippet}
+				</ListRow>
+			{/if}
 			<ListRow href={`mailto:${m.email}`} title={m.email} subtitle="E-Mail">
 				{#snippet lead()}<Mail size={20} />{/snippet}
 			</ListRow>
@@ -144,13 +149,13 @@
 			</Card>
 		{/if}
 
-		{#if m.partner_name}
+		{#if m.partner_first_name || m.partner_last_name}
 			<Card>
 				<h2 class="sec">Partner/in</h2>
 				<dl class="facts">
 					<div>
 						<dt>Name</dt>
-						<dd>{m.partner_name}</dd>
+						<dd>{[m.partner_first_name, m.partner_last_name].filter(Boolean).join(' ')}</dd>
 					</div>
 					{#if formatDate(m.partner_birthday)}
 						<div>

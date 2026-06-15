@@ -14,6 +14,7 @@
 	let status = $state<'aktiv' | 'inaktiv' | 'ehrenmitglied'>('aktiv');
 	let mobile = $state('');
 	let phone = $state('');
+	let phone_office = $state('');
 	let city = $state('');
 	let birthday = $state('');
 	let joined_on = $state('');
@@ -41,6 +42,7 @@
 				status,
 				mobile: orNull(mobile),
 				phone: orNull(phone),
+				phone_office: orNull(phone_office),
 				city: orNull(city),
 				birthday: orNull(birthday),
 				joined_on: orNull(joined_on)
@@ -95,6 +97,7 @@
 				<h2 class="sec">Kontakt &amp; Daten</h2>
 				<Input label="Handy" type="tel" bind:value={mobile} />
 				<Input label="Festnetz" type="tel" bind:value={phone} />
+				<Input label="Büro" type="tel" bind:value={phone_office} />
 				<Input label="Ort" bind:value={city} />
 				<Input label="Geburtstag" type="date" bind:value={birthday} />
 				<Input label="Mitglied seit" type="date" bind:value={joined_on} />
