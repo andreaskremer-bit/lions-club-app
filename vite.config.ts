@@ -13,27 +13,23 @@ export default defineConfig({
 			},
 
 			// Netlify deployment (DPF-zertifiziert); personenbezogene Daten möglichst client -> Supabase.
-			adapter: adapter(),
-
-			// Eigene Registrierung von src/service-worker.ts abschalten — @vite-pwa/sveltekit
-			// übernimmt Build (injectManifest) UND Registrierung. Sonst doppelte Registrierung.
-			serviceWorker: { register: false }
+			adapter: adapter()
 		}),
-		// PWA mit eigenem Service Worker (M5): Offline-Shell + Web-Push.
-		// injectManifest -> unser src/sw.ts wird gebündelt und zu /sw.js; Workbox
-		// injiziert die Precache-Liste in self.__WB_MANIFEST.
+		// PWA mit Web-Push + Offline-Asset-Caching (M5).
+		// generateSW (Default): vite-pwa erzeugt den Service Worker selbst — KEINE
+		// Abhängigkeit vom SvelteKit-SW-Build (dessen injectManifest-Kopplung unter
+		// rolldown-vite 8 auf Netlify im closeBundle scheiterte: swSrc ENOENT).
+		// Push-/notificationclick-Handler kommen via importScripts aus static/sw-push.js.
 		SvelteKitPWA({
-			strategies: 'injectManifest',
 			registerType: 'autoUpdate',
-			injectManifest: {
-				globPatterns: ['client/**/*.{js,css,html,ico,png,svg,webp,woff,woff2}']
+			workbox: {
+				// Build-Assets inkl. self-hosted Fonts vorab cachen (Offline-Shell).
+				globPatterns: ['client/**/*.{js,css,html,ico,png,svg,webp,woff,woff2,webmanifest}'],
+				importScripts: ['sw-push.js'],
+				cleanupOutdatedCaches: true
 			},
-			// Service Worker auch im Dev-Server aktiv (für lokales Push-/Offline-Testen).
-			devOptions: {
-				enabled: true,
-				type: 'module',
-				navigateFallback: '/'
-			},
+			// Service Worker auch im Dev-Server aktiv (für lokales Push-Testen).
+			devOptions: { enabled: true, type: 'classic' },
 			manifest: {
 				name: 'Lions Club Bonn-Rheinaue',
 				short_name: 'Lions BN-Rheinaue',
