@@ -26,3 +26,6 @@ vite.config.ts.timestamp-*
 /test-results
 /playwright-report
 /.playwright
+
+# Claude Code – persönliche, lokale Settings (Permissions, Pfade)
+.claude/settings.local.json

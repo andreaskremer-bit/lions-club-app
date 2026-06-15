@@ -7,7 +7,7 @@ insert into public.member
   (email, first_name, last_name, title, status, mobile, city, birthday, joined_on,
    partner_name, partner_birthday, partner_email, partner_mobile)
 values
-  ('webmaster@lions-bonn-rheinaue.de', 'Andreas',  'Kremer',    null,  'aktiv',         '+49 170 1112233', 'Bonn',     '1975-03-12', '2015-09-01', null, null, null, null),
+  ('admin@example.com',           'Alex',     'Admin',      null,  'aktiv',         '+49 170 1112233', 'Bonn',     '1980-01-15', '2015-09-01', null, null, null, null),
   ('praesident@example.com',      'Friedrich','Vorsteher',  'Dr.', 'aktiv',         '+49 170 2223344', 'Bonn',     '1962-06-20', '1998-04-15', 'Elke Vorsteher', '1964-02-02', null, '+49 170 9998877'),
   ('sekretaer@example.com',       'Sabine',   'Schrift',    null,  'aktiv',         '+49 171 3334455', 'Bonn',     '1970-11-05', '2005-10-01', null, null, null, null),
   ('schatzmeister@example.com',   'Klaus',    'Kasse',      null,  'aktiv',         '+49 172 4445566', 'Königswinter', '1968-01-30', '2001-03-20', null, null, null, null),
@@ -38,7 +38,7 @@ insert into public.member_amt (member_id, amt_id)
 select m.id, a.id
 from public.member m
 join (values
-  ('webmaster@lions-bonn-rheinaue.de', 'webmaster'),
+  ('admin@example.com', 'webmaster'),
   ('praesident@example.com',      'praesident'),
   ('sekretaer@example.com',       'sekretaer'),
   ('schatzmeister@example.com',   'schatzmeister'),
@@ -61,7 +61,7 @@ insert into public.event_response (event_id, member_id, status)
 select '00000000-0000-0000-0000-0000000a1003', m.id, v.status::public.rsvp_status
 from public.member m
 join (values
-  ('webmaster@lions-bonn-rheinaue.de', 'zugesagt'),
+  ('admin@example.com', 'zugesagt'),
   ('praesident@example.com',      'zugesagt'),
   ('sekretaer@example.com',       'zugesagt'),
   ('heinrich.ehren@example.com',  'zugesagt'),
@@ -81,7 +81,7 @@ insert into public.event_response (event_id, member_id, status)
 select '00000000-0000-0000-0000-0000000a1001', m.id, v.status::public.rsvp_status
 from public.member m
 join (values
-  ('webmaster@lions-bonn-rheinaue.de', 'zugesagt'),
+  ('admin@example.com', 'zugesagt'),
   ('praesident@example.com',      'zugesagt'),
   ('maria.mitglied@example.com',  'zugesagt'),
   ('clubmaster@example.com',      'abgesagt')
@@ -94,7 +94,7 @@ select '00000000-0000-0000-0000-0000000a1001', m.id, v.present,
        (select id from public.member where email = 'sekretaer@example.com')
 from public.member m
 join (values
-  ('webmaster@lions-bonn-rheinaue.de', true),
+  ('admin@example.com', true),
   ('praesident@example.com',      true),
   ('sekretaer@example.com',       true),
   ('heinrich.ehren@example.com',  true),   -- Ehrenmitglied: anwesend, zählt nicht
