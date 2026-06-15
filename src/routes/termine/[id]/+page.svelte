@@ -13,13 +13,34 @@
 		Trash2,
 		ClipboardCheck,
 		ListChecks,
-		Users
+		Users,
+		Pencil,
+		CalendarPlus
 	} from '@lucide/svelte';
 	import type { EventType } from '../+page';
+	import { buildIcs, icsFilename } from '$lib/ics';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
 	let e = $derived(data.event);
+
+	function exportIcs() {
+		const ics = buildIcs({
+			id: e.id,
+			title: e.title,
+			location: e.location,
+			description: e.description,
+			starts_at: e.starts_at,
+			ends_at: e.ends_at
+		});
+		const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = icsFilename(e.title);
+		a.click();
+		URL.revokeObjectURL(url);
+	}
 
 	const typeLabel: Record<EventType, string> = {
 		clubabend: 'Club-Abend',
@@ -154,6 +175,11 @@
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
 		{/snippet}
+		{#snippet trailing()}
+			<IconButton label="In meinen Kalender" onclick={exportIcs}>
+				{#snippet icon()}<CalendarPlus />{/snippet}
+			</IconButton>
+		{/snippet}
 	</AppBar>
 
 	<main class="shell__body">
@@ -181,6 +207,13 @@
 
 		{#if data.permissions.includes('manage_events')}
 			<div class="admin-actions">
+				<Button
+					variant="secondary"
+					onclick={() => goto(resolve('/termine/[id]/bearbeiten', { id: e.id }))}
+				>
+					{#snippet iconLeft()}<Pencil size={18} />{/snippet}
+					Termin bearbeiten
+				</Button>
 				<Button
 					variant="secondary"
 					onclick={() => goto(resolve('/termine/[id]/fragen', { id: e.id }))}

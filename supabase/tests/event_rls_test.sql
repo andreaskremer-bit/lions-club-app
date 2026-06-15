@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(15);
 
 -- Saubere Ausgangslage unabhängig vom Dev-Seed (wird durch rollback wiederhergestellt).
 -- auth.users cascaded auf member → member_amt/event_response/companion.
@@ -109,6 +109,20 @@ select throws_ok(
   '42501', null, 'Mitglied ohne manage_events kann keinen Termin anlegen'
 );
 
+-- (9b) RLS: Mitglied ohne manage_events kann Termin nicht ändern (Update wirkt nicht).
+update public.event set title = 'Gekapert' where id = '00000000-0000-0000-0000-0000000ce001';
+select is(
+  (select title from public.event where id = '00000000-0000-0000-0000-0000000ce001'),
+  'Club-Abend künftig', 'Mitglied ohne manage_events kann Termin nicht ändern'
+);
+
+-- (9c) RLS: Mitglied kann Termin nicht löschen (Delete wirkt nicht).
+delete from public.event where id = '00000000-0000-0000-0000-0000000ce001';
+select is(
+  (select count(*)::int from public.event where id = '00000000-0000-0000-0000-0000000ce001'),
+  1, 'Mitglied ohne manage_events kann Termin nicht löschen'
+);
+
 -- ── Rolle: Vorstand (manage_events via Clubmaster) ──────────────────────────
 reset role;
 set local role authenticated;
@@ -119,6 +133,21 @@ select lives_ok(
   $$ insert into public.event (title, type, starts_at)
      values ('Neuer Club-Abend', 'clubabend', now() + interval '14 days') $$,
   'Vorstand (manage_events) darf Termin anlegen'
+);
+
+-- (10b) Vorstand darf Termin ändern.
+update public.event set title = 'Geänderter Club-Abend'
+where id = '00000000-0000-0000-0000-0000000ce001';
+select is(
+  (select title from public.event where id = '00000000-0000-0000-0000-0000000ce001'),
+  'Geänderter Club-Abend', 'Vorstand (manage_events) darf Termin ändern'
+);
+
+-- (10c) Vorstand darf Termin löschen (Cascade auf Rückmeldungen etc.).
+delete from public.event where id = '00000000-0000-0000-0000-0000000ce002';
+select is(
+  (select count(*)::int from public.event where id = '00000000-0000-0000-0000-0000000ce002'),
+  0, 'Vorstand (manage_events) darf Termin löschen'
 );
 
 -- ── Rolle: anon ──────────────────────────────────────────────────────────────

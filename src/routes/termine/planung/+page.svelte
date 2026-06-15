@@ -32,6 +32,9 @@
 	let description = $state('');
 	let dateStr = $state('');
 	let timeStr = $state('19:00');
+	let endDateStr = $state('');
+	let endTimeStr = $state('');
+	let endTouched = $state(false);
 	let reminderDays = $state('3');
 	let reminderDaysNum = $derived(
 		reminderDays.trim() === ''
@@ -58,6 +61,21 @@
 		const [h, mi] = t.split(':').map(Number);
 		return new Date(y, mo - 1, da, h, mi);
 	}
+
+	// Clubabend/MV dauern standardmäßig 2 Std.
+	const isTimedType = (t: EventType) => t === 'clubabend' || t === 'versammlung';
+	const plus2h = (d: Date) => new Date(d.getTime() + 2 * 60 * 60 * 1000);
+
+	// Ende vorschlagen (überschreibbar): bei Clubabend/MV Beginn + 2 Std.
+	$effect(() => {
+		const s = combine(dateStr, timeStr);
+		if (!endTouched && s && isTimedType(type)) {
+			const e = plus2h(s);
+			const pad = (n: number) => String(n).padStart(2, '0');
+			endDateStr = `${e.getFullYear()}-${pad(e.getMonth() + 1)}-${pad(e.getDate())}`;
+			endTimeStr = `${pad(e.getHours())}:${pad(e.getMinutes())}`;
+		}
+	});
 
 	const previewFmt = new Intl.DateTimeFormat('de-DE', {
 		weekday: 'short',
@@ -88,6 +106,12 @@
 	async function saveSingle() {
 		const s = validate();
 		if (!s || busy) return;
+		const endCombined = combine(endDateStr, endTimeStr);
+		const end = endCombined ?? (isTimedType(type) ? plus2h(s) : null);
+		if (end && end <= s) {
+			err = 'Das Ende muss nach dem Beginn liegen.';
+			return;
+		}
 		busy = true;
 		err = '';
 		const { data: created, error } = await supabase
@@ -98,6 +122,7 @@
 				location: orNull(location),
 				description: orNull(description),
 				starts_at: s.toISOString(),
+				ends_at: end ? end.toISOString() : null,
 				reminder_days_before: reminderDaysNum
 			})
 			.select('id')
@@ -120,6 +145,7 @@
 			type,
 			location: orNull(location),
 			starts_at: d.toISOString(),
+			ends_at: isTimedType(type) ? plus2h(d).toISOString() : null,
 			reminder_days_before: reminderDaysNum
 		}));
 		const { error } = await supabase.from('event').insert(rows);
@@ -156,8 +182,28 @@
 			<Input label="Ort" bind:value={location} />
 			<div class="row">
 				<Input label="Datum" type="date" bind:value={dateStr} class="d" />
-				<Input label="Uhrzeit" type="time" bind:value={timeStr} class="t" />
+				<Input label="Uhrzeit (Beginn)" type="time" bind:value={timeStr} class="t" />
 			</div>
+			{#if mode === 'einzeln'}
+				<div class="row">
+					<Input
+						label="Datum (Ende, optional)"
+						type="date"
+						bind:value={endDateStr}
+						class="d"
+						oninput={() => (endTouched = true)}
+					/>
+					<Input
+						label="Uhrzeit"
+						type="time"
+						bind:value={endTimeStr}
+						class="t"
+						oninput={() => (endTouched = true)}
+					/>
+				</div>
+			{:else}
+				<p class="hint">Clubabend/MV: Ende automatisch 2 Std. nach Beginn.</p>
+			{/if}
 			<Input
 				label="Erinnerung (Tage vorher)"
 				type="number"
@@ -276,6 +322,11 @@
 	.err {
 		color: var(--clay, #b4502f);
 		font-size: var(--text-base);
+		margin: 0;
+	}
+	.hint {
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
 		margin: 0;
 	}
 </style>
