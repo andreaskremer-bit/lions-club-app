@@ -39,19 +39,36 @@ select
   '', '', '', '', '', '', '', ''
 from public.member m;
 
--- 3) Ämter zuweisen
+-- 3) Ämter zuweisen — aktuelles Lions-Jahr (lions_year defaultet auf current_lions_year()).
 insert into public.member_amt (member_id, amt_id)
 select m.id, a.id
 from public.member m
 join (values
-  ('admin@example.com', 'webmaster'),
+  ('admin@example.com',           'webmaster'),
   ('praesident@example.com',      'praesident'),
   ('sekretaer@example.com',       'sekretaer'),
   ('schatzmeister@example.com',   'schatzmeister'),
   ('clubmaster@example.com',      'clubmaster'),
-  ('heinrich.ehren@example.com',  'past_praesident')
+  ('maria.mitglied@example.com',  'presse') -- Beauftragte (nur Anzeige)
 ) as map(email, amt_key) on map.email = m.email
 join public.amt a on a.key = map.amt_key;
+
+-- Past-Präsident (abgeleitet): Heinrich war Präsident im VORIGEN Lions-Jahr.
+insert into public.member_amt (member_id, amt_id, lions_year)
+select m.id, a.id, public.current_lions_year() - 1
+from public.member m, public.amt a
+where m.email = 'heinrich.ehren@example.com' and a.key = 'praesident';
+
+-- Beispiel kommendes Lions-Jahr (zeigt: noch keine Rechtewirkung).
+insert into public.member_amt (member_id, amt_id, lions_year)
+select m.id, a.id, public.current_lions_year() + 1
+from public.member m, public.amt a
+where m.email = 'maria.mitglied@example.com' and a.key = 'vize';
+
+-- Vereinslokal (Default-Ort für Clubabend/MV).
+update public.club_venue
+set name = 'Hotel Königshof', street = 'Adenauerallee 9', zip = '53111', city = 'Bonn'
+where id = 1;
 
 -- 4) Termine (vergangen + anstehend, verschiedene Typen). Feste IDs für Seed-Rückmeldungen.
 insert into public.event (id, title, type, location, starts_at) values

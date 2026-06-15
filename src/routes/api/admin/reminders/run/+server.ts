@@ -2,6 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import { createClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { env } from '$env/dynamic/private';
+import { lionsStartYear } from '$lib/dates';
 import type { RequestHandler } from './$types';
 
 /**
@@ -17,11 +18,12 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const { user } = await locals.safeGetSession();
 	if (!user) throw error(401, 'Nicht angemeldet');
 
-	// Berechtigung des Aufrufers prüfen (als Nutzer über RLS).
+	// Berechtigung des Aufrufers prüfen (als Nutzer über RLS) — nur Ämter des aktuellen LJ.
 	const { data: meData } = await locals.supabase
 		.from('member')
 		.select('member_amt(amt(amt_permission(permission)))')
 		.eq('user_id', user.id)
+		.eq('member_amt.lions_year', lionsStartYear(new Date()))
 		.maybeSingle();
 	const me = meData as {
 		member_amt: { amt: { amt_permission: { permission: string }[] } | null }[];

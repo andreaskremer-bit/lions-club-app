@@ -31,10 +31,6 @@
 	// Status nur für Berechtigte
 	let status = $state<MemberStatus>(init.status);
 
-	// Ämter (nur manage_roles): Zuordnung wird je Umschalten direkt gespeichert.
-	let assigned = $state(new Set<string>(untrack(() => data.memberAmtIds)));
-	let amtBusy = $state(false);
-
 	let saving = $state(false);
 	let uploading = $state(false);
 	let error = $state('');
@@ -122,24 +118,6 @@
 			return;
 		}
 		await goto(resolve('/mitglieder/[id]', { id: m.id }), { invalidateAll: true });
-	}
-
-	async function toggleAmt(amtId: string, checked: boolean) {
-		if (amtBusy) return;
-		amtBusy = true;
-		error = '';
-		const q = checked
-			? supabase.from('member_amt').insert({ member_id: m.id, amt_id: amtId })
-			: supabase.from('member_amt').delete().eq('member_id', m.id).eq('amt_id', amtId);
-		const { error: err } = await q;
-		amtBusy = false;
-		if (err) {
-			error = 'Amt konnte nicht geändert werden: ' + err.message;
-			return;
-		}
-		if (checked) assigned.add(amtId);
-		else assigned.delete(amtId);
-		await invalidateAll();
 	}
 
 	async function removeMember() {
@@ -235,25 +213,21 @@
 			</Button>
 		</form>
 
-		{#if data.canManageRoles}
-			<Card>
-				<h2 class="sec">Ämter</h2>
-				<p class="muted">Änderungen werden sofort gespeichert.</p>
-				<div class="aemter">
-					{#each data.allAemter as a (a.id)}
-						<label class="amt">
-							<input
-								type="checkbox"
-								checked={assigned.has(a.id)}
-								disabled={amtBusy}
-								onchange={(e) => toggleAmt(a.id, e.currentTarget.checked)}
-							/>
-							<span>{a.label}</span>
-						</label>
-					{/each}
-				</div>
-			</Card>
-		{/if}
+		<Card>
+			<h2 class="sec">Ämter (aktuelles Lions-Jahr)</h2>
+			{#if data.currentOffices.length}
+				<ul class="offices">
+					{#each data.currentOffices as o (o)}<li>{o}</li>{/each}
+				</ul>
+			{:else}
+				<p class="muted">Keine Ämter im aktuellen Lions-Jahr.</p>
+			{/if}
+			{#if data.canManageRoles}
+				<Button variant="ghost" onclick={() => goto(resolve('/vorstand'))}>
+					Ämter im Vorstandsbereich pflegen
+				</Button>
+			{/if}
+		</Card>
 
 		{#if data.canDelete && !data.isSelf}
 			<Card>
@@ -346,22 +320,14 @@
 	.filebtn input {
 		display: none;
 	}
-	.aemter {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-	}
-	.amt {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
+	.offices {
+		margin: 0 0 var(--space-2);
+		padding-left: var(--space-4);
 		font-size: var(--text-base);
 		color: var(--text-strong);
-		min-height: 44px;
 	}
-	.amt input {
-		width: 20px;
-		height: 20px;
+	.offices li {
+		padding: 2px 0;
 	}
 	.muted {
 		font-size: var(--text-sm);

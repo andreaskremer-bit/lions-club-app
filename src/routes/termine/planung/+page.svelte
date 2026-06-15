@@ -29,6 +29,7 @@
 	let title = $state('');
 	let type = $state<EventType>('clubabend');
 	let location = $state('');
+	let locationTouched = $state(false);
 	let description = $state('');
 	let dateStr = $state('');
 	let timeStr = $state('19:00');
@@ -65,6 +66,13 @@
 	// Clubabend/MV dauern standardmäßig 2 Std.
 	const isTimedType = (t: EventType) => t === 'clubabend' || t === 'versammlung';
 	const plus2h = (d: Date) => new Date(d.getTime() + 2 * 60 * 60 * 1000);
+
+	// Ort vorbelegen (überschreibbar): bei Clubabend/MV das Vereinslokal.
+	$effect(() => {
+		if (!locationTouched && isTimedType(type) && !location && data.venueLocation) {
+			location = data.venueLocation;
+		}
+	});
 
 	// Ende vorschlagen (überschreibbar): bei Clubabend/MV Beginn + 2 Std.
 	$effect(() => {
@@ -179,7 +187,7 @@
 					{#each typeOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
 				</select>
 			</label>
-			<Input label="Ort" bind:value={location} />
+			<Input label="Ort" bind:value={location} oninput={() => (locationTouched = true)} />
 			<div class="row">
 				<Input label="Datum" type="date" bind:value={dateStr} class="d" />
 				<Input label="Uhrzeit (Beginn)" type="time" bind:value={timeStr} class="t" />

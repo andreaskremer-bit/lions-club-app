@@ -12,7 +12,8 @@
 		Bell,
 		FileText,
 		Newspaper,
-		Images
+		Images,
+		Award
 	} from '@lucide/svelte';
 
 	let { data } = $props();
@@ -97,6 +98,14 @@
 			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/auswertung'))}>
 				{#snippet iconLeft()}<BarChart3 size={18} />{/snippet}
 				Auswertung (Schatzmeister)
+				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+			</Button>
+		{/if}
+
+		{#if data.permissions.includes('manage_roles')}
+			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/vorstand'))}>
+				{#snippet iconLeft()}<Award size={18} />{/snippet}
+				Vorstand & Ämter
 				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 			</Button>
 		{/if}

@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { MemberStatus } from '../+page';
+import { lionsStartYear } from '$lib/dates';
 
 type AmtRef = { label: string; sort_order: number; display_only: boolean };
 
@@ -39,6 +40,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 			'id, user_id, first_name, last_name, title, status, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_first_name, partner_last_name, partner_birthday, partner_email, partner_mobile, notes, member_amt(amt(label, sort_order, display_only))'
 		)
 		.eq('id', params.id)
+		.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Ämter des aktuellen LJ
 		.maybeSingle();
 
 	if (err) throw error(500, err.message);

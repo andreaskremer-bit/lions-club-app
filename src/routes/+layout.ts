@@ -1,5 +1,6 @@
 import { createBrowserClient, createServerClient, isBrowser } from '@supabase/ssr';
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { lionsStartYear } from '$lib/dates';
 import type { LayoutLoad } from './$types';
 
 /**
@@ -35,6 +36,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 			.from('member')
 			.select('id, member_amt(amt(amt_permission(permission)))')
 			.eq('user_id', user.id)
+			.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Rechte des aktuellen LJ
 			.maybeSingle();
 		const m = data as {
 			id: string;

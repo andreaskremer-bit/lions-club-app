@@ -1,4 +1,5 @@
 import type { PageLoad } from './$types';
+import { lionsStartYear } from '$lib/dates';
 
 export type MemberStatus = 'aktiv' | 'inaktiv' | 'ehrenmitglied';
 
@@ -20,11 +21,13 @@ export type MemberListItem = {
 export const load: PageLoad = async ({ parent }) => {
 	const { supabase } = await parent();
 
+	// Nur Ämter des aktuellen Lions-Jahres als Untertitel/Badge anzeigen.
 	const { data, error } = await supabase
 		.from('member')
 		.select(
 			'id, first_name, last_name, title, status, mobile, phone, email, photo_path, member_amt(amt(label, sort_order, display_only))'
 		)
+		.eq('member_amt.lions_year', lionsStartYear(new Date()))
 		.order('last_name')
 		.order('first_name');
 

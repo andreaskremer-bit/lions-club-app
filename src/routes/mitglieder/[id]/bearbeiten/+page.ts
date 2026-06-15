@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { MemberStatus } from '../../+page';
+import { lionsStartYear } from '$lib/dates';
 
 export type EditMember = {
 	id: string;
@@ -24,7 +25,7 @@ export type EditMember = {
 	partner_birthday: string | null;
 	partner_email: string | null;
 	partner_mobile: string | null;
-	member_amt: { amt_id: string }[];
+	member_amt: { amt_id: string; lions_year: number }[];
 };
 
 export type AmtOption = { id: string; label: string; sort_order: number };
@@ -37,7 +38,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 		supabase
 			.from('member')
 			.select(
-				'id, user_id, first_name, last_name, title, status, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_first_name, partner_last_name, partner_birthday, partner_email, partner_mobile, member_amt(amt_id)'
+				'id, user_id, first_name, last_name, title, status, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_first_name, partner_last_name, partner_birthday, partner_email, partner_mobile, member_amt(amt_id, lions_year)'
 			)
 			.eq('id', params.id)
 			.maybeSingle(),
@@ -61,6 +62,15 @@ export const load: PageLoad = async ({ parent, params }) => {
 		photoUrl = signed?.signedUrl ?? null;
 	}
 
+	// Ämter des AKTUELLEN Lions-Jahres als read-only Labels (Pflege im Vorstandsbereich).
+	const cy = lionsStartYear(new Date());
+	const labelById = new Map(((amtRes.data ?? []) as AmtOption[]).map((a) => [a.id, a.label]));
+	const currentOffices = member.member_amt
+		.filter((x) => x.lions_year === cy)
+		.map((x) => labelById.get(x.amt_id))
+		.filter((l): l is string => !!l)
+		.sort((a, b) => a.localeCompare(b, 'de'));
+
 	return {
 		member,
 		photoUrl,
@@ -68,7 +78,6 @@ export const load: PageLoad = async ({ parent, params }) => {
 		canEditMaster,
 		canManageRoles: permissions.includes('manage_roles'),
 		canDelete: permissions.includes('delete_member'),
-		allAemter: (amtRes.data ?? []) as AmtOption[],
-		memberAmtIds: member.member_amt.map((x) => x.amt_id)
+		currentOffices
 	};
 };
