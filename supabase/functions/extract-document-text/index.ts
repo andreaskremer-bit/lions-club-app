@@ -34,9 +34,19 @@ async function extractDocx(bytes: Uint8Array): Promise<string> {
 		.trim();
 }
 
+// CORS: der Upload-Flow ruft die Function aus dem Browser (supabase.functions.invoke).
+// Ohne Preflight-Antwort + Header blockt der Browser den eigentlichen POST.
+const CORS = {
+	'Access-Control-Allow-Origin': '*',
+	'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+	'Access-Control-Allow-Methods': 'POST, OPTIONS'
+};
+
 Deno.serve(async (req) => {
+	if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+
 	const { id } = await req.json().catch(() => ({}));
-	if (!id) return new Response('id fehlt', { status: 400 });
+	if (!id) return new Response('id fehlt', { status: 400, headers: CORS });
 
 	const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
 
@@ -45,12 +55,13 @@ Deno.serve(async (req) => {
 		.select('id, file_path, mime_type, file_name')
 		.eq('id', id)
 		.maybeSingle();
-	if (!doc?.file_path) return new Response('Dokument oder Datei nicht gefunden', { status: 404 });
+	if (!doc?.file_path)
+		return new Response('Dokument oder Datei nicht gefunden', { status: 404, headers: CORS });
 
 	const { data: file, error: dlErr } = await supabase.storage
 		.from('documents')
 		.download(doc.file_path);
-	if (dlErr || !file) return new Response('Download fehlgeschlagen', { status: 500 });
+	if (dlErr || !file) return new Response('Download fehlgeschlagen', { status: 500, headers: CORS });
 
 	const bytes = new Uint8Array(await file.arrayBuffer());
 	const name = (doc.file_name ?? doc.file_path).toLowerCase();
@@ -73,6 +84,6 @@ Deno.serve(async (req) => {
 		.eq('id', id);
 
 	return new Response(JSON.stringify({ id, chars: text.length }), {
-		headers: { 'Content-Type': 'application/json' }
+		headers: { ...CORS, 'Content-Type': 'application/json' }
 	});
 });
