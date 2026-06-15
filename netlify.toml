@@ -5,5 +5,8 @@
   command = "npm run build"
   publish = "build"
 
+# Node 24: gleiche Version wie die lokal verifizierte (clean) Build-Umgebung.
+# Unter Node 22 brach der vite-pwa/SvelteKit-Service-Worker-Build auf Netlify ab
+# (output/client/service-worker.js wurde nicht rechtzeitig erzeugt -> swSrc ENOENT).
 [build.environment]
-  NODE_VERSION = "22"
+  NODE_VERSION = "24"
