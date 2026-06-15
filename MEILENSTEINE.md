@@ -132,4 +132,8 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 - **UI:** `/news` (Feed, angepinnt+neueste zuerst, Linkify via `src/lib/news.ts`), `/news/neu`, `/news/[id]/bearbeiten`; Startseiten-Button. `publish_content` verwaltet.
 - **Tests:** `news_rls_test.sql` (7 pgTAP) → **gesamt 67 pgTAP**; `news.test.ts` (4 Vitest, linkify) → 18 Unit; check/lint/build grün.
 
-**Offen:** Galerie-Link (Verlinkung Google-Share); Pro-Plan; OAuth2-Mailversand; M5/M6 aufs Remote pushen + Edge Functions deployen; M5/M6 scharfstellen (Go-live).
+**Galerie-Link — erledigt (2026-06-19)** — Spec §4.7: Verlinkung aufs bestehende geteilte Google-Drive (kein eigener Upload/Storage). `/galerie`-Seite (Beschreibung + Button „Galerie öffnen", externer Link via `window.open`) + Startseiten-Button. Ziel-URL aus Env `PUBLIC_GALLERY_URL` (`$env/dynamic/public`); leer = „noch nicht hinterlegt". Keine DB/Tests nötig.
+
+**M6-Inhalte damit komplett (Dokumente, News, Galerie).**
+
+**Offen (Go-live):** Pro-Plan; OAuth2-Mailversand; M5/M6-Migrationen aufs Remote pushen + Edge Functions deployen; `PUBLIC_GALLERY_URL` als Netlify-Env setzen; M5/M6 scharfstellen.

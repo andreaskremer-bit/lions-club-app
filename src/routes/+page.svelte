@@ -11,7 +11,8 @@
 		ArrowRight,
 		Bell,
 		FileText,
-		Newspaper
+		Newspaper,
+		Images
 	} from '@lucide/svelte';
 
 	let { data } = $props();
@@ -77,6 +78,12 @@
 		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/geburtstage'))}>
 			{#snippet iconLeft()}<Cake size={18} />{/snippet}
 			Geburtstage
+			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+		</Button>
+
+		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/galerie'))}>
+			{#snippet iconLeft()}<Images size={18} />{/snippet}
+			Galerie
 			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 		</Button>
 
