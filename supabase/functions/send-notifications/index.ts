@@ -37,6 +37,7 @@ type Notification = {
 	recipient_id: string;
 	event_id: string | null;
 	document_id: string | null;
+	news_post_id: string | null;
 	title: string;
 	body: string | null;
 	member: { email: string } | null;
@@ -56,7 +57,9 @@ function buildPayload(n: Notification) {
 			? `/termine/${n.event_id}`
 			: n.document_id
 				? '/dokumente'
-				: '/benachrichtigungen',
+				: n.news_post_id
+					? '/news'
+					: '/benachrichtigungen',
 		tag: n.id
 	});
 }
@@ -97,7 +100,9 @@ Deno.serve(async (req) => {
 
 	const { data: notes, error } = await supabase
 		.from('notification')
-		.select('id, recipient_id, event_id, document_id, title, body, member:recipient_id(email)')
+		.select(
+			'id, recipient_id, event_id, document_id, news_post_id, title, body, member:recipient_id(email)'
+		)
 		.is('sent_at', null)
 		.order('created_at', { ascending: true })
 		.limit(500);

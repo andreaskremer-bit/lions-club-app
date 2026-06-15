@@ -121,6 +121,7 @@
 	function open(n: (typeof data.notifications)[number]) {
 		if (n.event_id) goto(resolve('/termine/[id]', { id: n.event_id }));
 		else if (n.document_id) goto(resolve('/dokumente'));
+		else if (n.news_post_id) goto(resolve('/news'));
 	}
 
 	// --- Test-Trigger (nur manage_members) -------------------------------------
@@ -225,11 +226,15 @@
 		<div class="list">
 			{#each data.notifications as n (n.id)}
 				<button
-					class={['note', n.read_at ? '' : 'note--unread', n.event_id || n.document_id ? 'note--link' : '']
+					class={[
+						'note',
+						n.read_at ? '' : 'note--unread',
+						n.event_id || n.document_id || n.news_post_id ? 'note--link' : ''
+					]
 						.filter(Boolean)
 						.join(' ')}
 					onclick={() => open(n)}
-					disabled={!n.event_id && !n.document_id}
+					disabled={!n.event_id && !n.document_id && !n.news_post_id}
 				>
 					{#if !n.read_at}<span class="note__dot"></span>{/if}
 					<span class="note__main">

@@ -135,3 +135,12 @@ values
    'Gültige Vereinssatzung.', null,
    'satzung.pdf', 'application/pdf',
    'Satzung des Lions Club Bonn-Rheinaue. Zweck des Vereins ist die Foerderung gemeinnuetziger Zwecke und des buergerschaftlichen Engagements.');
+
+-- 10) Beispiel-News (M6) — Zeilenumbrüche + URL (testet Pre-Wrap + Linkify).
+insert into public.news_post (title, body, pinned, published_at) values
+  ('Sommerfest am 12. Juli',
+   E'Liebe Mitglieder,\n\nunser Sommerfest findet am 12. Juli im Clubhaus statt. Anmeldung über die Termine.\nInfos: https://lions-bonn-rheinaue.de',
+   true, now() - interval '2 days'),
+  ('Spendenübergabe Kinderhospiz',
+   'Wir haben 5.000 Euro an das Kinderhospiz übergeben. Herzlichen Dank an alle Helferinnen und Helfer.',
+   false, now() - interval '10 days');

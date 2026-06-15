@@ -10,7 +10,8 @@
 		BarChart3,
 		ArrowRight,
 		Bell,
-		FileText
+		FileText,
+		Newspaper
 	} from '@lucide/svelte';
 
 	let { data } = $props();
@@ -58,6 +59,12 @@
 		<Button fullWidth onclick={() => goto(resolve('/termine'))}>
 			{#snippet iconLeft()}<CalendarDays size={18} />{/snippet}
 			Termine
+			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+		</Button>
+
+		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/news'))}>
+			{#snippet iconLeft()}<Newspaper size={18} />{/snippet}
+			News
 			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 		</Button>
 

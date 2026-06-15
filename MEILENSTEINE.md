@@ -125,4 +125,11 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 - **Tests:** `document_rls_test.sql` (8 pgTAP: Lesen für alle, Schreiben/notify nur mit Recht, Gate, deutsche FTS) → **gesamt 60 pgTAP grün**. `check`/`lint`/Build grün.
 - **Go-live-Setup:** Edge Function deployen; Volltext-Extraktion läuft über Client-Invoke (kein DB-Webhook nötig). Optional alternativ DB-Webhook.
 
-**Offen:** News, Galerie-Link (Verlinkung Google-Share); Pro-Plan; OAuth2-Mailversand; M5/M6 scharfstellen (Go-live).
+**News — erledigt (2026-06-19)** — Vereinsnachrichten-Feed (Spec §4.5), Klartext mit Zeilenumbrüchen + automatisch verlinkten URLs.
+
+- **Schema** (`20260620120100_news.sql`): `news_post` (Titel, Text, `pinned`, `published_by`, `published_at`); RLS alle lesen / `publish_content` schreibt; Grants inkl. `service_role`.
+- **Benachrichtigung** (`…120200`/`…120300`): `notification_kind` `news` + `news_post_id` (Dedupe-Index erweitert); `notify_news()` (SECURITY DEFINER, Empfänger-Gate); Checkbox „Mitglieder benachrichtigen" beim Veröffentlichen. `send-notifications` + In-App-`open()` verlinken News.
+- **UI:** `/news` (Feed, angepinnt+neueste zuerst, Linkify via `src/lib/news.ts`), `/news/neu`, `/news/[id]/bearbeiten`; Startseiten-Button. `publish_content` verwaltet.
+- **Tests:** `news_rls_test.sql` (7 pgTAP) → **gesamt 67 pgTAP**; `news.test.ts` (4 Vitest, linkify) → 18 Unit; check/lint/build grün.
+
+**Offen:** Galerie-Link (Verlinkung Google-Share); Pro-Plan; OAuth2-Mailversand; M5/M6 aufs Remote pushen + Edge Functions deployen; M5/M6 scharfstellen (Go-live).
