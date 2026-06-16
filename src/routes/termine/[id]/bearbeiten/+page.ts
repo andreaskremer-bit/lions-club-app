@@ -6,6 +6,7 @@ export type EditEvent = {
 	id: string;
 	title: string;
 	type: EventType;
+	speaker: string | null;
 	location: string | null;
 	starts_at: string;
 	ends_at: string | null;
@@ -17,7 +18,9 @@ export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase } = await parent();
 	const { data } = await supabase
 		.from('event')
-		.select('id, title, type, location, starts_at, ends_at, description, reminder_days_before')
+		.select(
+			'id, title, type, speaker, location, starts_at, ends_at, description, reminder_days_before'
+		)
 		.eq('id', params.id)
 		.maybeSingle();
 	if (!data) throw error(404, 'Termin nicht gefunden');

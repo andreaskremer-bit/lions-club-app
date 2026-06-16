@@ -15,6 +15,7 @@ export type EventDetail = {
 	id: string;
 	title: string;
 	type: EventType;
+	speaker: string | null;
 	location: string | null;
 	starts_at: string;
 	ends_at: string | null;
@@ -47,13 +48,13 @@ export const load: PageLoad = async ({ parent, params }) => {
 		supabase
 			.from('event')
 			.select(
-				'id, title, type, location, starts_at, ends_at, description, companion_allowed, donation_required, event_response(id, member_id, status, comment, member(first_name, last_name), companion(id, name))'
+				'id, title, type, speaker, location, starts_at, ends_at, description, companion_allowed, donation_required, event_response(id, member_id, status, comment, member(first_name, last_name), companion(id, name))'
 			)
 			.eq('id', params.id)
 			.maybeSingle(),
 		supabase
 			.from('member')
-			.select('id')
+			.select('id, partner_first_name, partner_last_name')
 			.eq('user_id', user?.id ?? '')
 			.maybeSingle(),
 		supabase
@@ -74,9 +75,17 @@ export const load: PageLoad = async ({ parent, params }) => {
 	if (!eventRes.data) throw error(404, 'Termin nicht gefunden');
 
 	const event = eventRes.data as unknown as EventDetail;
+	const me = meRes.data as {
+		id: string;
+		partner_first_name: string | null;
+		partner_last_name: string | null;
+	} | null;
+	const partnerName =
+		[me?.partner_first_name, me?.partner_last_name].filter(Boolean).join(' ').trim() || null;
 	return {
 		event,
-		myMemberId: (meRes.data?.id ?? null) as string | null,
+		myMemberId: (me?.id ?? null) as string | null,
+		partnerName,
 		isPast: new Date(event.starts_at).getTime() < Date.now(),
 		questions: (qRes.data ?? []) as Question[],
 		myAnswers: (aRes.data ?? []) as unknown as MyAnswer[]

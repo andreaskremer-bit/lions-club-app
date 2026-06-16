@@ -28,6 +28,7 @@
 
 	let title = $state('');
 	let type = $state<EventType>('clubabend');
+	let speaker = $state('');
 	let location = $state('');
 	let locationTouched = $state(false);
 	let description = $state('');
@@ -127,6 +128,7 @@
 			.insert({
 				title: title.trim(),
 				type,
+				speaker: orNull(speaker),
 				location: orNull(location),
 				description: orNull(description),
 				starts_at: s.toISOString(),
@@ -220,6 +222,7 @@
 				bind:value={reminderDays}
 			/>
 			{#if mode === 'einzeln'}
+				<Input label="Referent/in (optional)" bind:value={speaker} />
 				<Input label="Beschreibung" multiline bind:value={description} />
 			{/if}
 		</Card>

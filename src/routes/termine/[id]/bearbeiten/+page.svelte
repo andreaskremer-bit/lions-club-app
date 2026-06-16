@@ -45,6 +45,7 @@
 
 	let title = $state(ev.title);
 	let type = $state<EventType>(ev.type);
+	let speaker = $state(ev.speaker ?? '');
 	let location = $state(ev.location ?? '');
 	let description = $state(ev.description ?? '');
 	let startDate = $state(s0.date);
@@ -86,6 +87,7 @@
 			.update({
 				title: title.trim(),
 				type,
+				speaker: orNull(speaker),
 				location: orNull(location),
 				description: orNull(description),
 				starts_at: start.toISOString(),
@@ -142,6 +144,7 @@
 						{#each typeOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
 					</select>
 				</label>
+				<Input label="Referent/in (optional)" bind:value={speaker} />
 				<Input label="Ort" bind:value={location} />
 				<div class="row">
 					<Input label="Datum (Beginn)" type="date" bind:value={startDate} class="d" />

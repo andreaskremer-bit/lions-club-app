@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, Card, Button, IconButton } from '$lib/components/ui';
+	import { AppBar, Button, IconButton } from '$lib/components/ui';
 	import {
 		LogOut,
 		Users,
@@ -16,9 +16,32 @@
 		Award
 	} from '@lucide/svelte';
 
+	import type { EventType } from './termine/+page';
+
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
-	let email = $derived(data.user?.email ?? '');
+
+	let nextEvent = $derived(data.nextEvent);
+	let latestNews = $derived(data.latestNews);
+
+	const typeLabel: Record<EventType, string> = {
+		clubabend: 'Club-Abend',
+		versammlung: 'Mitglieder-Versammlung',
+		reise: 'Club-Reise',
+		gesellig: 'Gesellig',
+		lions_termin: 'Lions-Termin'
+	};
+	const eventDateFmt = new Intl.DateTimeFormat('de-DE', {
+		weekday: 'short',
+		day: '2-digit',
+		month: 'long',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+	function newsSnippet(body: string): string {
+		const flat = body.replace(/\s+/g, ' ').trim();
+		return flat.length > 140 ? flat.slice(0, 140).trimEnd() + ' …' : flat;
+	}
 
 	let loading = $state(false);
 
@@ -49,14 +72,41 @@
 	</AppBar>
 
 	<main class="shell__body">
-		<Card>
-			<h2 class="welcome__h">Angemeldet</h2>
-			<p class="welcome__p">
-				Du bist als <strong>{email}</strong> angemeldet. Das Fundament (M0) steht: Design-System, self-hosted
-				Schriften, Supabase-Auth per E-Mail-Code.
-			</p>
-			<p class="welcome__hint">Die Module Termine, Mitglieder und mehr folgen ab M1.</p>
-		</Card>
+		<button
+			class="hero"
+			class:hero--empty={!nextEvent}
+			onclick={() =>
+				nextEvent
+					? goto(resolve('/termine/[id]', { id: nextEvent.id }))
+					: goto(resolve('/termine'))}
+		>
+			<span class="hero__eyebrow"><CalendarDays size={15} /> Nächster Termin</span>
+			{#if nextEvent}
+				<span class="hero__title">{nextEvent.title}</span>
+				<span class="hero__meta">{eventDateFmt.format(new Date(nextEvent.starts_at))} Uhr</span>
+				<span class="hero__tags">
+					<span class="hero__badge">{typeLabel[nextEvent.type]}</span>
+					{#if nextEvent.location}<span class="hero__loc">{nextEvent.location}</span>{/if}
+				</span>
+			{:else}
+				<span class="hero__meta">Aktuell ist kein kommender Termin geplant.</span>
+			{/if}
+		</button>
+
+		<button
+			class="hero"
+			class:hero--empty={!latestNews}
+			onclick={() =>
+				latestNews ? goto(resolve('/news/[id]', { id: latestNews.id })) : goto(resolve('/news'))}
+		>
+			<span class="hero__eyebrow"><Newspaper size={15} /> Neueste News</span>
+			{#if latestNews}
+				<span class="hero__title">{latestNews.title}</span>
+				<span class="hero__snippet">{newsSnippet(latestNews.body)}</span>
+			{:else}
+				<span class="hero__meta">Noch keine Nachrichten.</span>
+			{/if}
+		</button>
 
 		<Button fullWidth onclick={() => goto(resolve('/termine'))}>
 			{#snippet iconLeft()}<CalendarDays size={18} />{/snippet}
@@ -165,21 +215,63 @@
 		gap: var(--space-4);
 		padding: var(--screen-pad);
 	}
-	.welcome__h {
-		font-size: var(--text-lg);
-		margin-bottom: var(--space-2);
+	.hero {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		width: 100%;
+		text-align: left;
+		padding: var(--space-4);
+		background: var(--surface, #fff);
+		border: 1px solid var(--hairline, rgba(30, 79, 163, 0.16));
+		border-radius: var(--radius-lg, 14px);
+		cursor: pointer;
+		color: inherit;
+		font: inherit;
 	}
-	.welcome__p {
+	.hero--empty {
+		cursor: default;
+	}
+	.hero__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--lions-blue, #1e4fa3);
+	}
+	.hero__title {
+		font-size: var(--text-lg);
+		font-weight: 600;
+		color: var(--text-strong);
+		line-height: var(--leading-tight, 1.25);
+	}
+	.hero__meta {
+		font-size: var(--text-base);
+		color: var(--text-body);
+	}
+	.hero__snippet {
 		font-size: var(--text-base);
 		color: var(--text-body);
 		line-height: var(--leading-normal);
 	}
-	.welcome__p strong {
-		color: var(--text-strong);
+	.hero__tags {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-top: var(--space-1);
 	}
-	.welcome__hint {
+	.hero__badge {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--lions-blue, #1e4fa3);
+		background: rgba(30, 79, 163, 0.1);
+		padding: 2px 8px;
+		border-radius: 999px;
+	}
+	.hero__loc {
 		font-size: var(--text-sm);
 		color: var(--text-secondary);
-		margin-top: var(--space-3);
 	}
 </style>

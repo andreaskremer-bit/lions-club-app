@@ -90,21 +90,32 @@
 		await invalidateAll();
 	}
 
-	async function addCompanion() {
-		if (!myResponse || !newCompanion.trim() || busy) return;
+	async function insertCompanion(name: string) {
+		if (!myResponse || !name.trim() || busy) return;
 		busy = true;
 		err = '';
 		const { error } = await supabase
 			.from('companion')
-			.insert({ event_response_id: myResponse.id, name: newCompanion.trim() });
+			.insert({ event_response_id: myResponse.id, name: name.trim() });
 		busy = false;
 		if (error) {
 			err = error.message;
 			return;
 		}
-		newCompanion = '';
 		await invalidateAll();
 	}
+
+	async function addCompanion() {
+		const name = newCompanion.trim();
+		if (!name) return;
+		await insertCompanion(name);
+		if (!err) newCompanion = '';
+	}
+
+	// Partner aus dem Mitgliederprofil als Begleitung übernehmen (kein Doppel).
+	let partnerAdded = $derived(
+		!!data.partnerName && (myResponse?.companion ?? []).some((c) => c.name === data.partnerName)
+	);
 
 	async function removeCompanion(id: string) {
 		busy = true;
@@ -185,6 +196,7 @@
 	<main class="shell__body">
 		<header class="head">
 			<h1 class="head__title">{e.title}</h1>
+			{#if e.speaker}<p class="head__speaker">Referent/in: {e.speaker}</p>{/if}
 			<p class="head__when">{dateFmt.format(new Date(e.starts_at))} Uhr</p>
 			{#if e.location}<p class="head__loc">{e.location}</p>{/if}
 			<Tag tone="blue" outline>{typeLabel[e.type]}</Tag>
@@ -288,6 +300,17 @@
 						<p class="muted">Noch keine Begleitperson eingetragen.</p>
 					{/each}
 					{#if !data.isPast}
+						{#if data.partnerName && !partnerAdded}
+							<Button
+								variant="secondary"
+								fullWidth
+								disabled={busy}
+								onclick={() => insertCompanion(data.partnerName!)}
+							>
+								{#snippet iconLeft()}<UserPlus size={18} />{/snippet}
+								{data.partnerName} hinzufügen
+							</Button>
+						{/if}
 						<div class="comp-add">
 							<Input bind:value={newCompanion} placeholder="Name der Begleitperson" />
 							<Button
@@ -379,6 +402,12 @@
 	}
 	.head__title {
 		font-size: var(--text-xl);
+		margin: 0;
+	}
+	.head__speaker {
+		font-size: var(--text-base);
+		color: var(--text-strong);
+		font-weight: 600;
 		margin: 0;
 	}
 	.head__when {
