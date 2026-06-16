@@ -9,6 +9,7 @@
 	let { data } = $props();
 
 	const dayFmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long' });
+	const monthGroupFmt = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
 
 	type Row = BdayMember & BirthdayInfo;
 
@@ -17,6 +18,21 @@
 			.map((m) => ({ ...m, ...nextBirthdayInfo(m.birthday) }))
 			.sort((a, b) => a.days - b.days)
 	);
+
+	// Nach Monat des nächsten Geburtstags gruppieren (Reihenfolge bleibt erhalten).
+	let grouped = $derived.by(() => {
+		const groups: { key: string; label: string; rows: Row[] }[] = [];
+		for (const r of rows) {
+			const key = `${r.date.getFullYear()}-${r.date.getMonth()}`;
+			let g = groups.find((x) => x.key === key);
+			if (!g) {
+				g = { key, label: monthGroupFmt.format(r.date), rows: [] };
+				groups.push(g);
+			}
+			g.rows.push(r);
+		}
+		return groups;
+	});
 
 	function whenLabel(r: Row): string {
 		if (r.today) return 'heute';
@@ -35,28 +51,46 @@
 	</AppBar>
 
 	<main class="shell__body">
-		<div class="list">
-			{#each rows as r (r.id)}
-				<a class="bday" href={resolve('/mitglieder/[id]', { id: r.id })}>
-					<Avatar name={`${r.first_name} ${r.last_name}`} size="sm" />
-					<span class="bday__main">
-						<span class="bday__name">{r.first_name} {r.last_name}</span>
-						<span class="bday__date">{dayFmt.format(r.date)} · wird {r.turning}</span>
-					</span>
-					{#if r.today}
-						<Tag tone="gold" dot>heute</Tag>
-					{:else}
-						<span class="bday__in">{whenLabel(r)}</span>
-					{/if}
-				</a>
-			{:else}
-				<p class="empty">Keine Geburtstage hinterlegt.</p>
-			{/each}
-		</div>
+		{#each grouped as g (g.key)}
+			<div class="group">
+				<p class="month">{g.label}</p>
+				<div class="list">
+					{#each g.rows as r (r.id)}
+						<a class="bday" href={resolve('/mitglieder/[id]', { id: r.id })}>
+							<Avatar name={`${r.first_name} ${r.last_name}`} size="sm" />
+							<span class="bday__main">
+								<span class="bday__name">{r.first_name} {r.last_name}</span>
+								<span class="bday__date">{dayFmt.format(r.date)} · wird {r.turning}</span>
+							</span>
+							{#if r.today}
+								<Tag tone="gold" dot>heute</Tag>
+							{:else}
+								<span class="bday__in">{whenLabel(r)}</span>
+							{/if}
+						</a>
+					{/each}
+				</div>
+			</div>
+		{:else}
+			<p class="empty">Keine Geburtstage hinterlegt.</p>
+		{/each}
 	</main>
 </div>
 
 <style>
+	.group {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+	.month {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-secondary);
+		margin: 0;
+	}
 	.list {
 		display: flex;
 		flex-direction: column;
