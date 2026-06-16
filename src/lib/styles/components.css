@@ -686,10 +686,20 @@ textarea.lc-input {
 	height: 24px;
 	stroke-width: 1.9;
 }
+/* Kein globaler a:hover-Unterstrich auf Tabs (auch bei iOS-„klebrigem" Hover). */
 .lc-tabbar__item:hover {
-	color: var(--text-secondary);
+	text-decoration: none;
 }
-.lc-tabbar__item--active {
+/* Hover-Farbe nur auf echten Hover-Geräten und nur für NICHT-aktive Tabs —
+   sonst gewinnt :hover (höhere Spezifität) über --active und färbt den
+   aktiven Tab auf Touch-Geräten grau (iOS hält :hover nach dem Tap). */
+@media (hover: hover) {
+	.lc-tabbar__item:not(.lc-tabbar__item--active):hover {
+		color: var(--text-secondary);
+	}
+}
+.lc-tabbar__item--active,
+.lc-tabbar__item--active:hover {
 	color: var(--primary);
 }
 .lc-tabbar__item--active .lc-tabbar__icon svg {
