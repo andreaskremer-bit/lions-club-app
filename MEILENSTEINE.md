@@ -236,4 +236,18 @@ Durchsicht auf echten iPhones; je Punkt diagnostiziert → Freigabe → Fix → 
 - **Zurück-Ziele:** „Mehr"-Hub-Unterseiten (auswertung, benachrichtigungen, dokumente, galerie, geburtstage, vorstand, lions-export) zeigten Back→`/` → auf `/mehr` umgestellt (Konvention: Unterseite zurück zu ihrem Hub; Profil bleibt `/mitglieder`).
 - **AppBar-Höhe:** alle 5 Tab-Wurzeln jetzt `large` (vorher nur Termine/Mitglieder/News) → kein Höhensprung beim Tab-Wechsel; Drill-down-Seiten bleiben kompakt.
 - **Karten-Komponenten:** `src/lib/components/EventCard.svelte` + `NewsCard.svelte` extrahiert; Termine, News **und Startseite** nutzen sie identisch (Start: dieselben Karten statt eigener `.hero`-Kacheln; Loader holt RSVP/Aktiv-Zähler/News-Autor). Behebt zugleich einen toten Link (Start „Neueste News" → `/news`).
+- **Formular-Abstände:** Felder klebten am Feld darüber → `.lc-card > *+* { margin-top: space-5 }` + `.form`-Wrapper auf space-5.
+- **Geburtstage:** Monatstrenner wie bei Terminen (Mono-Header je Monat des nächsten Geburtstags).
 - Reine Frontend-Arbeit, kein DB-Push.
+
+## Infra: KeepAlive belastbar (erledigt 2026-06-16, Ziel = Free-Plan)
+
+Der externe KeepAlive (gegen Supabase-Free-7-Tage-Pause) lief „grün", aber mit **401** — das Repo-Secret `SUPABASE_ANON_KEY` enthielt den alten Legacy-Anon-JWT statt des aktuellen `sb_publishable_…`-Keys (beim Umstieg aufs neue Key-System deaktiviert). Nach Secret-Fix:
+
+- **Workflow gehärtet:** täglicher Cron (`0 6 * * *`), `::error::` + `exit 1` bei non-200 (statt stiller Warnung).
+- **Bulletproof-RPC:** Migration `20260621120300_keepalive_rpc.sql` — `public.keepalive()` (`select now()`, `security definer`, `grant execute to anon`). Workflow ruft `POST /rest/v1/rpc/keepalive` (apikey-only; **kein** `Authorization: Bearer` — Publishable-Key ist kein JWT) → echter DB-Roundtrip bis Postgres, sauberes 200, kein Datenzugriff. (Anon-REST gegen Tabellen liefert 401 — Grants nur `authenticated`.)
+- `keepalive_test.sql` (3 pgTAP) → **gesamt 85**. Remote per `db push` + Live-Curl (200) verifiziert.
+
+## Galerie — Umbau AUF HOLD (2026-06-16)
+
+Aktuelle Lösung (Link aufs geteilte Google-Drive) bleibt vorerst; geplanter Umbau auf einen In-App-Viewer mit Supabase Storage + reduzierten Bildern (Drive bleibt einzige Verwaltungs-Oberfläche, Sync via Service-Account/GitHub-Action) wartet auf interne Club-Klärung. Vollständiges Konzept inkl. Optionen: **`docs/galerie-konzept.md`**.
