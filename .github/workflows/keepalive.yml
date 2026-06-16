@@ -1,14 +1,10 @@
 name: Supabase Keep-alive
 
 # Hält das Supabase-Free-Tier-Projekt wach – es würde sonst nach 7 Tagen ohne
-# Zugriff pausiert. Ein täglicher Request an das Projekt genügt.
-#
-# Warum /auth/v1/health und nicht eine REST-Tabellenabfrage?
-#   Alle Tabellen sind per Grant/RLS nur für `authenticated` lesbar (gewollte
-#   Sicherheit). Eine anon-REST-Abfrage liefert daher 401 (permission denied),
-#   nicht 200. /auth/v1/health gibt mit gültigem Key sauber 200 zurück und
-#   validiert zugleich den Key (stale Key -> 401 wird erkannt).
-#   Für eine garantierte DB-Aktivität siehe RPC-Variante in der Doku/MEILENSTEINE.
+# Aktivität pausiert. Ruft täglich die RPC public.keepalive() (select now())
+# auf: ein echter DB-Roundtrip (geht bis Postgres durch), liefert sauberes 200
+# und greift auf KEINE Daten zu. Robuster als /auth/v1/health, das nur
+# Gateway/Auth erreicht.
 #
 # Benötigt zwei Repo-Secrets:
 #   SUPABASE_URL        – z. B. https://<ref>.supabase.co
@@ -24,17 +20,19 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping gegen Supabase
+      - name: Keep-alive-RPC gegen Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' \
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
             -H "apikey: $SUPABASE_ANON_KEY" \
-            "$SUPABASE_URL/auth/v1/health")
-          echo "Health-Ping HTTP $code"
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "$SUPABASE_URL/rest/v1/rpc/keepalive")
+          echo "Keep-alive-RPC HTTP $code"
           if [ "$code" != "200" ]; then
-            echo "::error::Keep-alive fehlgeschlagen (HTTP $code). 401 → Repo-Secret SUPABASE_ANON_KEY prüfen (aktueller sb_publishable_…-Key?); 5xx/000 → Projekt evtl. pausiert/reaktiviert gerade."
+            echo "::error::Keep-alive fehlgeschlagen (HTTP $code). 401 → Repo-Secret SUPABASE_ANON_KEY prüfen (aktueller sb_publishable_…-Key?); 404 → Migration keepalive_rpc nicht aufs Remote gepusht?; 5xx/000 → Projekt evtl. pausiert/reaktiviert gerade."
             exit 1
           fi
           echo "Projekt ist wach."
