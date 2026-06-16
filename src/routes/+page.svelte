@@ -73,8 +73,7 @@
 		<button
 			class="hero"
 			class:hero--empty={!latestNews}
-			onclick={() =>
-				latestNews ? goto(resolve('/news/[id]', { id: latestNews.id })) : goto(resolve('/news'))}
+			onclick={() => goto(resolve('/news'))}
 		>
 			<span class="hero__eyebrow"><Newspaper size={15} /> Neueste News</span>
 			{#if latestNews}
