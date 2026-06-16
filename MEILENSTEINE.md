@@ -217,3 +217,13 @@ Die vier Referenz-Komponenten gebaut, die noch fehlten — **Select, Checkbox, S
 - Reine Frontend-Arbeit, kein DB-Push. check/lint/prettier grün.
 
 **Damit ist der Design-„Lions 2.0"-Block komplett (Phasen 1–5).** Verbleibender Kleinkram: numerische Jahr-Selects (vorstand/auswertung) auf `Select` (string-basiert, Folge).
+
+## Design „Lions 2.0" — Feinschliff der Listen-Screens (erledigt 2026-06-16, LIVE)
+
+Abgleich gegen die Original-Mockups (`design-referenz`): die Listen-Screens waren noch flacher als gedacht. Drei Screens nachgezogen (je eigener Commit, per Screenshot gegen Mockup verifiziert):
+
+- **Gemeinsam:** große AppBar (`large` = fetter Serif-Titel + Mono-Eyebrow); Zurück-Pfeil von den Tab-Wurzeln entfernt; primäre AppBar-Aktion blau (`tone="primary"`).
+- **Mitglieder:** Eyebrow als Live-Zähler „X aktiv · Y gesamt"; Zeilen = großer getönter Avatar + Name + Amt + **Telefon/Mail-Schnellaktionen** (`tel:`/`mailto:`), Zeile→Profil; Status-Badge entfällt. Eigenes `.mrow` (keine ListRow-als-Link wegen verschachtelter Aktions-Links).
+- **Termine:** Liste/Kalender-Toggle als AppBar-Icon; **Monats-Gruppen**; Karten mit blauem **Datums-Chip** + Serif-Titel + Map-Pin + Ort·Zeit + Typ-/Status-Badge + **Icon-Zählern** ✓/✗/?.
+- **News:** Karten mit **Autor-Kopf** (Avatar + Name + Amt · relative Zeit) + Serif-Headline + Text. `news/+page.ts` lädt Autor (`published_by`) + Amt (LJ-Filter in JS). Kein Kategorie-Badge (bewusst, kein neues Feld). Feed zeigt vollen Text (keine News-Detailseite vorhanden).
+- Reine Frontend-Arbeit, kein DB-Push. check/lint/prettier grün.
