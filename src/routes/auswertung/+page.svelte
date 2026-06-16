@@ -1,21 +1,26 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Button, Card, Select } from '$lib/components/ui';
+	import type { SelectOption } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
 	import { lionsStartYear } from '$lib/dates';
 
 	let { data } = $props();
 
-	let selectedYear = $state(lionsStartYear(new Date()));
+	const yearLabel = (y: number) => `${y}/${y + 1}`;
+
+	// Select ist string-basiert: Auswahl als String halten, Lions-Jahr als Zahl ableiten.
+	let selectedYearValue = $state(String(lionsStartYear(new Date())));
+	let selectedYear = $derived(Number(selectedYearValue));
 
 	// Auswahl-Optionen aus dem Datenbestand (frühestes Termin-Jahr bis aktuelles Lions-Jahr).
-	let yearOptions = $derived.by(() => {
+	let yearOptions = $derived.by((): SelectOption[] => {
 		const current = lionsStartYear(new Date());
 		let min = current;
 		for (const e of data.events) min = Math.min(min, lionsStartYear(new Date(e.starts_at)));
-		const out: number[] = [];
-		for (let y = current; y >= min; y--) out.push(y);
+		const out: SelectOption[] = [];
+		for (let y = current; y >= min; y--) out.push({ value: String(y), label: yearLabel(y) });
 		return out;
 	});
 
@@ -51,7 +56,6 @@
 	});
 
 	let totalAbsences = $derived(rows.reduce((s, r) => s + r.abwesend, 0));
-	const yearLabel = (y: number) => `${y}/${y + 1}`;
 
 	function exportCsv() {
 		const head = ['Nachname', 'Vorname', 'Abwesenheiten', 'Anwesend', 'Erfasste Termine'];
@@ -86,14 +90,12 @@
 
 	<main class="shell__body">
 		<div class="controls">
-			<label class="year">
-				<span>Lions-Jahr</span>
-				<select bind:value={selectedYear}>
-					{#each yearOptions as y (y)}
-						<option value={y}>{yearLabel(y)}</option>
-					{/each}
-				</select>
-			</label>
+			<Select
+				label="Lions-Jahr"
+				options={yearOptions}
+				bind:value={selectedYearValue}
+				class="year"
+			/>
 			<Button variant="secondary" disabled={eventsInPeriod.length === 0} onclick={exportCsv}>
 				{#snippet iconLeft()}<Download size={18} />{/snippet}
 				CSV
@@ -138,21 +140,9 @@
 		justify-content: space-between;
 		gap: var(--space-3);
 	}
-	.year {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-		font-size: var(--text-sm);
-		color: var(--text-secondary);
-	}
-	.year select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
+	.controls :global(.year) {
+		flex: 0 0 auto;
+		min-width: 10rem;
 	}
 	.summary {
 		font-size: var(--text-sm);
