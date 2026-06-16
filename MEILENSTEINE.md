@@ -209,4 +209,11 @@ Die vier Referenz-Komponenten gebaut, die noch fehlten — **Select, Checkbox, S
 - **Bewusst inline gelassen**: numerische Jahr-Selects in `vorstand`/`auswertung` (Select ist string-basiert) — Folge-Aufgabe.
 - Reine Frontend-Arbeit, kein DB-Push. Per Screenshot verifiziert; check/lint/prettier grün.
 
-**Offene Folgephasen:** Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten).
+## Design „Lions 2.0" — Phase 4: CSS-Refactoring (erledigt 2026-06-16, LIVE) — Design-Block KOMPLETT
+
+- **`.shell`/`.shell__body`** waren in **25 Dateien byte-identisch dupliziert** → zentrale globale Definition in `components.css` (Default `gap: var(--space-4)`). Lokale Blöcke entfernt; **9 dichtere Listen-Seiten behalten nur eine `gap`-Override-Zeile** (space-3, benachrichtigungen space-2) — die Variation ist bewusst (Listen enger, Formulare luftiger).
+- **Netto −301 Zeilen / 26 Dateien.** Per Screenshot über alle Gap-Typen + die zwei Sonderfälle (mitglieder/neu, geburtstage) verifiziert — kein Spacing-Regress.
+- **Bewusst nicht gemacht:** `.hero`/`.post`/`.bday` in Komponenten ziehen — die sind *nicht* dupliziert (je eine CSS-Def, über Schleifen wiederverwendet bzw. 2× Startseite); Einzweck-Komponenten wären Umorganisation ohne Entdoppelung (YAGNI).
+- Reine Frontend-Arbeit, kein DB-Push. check/lint/prettier grün.
+
+**Damit ist der Design-„Lions 2.0"-Block komplett (Phasen 1–5).** Verbleibender Kleinkram: numerische Jahr-Selects (vorstand/auswertung) auf `Select` (string-basiert, Folge).

@@ -150,20 +150,6 @@
 </div>
 
 <style>
-	.shell {
-		display: flex;
-		flex-direction: column;
-		min-height: 100dvh;
-		max-width: var(--content-max);
-		margin: 0 auto;
-	}
-	.shell__body {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-4);
-		padding: var(--screen-pad);
-	}
 	.field__label {
 		font-size: var(--text-sm);
 		font-weight: 600;

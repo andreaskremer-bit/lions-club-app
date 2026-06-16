@@ -70,20 +70,6 @@
 </div>
 
 <style>
-	.shell {
-		display: flex;
-		flex-direction: column;
-		min-height: 100dvh;
-		max-width: var(--content-max);
-		margin: 0 auto;
-	}
-	.shell__body {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-4);
-		padding: var(--screen-pad);
-	}
 	.err {
 		color: var(--clay, #b4502f);
 		font-size: var(--text-base);

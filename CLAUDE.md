@@ -65,7 +65,7 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 
 Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-16):
 
-**M0–M6 + P1 + P2 + P2.1 + P3 + P4 + Design-2.0-Phase-1+2+3+5 (Bottom-Nav/IA + Branding/Emblem + Komponenten + WCAG-Politur) vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
+**M0–M6 + P1 + P2 + P2.1 + P3 + P4 + Design „Lions 2.0" KOMPLETT (Phasen 1–5: Bottom-Nav/IA + Branding/Emblem + Komponenten + WCAG-Politur + Shell-Refactoring) vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
 
 - **Live:** `https://app.lions-bonn-rheinaue.de` (Netlify, Club-Account, Auto-Deploy bei Push). OTP-Login über Club-Gmail-SMTP verifiziert; als PWA aufs iPhone installierbar.
 - **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260621120200` (P4) via `supabase db push` angewendet; Edge Functions `extract-document-text` + `send-notifications` deployed; Admin-Bootstrap `admin@example.com` = Präsident + Webmaster; remote nur Andreas `notifications_enabled=true`.
@@ -75,7 +75,7 @@ Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-16):
 - **Push-Reihenfolge (P2-Lehre):** Root-Layout fragt `member_amt.lions_year` auf JEDER Seite ab → bei schema-relevanten Migrationen **immer `supabase db push` ZUERST, dann `git push`**.
 - **`service_role`-Grant-Falle:** Edge Functions laufen als `service_role` — RLS-Bypass ersetzt NICHT die Tabellen-Grants. Bei neuen Tabellen, die eine Edge Function direkt liest/schreibt, immer auch `grant … to service_role` (sonst `permission denied 42501`).
 
-**Offener Backlog:** **Design „Lions 2.0"**: Phase 1 (Bottom-Nav/IA: globale TabBar Start/Termine/Mitglieder/News/Mehr, `/mehr`-Hub, verschlankte Startseite) + Phase 2 (Branding: echtes Lions-Emblem auf Login + Start-AppBar; PWA-Icons waren schon gebrandet) + Phase 5 (WCAG-AA: `--gold-700` #856010 statt #9a7218 für AA-konformen kleinen Gold-Text; C5-Datums-Chip war nie ein Problem) + Phase 3 (Komponenten Select/Checkbox/Switch/HintCard gebaut + in Formularen adoptiert) **erledigt+live**; offen Phase 4 CSS-Refactoring. (P3 Lions-Export & P4 Benachrichtigungs-Präferenzen erledigt; echtes Lions-Wiesbaden-Zielformat ggf. später aufmappen.)
+**Offener Backlog:** **Design „Lions 2.0"**: Phase 1 (Bottom-Nav/IA: globale TabBar Start/Termine/Mitglieder/News/Mehr, `/mehr`-Hub, verschlankte Startseite) + Phase 2 (Branding: echtes Lions-Emblem auf Login + Start-AppBar; PWA-Icons waren schon gebrandet) + Phase 5 (WCAG-AA: `--gold-700` #856010 statt #9a7218 für AA-konformen kleinen Gold-Text; C5-Datums-Chip war nie ein Problem) + Phase 3 (Komponenten Select/Checkbox/Switch/HintCard) + Phase 4 (Shell-CSS zentralisiert, −301 Zeilen Duplizierung) — **Design-Block komplett**. (P3 Lions-Export & P4 Benachrichtigungs-Präferenzen erledigt; echtes Lions-Wiesbaden-Zielformat + numerische Jahr-Selects als Kleinkram offen.)
 
 **Offen (echtes Go-live):** M5/M6 **scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`: alle aktiven Mitglieder `notifications_enabled=true`, `REMINDERS_ARMED=true` + VAPID-Private/SMTP-Secrets, pg_cron+pg_net) · **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
 
