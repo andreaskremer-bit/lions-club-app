@@ -32,7 +32,7 @@
 </script>
 
 <div class="shell">
-	<AppBar title="Bonn-Rheinaue" eyebrow="Lions Club" bordered>
+	<AppBar title="Bonn-Rheinaue" eyebrow="Lions Club" large bordered>
 		{#snippet leading()}
 			<img class="appbar-emblem" src="/icons/lions-emblem.png" alt="" />
 		{/snippet}

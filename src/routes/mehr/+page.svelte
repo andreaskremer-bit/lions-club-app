@@ -29,7 +29,7 @@
 </script>
 
 <div class="shell">
-	<AppBar title="Mehr" eyebrow="Übersicht" bordered />
+	<AppBar title="Mehr" eyebrow="Übersicht" large bordered />
 
 	<main class="shell__body">
 		{#if data.memberId}
