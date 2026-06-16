@@ -79,7 +79,7 @@
 <div class="shell">
 	<AppBar title="Dokumente" eyebrow="Ablage" bordered>
 		{#snippet leading()}
-			<IconButton label="Zurück" onclick={() => goto(resolve('/'))}>
+			<IconButton label="Zurück" onclick={() => goto(resolve('/mehr'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
 		{/snippet}

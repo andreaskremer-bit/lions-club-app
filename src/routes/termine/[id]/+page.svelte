@@ -464,10 +464,11 @@
 	}
 	.admin-actions {
 		display: flex;
-		gap: var(--space-3);
+		flex-direction: column;
+		gap: var(--space-2);
 	}
 	.admin-actions :global(.lc-btn) {
-		flex: 1;
+		width: 100%;
 	}
 	.q-block {
 		padding: var(--space-2) 0;

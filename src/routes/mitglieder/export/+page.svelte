@@ -25,7 +25,7 @@
 <div class="shell">
 	<AppBar title="Lions-Export" eyebrow="Mitglieder" bordered>
 		{#snippet leading()}
-			<IconButton label="Zurück" onclick={() => goto(resolve('/mitglieder'))}>
+			<IconButton label="Zurück" onclick={() => goto(resolve('/mehr'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
 		{/snippet}

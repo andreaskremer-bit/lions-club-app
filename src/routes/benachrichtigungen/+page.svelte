@@ -181,7 +181,7 @@
 <div class="shell">
 	<AppBar title="Benachrichtigungen" eyebrow="Aktuell" bordered>
 		{#snippet leading()}
-			<IconButton label="Zurück" onclick={() => goto(resolve('/'))}>
+			<IconButton label="Zurück" onclick={() => goto(resolve('/mehr'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
 		{/snippet}

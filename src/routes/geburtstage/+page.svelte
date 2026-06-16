@@ -28,7 +28,7 @@
 <div class="shell">
 	<AppBar title="Geburtstage" eyebrow="Mitglieder" bordered>
 		{#snippet leading()}
-			<IconButton label="Zurück" onclick={() => goto(resolve('/'))}>
+			<IconButton label="Zurück" onclick={() => goto(resolve('/mehr'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
 		{/snippet}
