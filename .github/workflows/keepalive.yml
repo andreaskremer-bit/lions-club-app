@@ -1,12 +1,23 @@
 name: Supabase Keep-alive
 
-# Hält das Supabase-Free-Tier-Projekt wach – es würde sonst nach 7 Tagen
-# ohne API-/DB-Zugriff pausiert. Ein kleiner REST-Call alle ~3 Tage genügt.
-# Benötigt zwei Repo-Secrets: SUPABASE_URL und SUPABASE_ANON_KEY.
+# Hält das Supabase-Free-Tier-Projekt wach – es würde sonst nach 7 Tagen ohne
+# Zugriff pausiert. Ein täglicher Request an das Projekt genügt.
+#
+# Warum /auth/v1/health und nicht eine REST-Tabellenabfrage?
+#   Alle Tabellen sind per Grant/RLS nur für `authenticated` lesbar (gewollte
+#   Sicherheit). Eine anon-REST-Abfrage liefert daher 401 (permission denied),
+#   nicht 200. /auth/v1/health gibt mit gültigem Key sauber 200 zurück und
+#   validiert zugleich den Key (stale Key -> 401 wird erkannt).
+#   Für eine garantierte DB-Aktivität siehe RPC-Variante in der Doku/MEILENSTEINE.
+#
+# Benötigt zwei Repo-Secrets:
+#   SUPABASE_URL        – z. B. https://<ref>.supabase.co
+#   SUPABASE_ANON_KEY   – der aktuelle PUBLIC-Key (sb_publishable_…),
+#                         NICHT der alte/deaktivierte Legacy-JWT (sonst 401).
 
 on:
   schedule:
-    - cron: '0 6 */3 * *' # alle ~3 Tage, 06:00 UTC
+    - cron: '0 6 * * *' # täglich 06:00 UTC (Puffer, falls GitHub einen Lauf auslässt)
   workflow_dispatch: {} # zusätzlich manuell auslösbar
 
 jobs:
@@ -18,13 +29,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          # auth/v1/health mit apikey liefert verlässlich 200 (unabhängig vom DB-Schema)
-          # und hält das Projekt wach.
           code=$(curl -s -o /dev/null -w '%{http_code}' \
             -H "apikey: $SUPABASE_ANON_KEY" \
             "$SUPABASE_URL/auth/v1/health")
           echo "Health-Ping HTTP $code"
           if [ "$code" != "200" ]; then
-            echo "::warning::Unerwarteter Status $code – Projekt evtl. pausiert oder reaktiviert gerade."
+            echo "::error::Keep-alive fehlgeschlagen (HTTP $code). 401 → Repo-Secret SUPABASE_ANON_KEY prüfen (aktueller sb_publishable_…-Key?); 5xx/000 → Projekt evtl. pausiert/reaktiviert gerade."
             exit 1
           fi
+          echo "Projekt ist wach."
