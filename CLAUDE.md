@@ -39,7 +39,7 @@ Mobile-first **PWA** zur Clubverwaltung (ersetzt die Avareto-LionsApp), ~34 Mitg
 
 - **Schriften self-hosten** (`@fontsource-variable/*`) — **niemals** Google-Fonts-CDN.
 - Daten in Supabase **EU / Irland (eu-west-1)**; **RLS** als technische Zugriffskontrolle; keine personenbezogenen Daten in URLs/Query-Strings.
-- **Logo:** offizielles Lions-Emblem ist markenrechtlich geschützt → ohne Club-Freigabe **nicht** einbauen. Aktuell „LC"-Monogramm als Platzhalter (`static/icons/monogram.svg`).
+- **Logo:** offizielles Lions-Emblem ist **vom Club freigegeben und in Nutzung** (`static/icons/lions-emblem.png`) — auf Login-Brand-Lockup + Start-AppBar; gemäß Marken-Vorgaben nicht umfärben/verzerren, genug Freiraum lassen. PWA-/App-Icons (`static/icons/pwa-*.png`, `favicon.png`) tragen es ebenfalls. Das „LC"-Monogramm (`static/icons/monogram.svg`) bleibt nur als kompakter Fallback.
 
 ## Befehle
 
@@ -65,7 +65,7 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 
 Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-16):
 
-**M0–M6 + P1 + P2 + P2.1 + P4 + Design-2.0-Phase-1 (Bottom-Nav/IA) vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
+**M0–M6 + P1 + P2 + P2.1 + P4 + Design-2.0-Phase-1+2 (Bottom-Nav/IA + Branding/Emblem) vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
 
 - **Live:** `https://app.lions-bonn-rheinaue.de` (Netlify, Club-Account, Auto-Deploy bei Push). OTP-Login über Club-Gmail-SMTP verifiziert; als PWA aufs iPhone installierbar.
 - **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260621120200` (P4) via `supabase db push` angewendet; Edge Functions `extract-document-text` + `send-notifications` deployed; Admin-Bootstrap `admin@example.com` = Präsident + Webmaster; remote nur Andreas `notifications_enabled=true`.
@@ -75,7 +75,7 @@ Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-16):
 - **Push-Reihenfolge (P2-Lehre):** Root-Layout fragt `member_amt.lions_year` auf JEDER Seite ab → bei schema-relevanten Migrationen **immer `supabase db push` ZUERST, dann `git push`**.
 - **`service_role`-Grant-Falle:** Edge Functions laufen als `service_role` — RLS-Bypass ersetzt NICHT die Tabellen-Grants. Bei neuen Tabellen, die eine Edge Function direkt liest/schreibt, immer auch `grant … to service_role` (sonst `permission denied 42501`).
 
-**Offener Backlog:** P3 Lions-Deutschland-Export (`export_lions` existiert, Feature fehlt) — **AUF HOLD** (Club klärt Bedarf intern) · **Design „Lions 2.0"**: Phase 1 (Bottom-Nav/IA: globale TabBar Start/Termine/Mitglieder/News/Mehr, `/mehr`-Hub, verschlankte Startseite) **erledigt+live**; offen Phase 2 Branding (echtes Lions-Emblem + PWA-Icons aus `design-referenz/assets`), Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard), Phase 4 CSS-Refactoring, Phase 5 Punchliste-Reste. (P4 Benachrichtigungs-Präferenzen erledigt.)
+**Offener Backlog:** P3 Lions-Deutschland-Export (`export_lions` existiert, Feature fehlt) — **AUF HOLD** (Club klärt Bedarf intern) · **Design „Lions 2.0"**: Phase 1 (Bottom-Nav/IA: globale TabBar Start/Termine/Mitglieder/News/Mehr, `/mehr`-Hub, verschlankte Startseite) + Phase 2 (Branding: echtes Lions-Emblem auf Login + Start-AppBar; PWA-Icons waren schon gebrandet) **erledigt+live**; offen Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard), Phase 4 CSS-Refactoring, Phase 5 Punchliste-Reste. (P4 Benachrichtigungs-Präferenzen erledigt.)
 
 **Offen (echtes Go-live):** M5/M6 **scharfstellen** (Go-live-Schalter, siehe `MEILENSTEINE.md`: alle aktiven Mitglieder `notifications_enabled=true`, `REMINDERS_ARMED=true` + VAPID-Private/SMTP-Secrets, pg_cron+pg_net) · **Supabase Pro-Plan** (Free pausiert nach 7 Tagen) + **OAuth2-Mailversand** (statt App-Passwort).
 

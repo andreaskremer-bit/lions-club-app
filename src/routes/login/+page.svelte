@@ -63,7 +63,7 @@
 <div class="login">
 	<div class="login__top">
 		<div class="brand">
-			<img class="brand__emblem" src="/icons/monogram.svg" alt="Lions Club Bonn-Rheinaue" />
+			<img class="brand__emblem" src="/icons/lions-emblem.png" alt="Lions Club Bonn-Rheinaue" />
 			<div class="brand__name">Lions Club<br />Bonn-Rheinaue</div>
 			<div class="brand__sub">We Serve</div>
 		</div>
@@ -144,8 +144,8 @@
 		text-align: center;
 	}
 	.brand__emblem {
-		width: 92px;
-		height: 92px;
+		width: 108px;
+		height: 108px;
 		object-fit: contain;
 		display: block;
 		margin: 0 auto 18px;

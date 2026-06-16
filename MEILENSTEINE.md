@@ -176,4 +176,13 @@ Großer Design-Block, **phasenweise** umgesetzt. Die inhaltlichen Punchliste-Pun
 - **Mehr-Icon:** zunächst Burger (`Menu`) → Nutzer erwartete eine Schublade. „Mehr = eigene Hub-Seite mit Liste" ist aber der Standard für Bottom-Tabs (referenztreu). Lösung: Icon `Menu`→`Ellipsis` („…"), Verhalten unverändert.
 - Reine Frontend-Arbeit, **keine Migration/kein DB-Push**. check/lint/Build grün; lokal gesichtet.
 
-**Offene Folgephasen:** Phase 2 Branding (echtes Lions-Emblem in AppBar/Login + PWA-Icons aus `design-referenz/assets`) · Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard) · Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten) · Phase 5 Punchliste-Reste (Datums-Chips „12.06.", WCAG-AA-Kontrast).
+## Design „Lions 2.0" — Phase 2: Branding / echtes Lions-Emblem (erledigt 2026-06-16, LIVE)
+
+- **App-/PWA-Icons** (`static/icons/pwa-192/512.png`, `pwa-maskable-512.png`, `favicon.png`) trugen das gebrandete Lions-Motiv bereits (byte-identisch mit `design-referenz/assets`) — kein Handlungsbedarf.
+- **Vollständiges Lions-Emblem** (`design-referenz/assets/lions-emblem.png`) nach `static/icons/lions-emblem.png` übernommen.
+- **Login-Brand-Lockup**: Emblem (108px) statt LC-Monogramm; Schriftzug + „We Serve" bleiben.
+- **Start-AppBar**: kleines Emblem (32px) als `leading`. Da der lange Titel + Emblem abschnitt (im Screenshot-Check gesehen), Header auf sauberes Lockup umgestellt: eyebrow „Lions Club" + title „Bonn-Rheinaue".
+- **CLAUDE.md**-Designregel nachgezogen: Logo **vom Club freigegeben & in Nutzung** (nicht mehr „Platzhalter/nicht einbauen"); Monogramm nur noch Fallback.
+- Reine Frontend-Arbeit, kein DB-Push. **Verifikation per Screenshot** (Playwright/Chromium gegen lokalen Dev, OTP-Login via Mailpit) — Login + Start bestätigt.
+
+**Offene Folgephasen:** Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard) · Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten) · Phase 5 Punchliste-Reste (Datums-Chips „12.06.", WCAG-AA-Kontrast).

@@ -32,7 +32,10 @@
 </script>
 
 <div class="shell">
-	<AppBar title="Lions Club Bonn-Rheinaue" eyebrow="Clubverwaltung" bordered>
+	<AppBar title="Bonn-Rheinaue" eyebrow="Lions Club" bordered>
+		{#snippet leading()}
+			<img class="appbar-emblem" src="/icons/lions-emblem.png" alt="" />
+		{/snippet}
 		{#snippet trailing()}
 			<button
 				class="bell"
@@ -85,6 +88,12 @@
 </div>
 
 <style>
+	.appbar-emblem {
+		width: 32px;
+		height: 32px;
+		object-fit: contain;
+		display: block;
+	}
 	.bell {
 		position: relative;
 		display: inline-flex;
