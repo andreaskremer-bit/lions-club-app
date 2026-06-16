@@ -3,7 +3,17 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, SegmentedControl, Tag, StatusBadge } from '$lib/components/ui';
 	import type { Status } from '$lib/components/ui';
-	import { ChevronLeft, ChevronRight, X, Plus } from '@lucide/svelte';
+	import {
+		ChevronLeft,
+		ChevronRight,
+		X,
+		Plus,
+		MapPin,
+		Check,
+		HelpCircle,
+		CalendarDays,
+		List as ListIcon
+	} from '@lucide/svelte';
 	import type { EventListItem, EventType } from './+page';
 
 	let { data } = $props();
@@ -15,10 +25,6 @@
 	];
 
 	let viewMode = $state<'liste' | 'kalender'>('liste');
-	const modeOptions = [
-		{ value: 'liste', label: 'Liste' },
-		{ value: 'kalender', label: 'Kalender' }
-	];
 
 	// ── Kalender ────────────────────────────────────────────────────────────────
 	const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -66,14 +72,19 @@
 		lions_termin: 'Lions-Termin'
 	};
 
-	const dateFmt = new Intl.DateTimeFormat('de-DE', {
-		weekday: 'short',
-		day: '2-digit',
-		month: 'long',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
-	const formatWhen = (iso: string) => dateFmt.format(new Date(iso)) + ' Uhr';
+	// Datums-Chip + Zeit.
+	const wdFmt = new Intl.DateTimeFormat('de-DE', { weekday: 'short' });
+	const moFmt = new Intl.DateTimeFormat('de-DE', { month: 'short' });
+	const monthGroupFmt = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
+	const chip = (iso: string) => {
+		const d = new Date(iso);
+		return {
+			wd: wdFmt.format(d).replace('.', '').toUpperCase(),
+			day: d.getDate(),
+			mo: moFmt.format(d).replace('.', '').slice(0, 3).toUpperCase(),
+			time: timeFmt.format(d)
+		};
+	};
 
 	let nameById = $derived(
 		new Map(data.members.map((m) => [m.id, `${m.first_name} ${m.last_name}`]))
@@ -107,6 +118,22 @@
 				return view === 'anstehend' ? ta - tb : tb - ta;
 			})
 	);
+
+	// Nach Monat gruppieren (Reihenfolge bleibt erhalten).
+	let grouped = $derived.by(() => {
+		const groups: { key: string; label: string; events: EventListItem[] }[] = [];
+		for (const e of list) {
+			const d = new Date(e.starts_at);
+			const key = `${d.getFullYear()}-${d.getMonth()}`;
+			let g = groups.find((x) => x.key === key);
+			if (!g) {
+				g = { key, label: monthGroupFmt.format(d), events: [] };
+				groups.push(g);
+			}
+			g.events.push(e);
+		}
+		return groups;
+	});
 
 	// ── Meldungen-Sheet ──────────────────────────────────────────────────────
 	let sheetEvent = $state<EventListItem | null>(null);
@@ -148,13 +175,16 @@
 <svelte:window onkeydown={(ev) => ev.key === 'Escape' && closeSheet()} />
 
 <div class="shell">
-	<AppBar title="Termine" eyebrow="Programm" bordered>
-		{#snippet leading()}
-			<IconButton label="Zurück" onclick={() => goto(resolve('/'))}>
-				{#snippet icon()}<ChevronLeft />{/snippet}
-			</IconButton>
-		{/snippet}
+	<AppBar title="Termine" eyebrow="Lions Club Bonn-Rheinaue" large bordered>
 		{#snippet trailing()}
+			<IconButton
+				label={viewMode === 'liste' ? 'Kalenderansicht' : 'Listenansicht'}
+				onclick={() => (viewMode = viewMode === 'liste' ? 'kalender' : 'liste')}
+			>
+				{#snippet icon()}
+					{#if viewMode === 'liste'}<CalendarDays />{:else}<ListIcon />{/if}
+				{/snippet}
+			</IconButton>
 			{#if data.permissions.includes('manage_events')}
 				<IconButton label="Termine planen" onclick={() => goto(resolve('/termine/planung'))}>
 					{#snippet icon()}<Plus />{/snippet}
@@ -164,41 +194,46 @@
 	</AppBar>
 
 	<main class="shell__body">
-		<SegmentedControl options={modeOptions} bind:value={viewMode} />
-
 		{#if viewMode === 'liste'}
 			<SegmentedControl options={viewOptions} bind:value={view} />
 
-			<div class="list">
-				{#each list as e (e.id)}
-					{@const c = counts(e)}
-					<div class="termin">
-						<button
-							class="termin__main"
-							onclick={() => goto(resolve('/termine/[id]', { id: e.id }))}
-						>
-							<div class="termin__row">
-								<span class="termin__title">{e.title}</span>
-								<StatusBadge status={ownStatus(e)} />
-							</div>
-							<div class="termin__when">
-								{formatWhen(e.starts_at)}{e.location ? ` · ${e.location}` : ''}
-							</div>
-							<div class="termin__type">
-								<Tag tone="blue" outline>{typeLabel[e.type]}</Tag>
-								<ChevronRight size={18} class="termin__chev" />
-							</div>
-						</button>
-						<button class="termin__counts" onclick={() => openSheet(e)}>
-							{c.zu} angemeldet · {c.ab} abgemeldet · {c.offen} offen
-						</button>
-					</div>
-				{:else}
-					<p class="empty">
-						{view === 'anstehend' ? 'Keine anstehenden Termine.' : 'Keine vergangenen Termine.'}
-					</p>
-				{/each}
-			</div>
+			{#each grouped as g (g.key)}
+				<p class="month">{g.label}</p>
+				<div class="list">
+					{#each g.events as e (e.id)}
+						{@const c = counts(e)}
+						{@const ch = chip(e.starts_at)}
+						<div class="ev">
+							<button class="ev__main" onclick={() => goto(resolve('/termine/[id]', { id: e.id }))}>
+								<span class="ev__chip">
+									<span class="ev__chip-wd">{ch.wd}</span>
+									<span class="ev__chip-day">{ch.day}</span>
+									<span class="ev__chip-mo">{ch.mo}</span>
+								</span>
+								<span class="ev__content">
+									<span class="ev__title">{e.title}</span>
+									<span class="ev__meta">
+										{#if e.location}<MapPin size={15} /> {e.location} · {/if}{ch.time}
+									</span>
+									<span class="ev__badges">
+										<Tag tone="blue">{typeLabel[e.type]}</Tag>
+										<StatusBadge status={ownStatus(e)} />
+									</span>
+								</span>
+							</button>
+							<button class="ev__counts" onclick={() => openSheet(e)} aria-label="Meldungen ansehen">
+								<span class="ev__c ev__c--yes"><Check size={16} /> {c.zu}</span>
+								<span class="ev__c ev__c--no"><X size={16} /> {c.ab}</span>
+								<span class="ev__c ev__c--open"><HelpCircle size={16} /> {c.offen}</span>
+							</button>
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p class="empty">
+					{view === 'anstehend' ? 'Keine anstehenden Termine.' : 'Keine vergangenen Termine.'}
+				</p>
+			{/each}
 		{:else}
 			<div class="cal__nav">
 				<IconButton label="Vorheriger Monat" onclick={() => shiftMonth(-1)}>
@@ -276,64 +311,122 @@
 	.shell__body {
 		gap: var(--space-3);
 	}
+	.month {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-secondary);
+		margin: var(--space-2) 0 0;
+	}
 	.list {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
 	}
-	.termin {
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
-		border-radius: var(--radius-md, 12px);
-		background: var(--surface, #fff);
-		overflow: hidden;
-	}
-	.termin__main {
+	.ev {
+		border: 1px solid var(--border-hairline);
+		border-radius: var(--radius-lg);
+		background: var(--surface-card);
+		padding: var(--space-4);
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-2);
+		gap: var(--space-3);
+	}
+	.ev__main {
+		display: flex;
+		gap: var(--space-3);
 		width: 100%;
-		padding: var(--space-3);
 		background: none;
 		border: none;
 		text-align: left;
 		cursor: pointer;
 		color: inherit;
 		font: inherit;
+		padding: 0;
 	}
-	.termin__row {
+	.ev__chip {
+		flex: none;
+		width: 56px;
 		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		padding: var(--space-2) 0;
+		background: var(--surface-blue);
+		border-radius: var(--radius-md);
+		color: var(--blue-700);
+	}
+	.ev__chip-wd,
+	.ev__chip-mo {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.04em;
+	}
+	.ev__chip-day {
+		font-size: var(--text-xl);
+		font-weight: var(--fw-bold);
+		line-height: 1;
+	}
+	.ev__content {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 		gap: var(--space-2);
+		min-width: 0;
 	}
-	.termin__title {
-		font-size: var(--text-base);
-		font-weight: 600;
+	.ev__title {
+		font-family: var(--font-display);
+		font-size: var(--text-lg);
+		font-weight: var(--fw-semibold);
 		color: var(--text-strong);
-		line-height: var(--leading-snug, 1.3);
+		line-height: var(--leading-tight);
 	}
-	.termin__when {
-		font-size: var(--text-sm);
-		color: var(--text-secondary);
-	}
-	.termin__type {
+	.ev__meta {
 		display: flex;
 		align-items: center;
-	}
-	.termin :global(.termin__chev) {
-		margin-left: auto;
-		color: var(--text-secondary);
-	}
-	.termin__counts {
-		width: 100%;
-		padding: var(--space-2) var(--space-3);
-		border: none;
-		border-top: 1px solid var(--hairline, rgba(0, 0, 0, 0.08));
-		background: var(--surface-sunken, rgba(0, 0, 0, 0.02));
-		text-align: left;
+		gap: 4px;
+		flex-wrap: wrap;
 		font-size: var(--text-sm);
 		color: var(--text-secondary);
+	}
+	.ev__meta :global(svg) {
+		flex: none;
+	}
+	.ev__badges {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: 2px;
+	}
+	.ev__counts {
+		display: flex;
+		gap: var(--space-4);
+		background: none;
+		border: none;
+		border-top: 1px solid var(--border-hairline);
+		padding: var(--space-3) 0 0;
 		cursor: pointer;
+		font: inherit;
+	}
+	.ev__c {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: var(--text-base);
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+	.ev__c--yes {
+		color: var(--status-yes-fg);
+	}
+	.ev__c--no {
+		color: var(--status-no-fg);
+	}
+	.ev__c--open {
+		color: var(--text-secondary);
 	}
 	.empty {
 		font-size: var(--text-base);
@@ -387,10 +480,10 @@
 		cursor: pointer;
 	}
 	.cal__day--today {
-		outline: 1px solid var(--gold, #b98a22);
+		outline: 1px solid var(--gold-600);
 	}
 	.cal__day--sel {
-		background: var(--lions-blue, #1e4fa3);
+		background: var(--primary);
 		color: #fff;
 	}
 	.cal__dot {
@@ -399,7 +492,7 @@
 		width: 5px;
 		height: 5px;
 		border-radius: 50%;
-		background: var(--lions-blue, #1e4fa3);
+		background: var(--primary);
 	}
 	.cal__day--sel .cal__dot {
 		background: #fff;
@@ -409,9 +502,9 @@
 		align-items: center;
 		gap: var(--space-3);
 		padding: var(--space-3);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
+		border: 1px solid var(--border-hairline);
 		border-radius: var(--radius-md, 12px);
-		background: var(--surface, #fff);
+		background: var(--surface-card);
 		text-decoration: none;
 		color: inherit;
 	}
@@ -442,10 +535,9 @@
 		z-index: 41;
 		max-width: var(--content-max);
 		margin: 0 auto;
-		background: var(--surface, #fff);
+		background: var(--surface-card);
 		border-radius: var(--radius-lg, 16px) var(--radius-lg, 16px) 0 0;
-		padding: var(--space-4) var(--screen-pad)
-			calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+		padding: var(--space-4) var(--screen-pad) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
