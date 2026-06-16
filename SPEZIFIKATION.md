@@ -28,7 +28,7 @@ Der Lions Club Bonn-Rheinaue nutzt heute die LionsApp von Avareto zur Mitglieder
 | ------------------ | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | App-Typ            | **PWA** (installierbare Web-App)                  | 90 % mobile Nutzung; Desktop automatisch mit abgedeckt; kein App-Store-Zwang                                                       |
 | Frontend           | **SvelteKit**                                     | Echtes App-Framework (SPA+SSR, Routing, Form-Actions, Auth-Hooks); technisch bester Fit für eine auth-geschützte, interaktive PWA  |
-| Backend/DB         | **Supabase (Region EU/Frankfurt)**                | Postgres + Auth + Row-Level-Security + Storage; AV-Vertrag abschließen                                                             |
+| Backend/DB         | **Supabase (Region EU / Irland, eu-west-1)**      | Postgres + Auth + Row-Level-Security + Storage; AV-Vertrag abschließen                                                             |
 | Hosting Frontend   | **Netlify** (DPF-zertifiziert)                    | EU-US Data Privacy Framework + AVV als Transfergrundlage; dort liegt auch das bestehende Lions-Projekt                             |
 | Benachrichtigungen | Web-Push (PWA) + E-Mail-Fallback                  | Reminder-Automatik statt Chat                                                                                                      |
 | Authentifizierung  | Supabase Auth — **E-Mail-OTP (6-stelliger Code)** | Umgeht das PWA-Link-Problem (Code wird in der App eingegeben); kostenlos. SMS verworfen (Kosten, US-Subprozessor, nicht sicherer). |
@@ -109,6 +109,7 @@ Der frühere Flag „offizieller Clubabend" entspricht damit **spendenpflichtig 
 ### 4.4 Benachrichtigungen & Reminder-Automatik — _Muss_
 
 - Web-Push über die PWA; E-Mail als Fallback für Nutzer ohne Push.
+- **Versandkanäle je Mitglied wählbar (P4):** Push / E-Mail / beide — **kein Voll-Opt-out**, In-App-Hinweise erhält jedes Mitglied immer. „beide“ = Push mit E-Mail-Fallback. Standard: beide.
 - **Automatische Reminder**, z. B.:
   - **3 Tage vor** einem Termin an alle, die **noch nicht** geantwortet haben (Vorlauf pro Termin überschreibbar). Hintergrund: rechtzeitige Teilnehmerzahl, z. B. für die Raumplanung des Club-Restaurants.
   - Erinnerung an den Vorstand zur Anwesenheitserfassung nach einem Clubabend.
@@ -170,7 +171,7 @@ Der frühere Flag „offizieller Clubabend" entspricht damit **spendenpflichtig 
 
 Datenhaltung ist Architekturtreiber, nicht Anhang.
 
-- **Datenhaltung EU/DE:** Supabase Region Frankfurt. **Hinweis (transparent):** Supabase Inc. ist ein US-Unternehmen; Daten liegen physisch in der EU, ein **AV-Vertrag (DPA)** ist abzuschließen. DSGVO-rechtlich verbleibt der bekannte US-Bezug (SCC/Cloud Act) — bewusst akzeptiert in der pragmatischen Variante.
+- **Datenhaltung EU:** Supabase Region EU / Irland (eu-west-1). **Hinweis (transparent):** Supabase Inc. ist ein US-Unternehmen; Daten liegen physisch in der EU, ein **AV-Vertrag (DPA)** ist abzuschließen. DSGVO-rechtlich verbleibt der bekannte US-Bezug (SCC/Cloud Act) — bewusst akzeptiert in der pragmatischen Variante.
 - **Frontend-Hosting:** **Netlify**. Netlify, Inc. ist nach dem **EU-US Data Privacy Framework** zertifiziert (gültige Transfergrundlage); zusätzlich **AVV/DPA** abschließen. Architektur-Empfehlung: personenbezogene Daten möglichst **clientseitig direkt mit Supabase (EU)** austauschen; SSR-Routen, die personenbezogene Daten über Netlify leiten, sparsam einsetzen.
 - **Rollen & Zugriffsschutz:** Row-Level-Security in Supabase; Mitglieder sehen nur, was ihre Rolle erlaubt.
 - **Foto-Einwilligung:** einfach gehalten — Galerie ist clubintern (nur Mitglieder), der Zugriff wird ausdrücklich gewünscht; Widerruf/Löschung einzelner Bilder möglich.
@@ -196,7 +197,7 @@ Datenhaltung ist Architekturtreiber, nicht Anhang.
 - **Export:** PDF + CSV.
 - **Magazine-Modul:** gestrichen.
 - **Fotogalerie:** vorerst Verlinkung auf bestehendes Google-Share.
-- **Hosting:** Netlify (DPF-zertifiziert) + AVV; Datenbank Supabase EU/Frankfurt.
+- **Hosting:** Netlify (DPF-zertifiziert) + AVV; Datenbank Supabase EU / Irland (eu-west-1).
 - **Clubgröße:** 34 Mitglieder.
 - Status „ausgetreten" entfällt; „Visitenkarte teilen" verworfen; Foto-Einwilligung einfach; Lions-interne Vorgaben nicht einschlägig.
 

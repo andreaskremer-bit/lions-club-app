@@ -1,14 +1,42 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { env } from '$env/dynamic/public';
-	import { AppBar, IconButton, Button } from '$lib/components/ui';
+	import { AppBar, IconButton, Button, SegmentedControl } from '$lib/components/ui';
 	import { pushSupported, subscriptionToRow, urlBase64ToUint8Array } from '$lib/push';
 	import { ChevronLeft } from '@lucide/svelte';
+	import type { NotificationChannel } from './+page';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
+
+	// --- Versandkanäle (P4) -----------------------------------------------------
+	let channel = $state<NotificationChannel>(untrack(() => data.channel));
+	let channelBusy = $state(false);
+	let channelError = $state<string | null>(null);
+	const channelOptions = [
+		{ value: 'push', label: 'Nur Push' },
+		{ value: 'email', label: 'Nur E-Mail' },
+		{ value: 'both', label: 'Beide' }
+	];
+
+	async function saveChannel(value: string) {
+		if (!data.memberId || channelBusy) return;
+		const prev = channel;
+		channel = value as NotificationChannel;
+		channelBusy = true;
+		channelError = null;
+		const { error } = await supabase
+			.from('member')
+			.update({ notification_channel: channel })
+			.eq('id', data.memberId);
+		channelBusy = false;
+		if (error) {
+			channel = prev; // bei Fehler zurücksetzen
+			channelError = 'Speichern fehlgeschlagen. Bitte erneut versuchen.';
+		}
+	}
 
 	// VAPID-Public-Key zur Laufzeit (Netlify-Env). Dynamic statt static, damit der
 	// Build nicht bricht, wenn die Variable (noch) nicht gesetzt ist.
@@ -199,6 +227,16 @@
 			{/if}
 
 			{#if pushError}<p class="push__error">{pushError}</p>{/if}
+		</section>
+
+		<section class="push">
+			<span class="push__title">Versandkanäle</span>
+			<p class="push__hint">
+				In-App-Hinweise bekommst du immer. Lege fest, wie du Erinnerungen zusätzlich erhalten
+				möchtest: „Beide“ schickt Push und nur dann E-Mail, wenn kein Gerät erreichbar ist.
+			</p>
+			<SegmentedControl options={channelOptions} value={channel} onchange={saveChannel} />
+			{#if channelError}<p class="push__error">{channelError}</p>{/if}
 		</section>
 
 		{#if canTrigger}

@@ -32,6 +32,8 @@ if (VAPID_PUBLIC && VAPID_PRIVATE) {
 	webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 }
 
+type Channel = 'push' | 'email' | 'both';
+
 type Notification = {
 	id: string;
 	recipient_id: string;
@@ -40,7 +42,7 @@ type Notification = {
 	news_post_id: string | null;
 	title: string;
 	body: string | null;
-	member: { email: string } | null;
+	member: { email: string; notification_channel: Channel } | null;
 };
 
 type Subscription = {
@@ -101,7 +103,7 @@ Deno.serve(async (req) => {
 	const { data: notes, error } = await supabase
 		.from('notification')
 		.select(
-			'id, recipient_id, event_id, document_id, news_post_id, title, body, member:recipient_id(email)'
+			'id, recipient_id, event_id, document_id, news_post_id, title, body, member:recipient_id(email, notification_channel)'
 		)
 		.is('sent_at', null)
 		.order('created_at', { ascending: true })
@@ -138,39 +140,53 @@ Deno.serve(async (req) => {
 
 		const subs = subsByMember.get(n.recipient_id) ?? [];
 
+		// P4 — bevorzugte Kanäle des Empfängers (Default both).
+		const channel: Channel = n.member?.notification_channel ?? 'both';
+		const wantsPush = channel === 'push' || channel === 'both';
+		const wantsEmail = channel === 'email' || channel === 'both';
+
 		if (!ARMED) {
 			// Dry-Run: nur protokollieren, nichts senden, sent_at NICHT setzen.
+			const plan = [
+				wantsPush ? `${subs.length} Push-Abo(s)` : null,
+				channel === 'email' ? 'E-Mail' : channel === 'both' ? 'E-Mail-Fallback' : null
+			]
+				.filter(Boolean)
+				.join(' + ');
 			console.log(
-				`[DRY-RUN] würde senden an ${email || n.recipient_id}: "${n.title}" ` +
-					`(${subs.length} Push-Abo(s)${subs.length ? '' : ', E-Mail-Fallback'})`
+				`[DRY-RUN] würde senden an ${email || n.recipient_id} [${channel}]: "${n.title}" (${plan})`
 			);
 			continue;
 		}
 
 		let delivered = false;
 
-		// 1) Web-Push an alle Abos des Empfängers.
-		for (const s of subs) {
-			try {
-				await webpush.sendNotification(
-					{ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-					buildPayload(n)
-				);
-				delivered = true;
-				result.push++;
-			} catch (e) {
-				const status = (e as { statusCode?: number }).statusCode;
-				// Abo ungültig geworden -> entfernen.
-				if (status === 404 || status === 410) {
-					await supabase.from('push_subscription').delete().eq('endpoint', s.endpoint);
-				} else {
-					console.error(`Push-Fehler an ${email}:`, e);
+		// 1) Web-Push an alle Abos des Empfängers (außer Kanal = nur E-Mail).
+		if (wantsPush) {
+			for (const s of subs) {
+				try {
+					await webpush.sendNotification(
+						{ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+						buildPayload(n)
+					);
+					delivered = true;
+					result.push++;
+				} catch (e) {
+					const status = (e as { statusCode?: number }).statusCode;
+					// Abo ungültig geworden -> entfernen.
+					if (status === 404 || status === 410) {
+						await supabase.from('push_subscription').delete().eq('endpoint', s.endpoint);
+					} else {
+						console.error(`Push-Fehler an ${email}:`, e);
+					}
 				}
 			}
 		}
 
-		// 2) E-Mail-Fallback, wenn kein Push zugestellt werden konnte.
-		if (!delivered && email) {
+		// 2) E-Mail: bei Kanal 'email' immer, bei 'both' nur als Fallback (kein Push
+		//    zugestellt), bei 'push' nie.
+		const emailNow = wantsEmail && email && (channel === 'email' || !delivered);
+		if (emailNow) {
 			try {
 				const ok = await sendEmail(email, n.title, n.body ?? n.title);
 				if (ok) {

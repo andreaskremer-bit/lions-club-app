@@ -147,3 +147,19 @@ Drei vom Club gewünschte Detailverbesserungen; Reihenfolge eingehalten (`supaba
 - **Startseite** (`/+page.svelte` + `/+page.ts`): zwei anklickbare Karten „Nächster Termin" (`starts_at >= now`, limit 1 → Detailseite) und „Neueste News" (pinned/published_at, limit 1 → Beitrag), je mit Leer-Zustand. Veraltete M0-Begrüßung entfernt.
 
 `npm run check` (0 Fehler) + ESLint grün. Migration via `supabase db push` aufs Remote angewendet, dann gepusht → Netlify-Auto-Deploy.
+
+## P4 – Benachrichtigungs-Präferenzen (erledigt 2026-06-16, LIVE)
+
+Versandkanal je Mitglied wählbar; **kein Voll-Opt-out** — In-App-Hinweise erhält jedes freigeschaltete Mitglied weiterhin immer (Empfänger-Gate `notifications_enabled`). Die neue Spalte steuert nur die externen Kanäle.
+
+- **Schema** (`20260621120200_notification_channel.sql`): Enum `notification_channel` (`push`/`email`/`both`) + Spalte `member.notification_channel` (Default `both`). Keine RLS-Änderung nötig: `member_update_self` erlaubt Selbstpflege, `protect_member_columns()` schützt nur Status/E-Mail/Konto (nicht diese Spalte).
+- **Versand** (`send-notifications`): liest `notification_channel` mit; `push` = nur Web-Push, `email` = nur E-Mail, `both` = Push mit E-Mail-Fallback (bisheriges Verhalten). Dry-Run-Log nennt den Kanal.
+- **UI** (`/benachrichtigungen`): Sektion „Versandkanäle" mit `SegmentedControl` (Nur Push / Nur E-Mail / Beide); lädt + speichert die eigene Wahl (optimistisch, Rollback bei Fehler).
+- **Tests:** `notification_channel_test.sql` (4 pgTAP: Default `both`, Self-Update erlaubt, nicht spaltengeschützt, Enum-Schranke) → **gesamt 82 pgTAP grün** (lokal verifiziert). check/lint grün.
+- **Deploy-Reihenfolge:** `supabase db push` → `supabase functions deploy send-notifications` → `git push`.
+
+**SPEZIFIKATION.md nachgezogen:** Region **eu-west-1 (Irland)** statt „Frankfurt" (3 Stellen); P4-Kanalwahl in §4.4 ergänzt. (Sekretär-Zusatzrechte `manage_roles`/`delete_member` standen bereits drin, Beschluss 2026-06-17.)
+
+## P3 – Lions-Deutschland-Export — AUF HOLD (2026-06-16)
+
+Recht `export_lions` existiert, Feature bewusst zurückgestellt. Der Club klärt intern, ob ein solcher Export überhaupt benötigt wird; erst danach (mit bestätigtem Zielformat) wieder aufnehmen.
