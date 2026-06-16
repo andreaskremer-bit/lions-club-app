@@ -10,3 +10,10 @@
 @import './tokens/spacing.css';
 @import './tokens/base.css';
 @import './components.css';
+
+/* App-Shell: liegt eine fixe Bottom-TabBar an (eingeloggt), bekommt die
+   Content-Spalte unten Luft, damit der letzte Eintrag nicht verdeckt wird.
+   Greift global, weil alle Seiten dasselbe `.shell__body`-Muster nutzen. */
+.has-tabbar .shell__body {
+	padding-bottom: calc(var(--tabbar-h) + var(--space-4) + env(safe-area-inset-bottom, 0px));
+}

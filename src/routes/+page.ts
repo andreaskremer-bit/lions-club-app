@@ -14,8 +14,7 @@ export const load: PageLoad = async ({ parent }) => {
 	const { supabase } = await parent();
 	const nowIso = new Date().toISOString();
 
-	const [unreadRes, eventRes, newsRes] = await Promise.all([
-		supabase.from('notification').select('id', { count: 'exact', head: true }).is('read_at', null),
+	const [eventRes, newsRes] = await Promise.all([
 		supabase
 			.from('event')
 			.select('id, title, type, location, starts_at')
@@ -33,7 +32,6 @@ export const load: PageLoad = async ({ parent }) => {
 	]);
 
 	return {
-		unread: unreadRes.count ?? 0,
 		nextEvent: (eventRes.data ?? null) as StartEvent | null,
 		latestNews: (newsRes.data ?? null) as NewsPost | null
 	};

@@ -1,25 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, Button, IconButton } from '$lib/components/ui';
-	import {
-		LogOut,
-		Users,
-		CalendarDays,
-		Cake,
-		BarChart3,
-		ArrowRight,
-		Bell,
-		FileText,
-		Newspaper,
-		Images,
-		Award
-	} from '@lucide/svelte';
+	import { AppBar } from '$lib/components/ui';
+	import { CalendarDays, Bell, Newspaper } from '@lucide/svelte';
 
 	import type { EventType } from './termine/+page';
 
 	let { data } = $props();
-	let supabase = $derived(data.supabase);
 
 	let nextEvent = $derived(data.nextEvent);
 	let latestNews = $derived(data.latestNews);
@@ -42,32 +29,19 @@
 		const flat = body.replace(/\s+/g, ' ').trim();
 		return flat.length > 140 ? flat.slice(0, 140).trimEnd() + ' …' : flat;
 	}
-
-	let loading = $state(false);
-
-	async function signOut() {
-		loading = true;
-		await supabase.auth.signOut();
-		await goto(resolve('/login'), { invalidateAll: true });
-	}
 </script>
 
 <div class="shell">
 	<AppBar title="Lions Club Bonn-Rheinaue" eyebrow="Clubverwaltung" bordered>
 		{#snippet trailing()}
-			<div class="appbar-actions">
-				<button
-					class="bell"
-					aria-label="Benachrichtigungen"
-					onclick={() => goto(resolve('/benachrichtigungen'))}
-				>
-					<Bell size={22} />
-					{#if data.unread > 0}<span class="bell__badge">{data.unread}</span>{/if}
-				</button>
-				<IconButton label="Abmelden" onclick={signOut} disabled={loading}>
-					{#snippet icon()}<LogOut />{/snippet}
-				</IconButton>
-			</div>
+			<button
+				class="bell"
+				aria-label="Benachrichtigungen"
+				onclick={() => goto(resolve('/benachrichtigungen'))}
+			>
+				<Bell size={22} />
+				{#if data.unread > 0}<span class="bell__badge">{data.unread}</span>{/if}
+			</button>
 		{/snippet}
 	</AppBar>
 
@@ -107,72 +81,10 @@
 				<span class="hero__meta">Noch keine Nachrichten.</span>
 			{/if}
 		</button>
-
-		<Button fullWidth onclick={() => goto(resolve('/termine'))}>
-			{#snippet iconLeft()}<CalendarDays size={18} />{/snippet}
-			Termine
-			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-		</Button>
-
-		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/news'))}>
-			{#snippet iconLeft()}<Newspaper size={18} />{/snippet}
-			News
-			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-		</Button>
-
-		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/mitglieder'))}>
-			{#snippet iconLeft()}<Users size={18} />{/snippet}
-			Mitgliederverzeichnis
-			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-		</Button>
-
-		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/geburtstage'))}>
-			{#snippet iconLeft()}<Cake size={18} />{/snippet}
-			Geburtstage
-			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-		</Button>
-
-		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/galerie'))}>
-			{#snippet iconLeft()}<Images size={18} />{/snippet}
-			Galerie
-			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-		</Button>
-
-		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/dokumente'))}>
-			{#snippet iconLeft()}<FileText size={18} />{/snippet}
-			Dokumente
-			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-		</Button>
-
-		{#if data.permissions.includes('view_donations')}
-			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/auswertung'))}>
-				{#snippet iconLeft()}<BarChart3 size={18} />{/snippet}
-				Auswertung (Schatzmeister)
-				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-			</Button>
-		{/if}
-
-		{#if data.permissions.includes('manage_roles')}
-			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/vorstand'))}>
-				{#snippet iconLeft()}<Award size={18} />{/snippet}
-				Vorstand & Ämter
-				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
-			</Button>
-		{/if}
-
-		<Button variant="secondary" fullWidth onclick={signOut} disabled={loading}>
-			{loading ? 'Abmelden …' : 'Abmelden'}
-			{#snippet iconRight()}<LogOut size={18} />{/snippet}
-		</Button>
 	</main>
 </div>
 
 <style>
-	.appbar-actions {
-		display: flex;
-		align-items: center;
-		gap: var(--space-1);
-	}
 	.bell {
 		position: relative;
 		display: inline-flex;

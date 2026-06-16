@@ -163,3 +163,17 @@ Versandkanal je Mitglied wählbar; **kein Voll-Opt-out** — In-App-Hinweise erh
 ## P3 – Lions-Deutschland-Export — AUF HOLD (2026-06-16)
 
 Recht `export_lions` existiert, Feature bewusst zurückgestellt. Der Club klärt intern, ob ein solcher Export überhaupt benötigt wird; erst danach (mit bestätigtem Zielformat) wieder aufnehmen.
+
+## Design „Lions 2.0" — Phase 1: App-Shell + Bottom-Navigation (erledigt 2026-06-16, LIVE)
+
+Großer Design-Block, **phasenweise** umgesetzt. Die inhaltlichen Punchliste-Punkte (Titel=Thema, Status+Zähler, Jahresplanung, Zusatzabfragen, keine Spenden-Hinweise) waren bereits erfüllt; offen war v. a. die **Navigations-/IA-Schicht**. Tokens sind seit Beginn 1:1 aus `design-referenz/` übernommen; die Komponente `TabBar.svelte` + `.lc-tabbar`-CSS existierten, wurden aber nicht genutzt.
+
+- **Globale Bottom-TabBar** (`src/routes/+layout.svelte`), **5 Tabs** (Nutzerentscheidung statt 4 referenztreu): **Start · Termine · Mitglieder · News · Mehr**. Nur eingeloggt & nicht auf `/login`; aktiver Tab aus dem Pfad (`$app/state`). Fix positioniert (`.app-tabbar`, zentriert auf Content-Breite); Hairline + Safe-Area kommen aus `.lc-tabbar`.
+- **Unread-Badge** auf „Mehr": `+layout.ts` lädt `unread` jetzt zentral (Tab-Badge auf jeder Seite korrekt); `+page.ts` bezieht es vom Parent.
+- **Bottom-Padding** global: `.has-tabbar .shell__body` in `app.css`, damit Inhalt nicht hinter der Bar verschwindet.
+- **Startseite verschlankt** (`/+page.svelte`): nur noch die zwei Dashboard-Karten + Glocke; lange Button-Liste entfernt.
+- **Neuer „Mehr"-Hub** (`src/routes/mehr/+page.svelte`): Mein Profil, Geburtstage, Dokumente, Galerie, Benachrichtigungen, rechte-gated Auswertung/Vorstand, **„Ausloggen"** (Punchliste C4 gleich erledigt).
+- **Mehr-Icon:** zunächst Burger (`Menu`) → Nutzer erwartete eine Schublade. „Mehr = eigene Hub-Seite mit Liste" ist aber der Standard für Bottom-Tabs (referenztreu). Lösung: Icon `Menu`→`Ellipsis` („…"), Verhalten unverändert.
+- Reine Frontend-Arbeit, **keine Migration/kein DB-Push**. check/lint/Build grün; lokal gesichtet.
+
+**Offene Folgephasen:** Phase 2 Branding (echtes Lions-Emblem in AppBar/Login + PWA-Icons aus `design-referenz/assets`) · Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard) · Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten) · Phase 5 Punchliste-Reste (Datums-Chips „12.06.", WCAG-AA-Kontrast).

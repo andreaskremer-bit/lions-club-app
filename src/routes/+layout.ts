@@ -50,5 +50,15 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		permissions = [...set];
 	}
 
-	return { supabase, session, user, memberId, permissions };
+	// Ungelesene Benachrichtigungen — zentral fürs TabBar-Badge auf jeder Seite.
+	let unread = 0;
+	if (user) {
+		const { count } = await supabase
+			.from('notification')
+			.select('id', { count: 'exact', head: true })
+			.is('read_at', null);
+		unread = count ?? 0;
+	}
+
+	return { supabase, session, user, memberId, permissions, unread };
 };
