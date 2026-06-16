@@ -46,7 +46,12 @@
 </script>
 
 <div class="shell">
-	<AppBar title="Mitglieder" eyebrow={`${aktivCount} aktiv · ${data.members.length} gesamt`} large bordered>
+	<AppBar
+		title="Mitglieder"
+		eyebrow={`${aktivCount} aktiv · ${data.members.length} gesamt`}
+		large
+		bordered
+	>
 		{#snippet trailing()}
 			{#if data.permissions.includes('manage_members')}
 				<IconButton

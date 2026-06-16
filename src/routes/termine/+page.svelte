@@ -213,7 +213,8 @@
 								<span class="ev__content">
 									<span class="ev__title">{e.title}</span>
 									<span class="ev__meta">
-										{#if e.location}<MapPin size={15} /> {e.location} · {/if}{ch.time}
+										{#if e.location}<MapPin size={15} /> {e.location} ·
+										{/if}{ch.time}
 									</span>
 									<span class="ev__badges">
 										<Tag tone="blue">{typeLabel[e.type]}</Tag>
@@ -221,7 +222,11 @@
 									</span>
 								</span>
 							</button>
-							<button class="ev__counts" onclick={() => openSheet(e)} aria-label="Meldungen ansehen">
+							<button
+								class="ev__counts"
+								onclick={() => openSheet(e)}
+								aria-label="Meldungen ansehen"
+							>
 								<span class="ev__c ev__c--yes"><Check size={16} /> {c.zu}</span>
 								<span class="ev__c ev__c--no"><X size={16} /> {c.ab}</span>
 								<span class="ev__c ev__c--open"><HelpCircle size={16} /> {c.offen}</span>
@@ -537,7 +542,8 @@
 		margin: 0 auto;
 		background: var(--surface-card);
 		border-radius: var(--radius-lg, 16px) var(--radius-lg, 16px) 0 0;
-		padding: var(--space-4) var(--screen-pad) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+		padding: var(--space-4) var(--screen-pad)
+			calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
