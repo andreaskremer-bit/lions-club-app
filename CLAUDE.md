@@ -21,7 +21,7 @@ Mobile-first **PWA** zur Clubverwaltung (ersetzt die Avareto-LionsApp), ~34 Mitg
 ## Projektstruktur
 
 - `src/lib/styles/` — `app.css` (Einstieg) importiert `tokens/*.css` + `components.css`. `fonts.ts` = self-hosted Schriften.
-- `src/lib/components/ui/` — Svelte-Komponenten (Button, IconButton, Card, Avatar, Tag, StatusBadge, Input, Select, Checkbox, Switch, HintCard, OtpInput, SegmentedControl, ListRow, TabBar, AppBar), Barrel `index.ts`.
+- `src/lib/components/ui/` — UI-Primitive (Button, IconButton, Card, Avatar, Tag, StatusBadge, Input, Select, Checkbox, Switch, HintCard, OtpInput, SegmentedControl, ListRow, TabBar, AppBar), Barrel `index.ts`. Komposite in `src/lib/components/` (`EventCard`, `NewsCard` — von Termine/News **und** Startseite genutzt; `AnswerField`).
 - `src/hooks.server.ts` — Supabase-Server-Client, `safeGetSession` (mit `getUser`-Validierung), Auth-Guard (→ `/login`).
 - `src/routes/+layout.ts` / `+layout.server.ts` — Client/Server-Supabase-Client + Session.
 - `src/routes/login/+page.svelte` — OTP-Flow. `src/routes/+page.svelte` — geschützte Startseite.
@@ -65,7 +65,7 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 
 Siehe persistentes Memory (`milestone-status`). Kurz (Stand 2026-06-16):
 
-**M0–M6 + P1 + P2 + P2.1 + P3 + P4 + Design „Lions 2.0" KOMPLETT (Phasen 1–5: Bottom-Nav/IA + Branding/Emblem + Komponenten + WCAG-Politur + Shell-Refactoring + Listen-Screen-Feinschliff mockup-treu) vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
+**M0–M6 + P1 + P2 + P2.1 + P3 + P4 + Design „Lions 2.0" KOMPLETT (Phasen 1–5: Bottom-Nav/IA + Branding/Emblem + Komponenten + WCAG-Politur + Shell-Refactoring + Listen-Screen-Feinschliff mockup-treu + Review-Korrekturen: alle Tab-Wurzeln große AppBar, geteilte EventCard/NewsCard auch auf Start, Mehr-Unterseiten Zurück→Mehr) vollständig & LIVE (M6: Dokumente, News, Galerie-Link; Versand NICHT scharfgestellt — Geheim-Phase), Prototyp LIVE.**
 
 - **Live:** `https://app.lions-bonn-rheinaue.de` (Netlify, Club-Account, Auto-Deploy bei Push). OTP-Login über Club-Gmail-SMTP verifiziert; als PWA aufs iPhone installierbar.
 - **Remote-Projekt** `qfxtyqippdrcrhwbkhwx` (EU/Irland): Migrationen bis `20260621120200` (P4) via `supabase db push` angewendet; Edge Functions `extract-document-text` + `send-notifications` deployed; Admin-Bootstrap `admin@example.com` = Präsident + Webmaster; remote nur Andreas `notifications_enabled=true`.

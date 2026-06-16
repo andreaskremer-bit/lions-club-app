@@ -227,3 +227,13 @@ Abgleich gegen die Original-Mockups (`design-referenz`): die Listen-Screens ware
 - **Termine:** Liste/Kalender-Toggle als AppBar-Icon; **Monats-Gruppen**; Karten mit blauem **Datums-Chip** + Serif-Titel + Map-Pin + Ort·Zeit + Typ-/Status-Badge + **Icon-Zählern** ✓/✗/?.
 - **News:** Karten mit **Autor-Kopf** (Avatar + Name + Amt · relative Zeit) + Serif-Headline + Text. `news/+page.ts` lädt Autor (`published_by`) + Amt (LJ-Filter in JS). Kein Kategorie-Badge (bewusst, kein neues Feld). Feed zeigt vollen Text (keine News-Detailseite vorhanden).
 - Reine Frontend-Arbeit, kein DB-Push. check/lint/prettier grün.
+
+## Design „Lions 2.0" — Review-Runde UX-Korrekturen (erledigt 2026-06-16, LIVE)
+
+Durchsicht auf echten iPhones; je Punkt diagnostiziert → Freigabe → Fix → Screenshot:
+
+- **Termin-Detail:** Verwaltungs-Buttons liefen rechts raus (horizontaler Flex ohne Umbruch) → vollbreit gestapelt (`.admin-actions { flex-direction: column }`).
+- **Zurück-Ziele:** „Mehr"-Hub-Unterseiten (auswertung, benachrichtigungen, dokumente, galerie, geburtstage, vorstand, lions-export) zeigten Back→`/` → auf `/mehr` umgestellt (Konvention: Unterseite zurück zu ihrem Hub; Profil bleibt `/mitglieder`).
+- **AppBar-Höhe:** alle 5 Tab-Wurzeln jetzt `large` (vorher nur Termine/Mitglieder/News) → kein Höhensprung beim Tab-Wechsel; Drill-down-Seiten bleiben kompakt.
+- **Karten-Komponenten:** `src/lib/components/EventCard.svelte` + `NewsCard.svelte` extrahiert; Termine, News **und Startseite** nutzen sie identisch (Start: dieselben Karten statt eigener `.hero`-Kacheln; Loader holt RSVP/Aktiv-Zähler/News-Autor). Behebt zugleich einen toten Link (Start „Neueste News" → `/news`).
+- Reine Frontend-Arbeit, kein DB-Push.
