@@ -160,9 +160,15 @@ Versandkanal je Mitglied wählbar; **kein Voll-Opt-out** — In-App-Hinweise erh
 
 **SPEZIFIKATION.md nachgezogen:** Region **eu-west-1 (Irland)** statt „Frankfurt" (3 Stellen); P4-Kanalwahl in §4.4 ergänzt. (Sekretär-Zusatzrechte `manage_roles`/`delete_member` standen bereits drin, Beschluss 2026-06-17.)
 
-## P3 – Lions-Deutschland-Export — AUF HOLD (2026-06-16)
+## P3 – Lions-Deutschland-Export (erledigt 2026-06-16, LIVE)
 
-Recht `export_lions` existiert, Feature bewusst zurückgestellt. Der Club klärt intern, ob ein solcher Export überhaupt benötigt wird; erst danach (mit bestätigtem Zielformat) wieder aufnehmen.
+Mitglieder-Export für die Meldung an Lions Deutschland (Wiesbaden). Entscheidung: **allgemeines CSV jetzt** (echtes Lions-Template später aufmappen), **alle Mitglieder inkl. inaktive**.
+
+- **Felder:** Pflicht (Titel/Vorname/Nachname/Status) + Kontakt (E-Mail/Festnetz/Mobil/Büro) + Adresse (Straße/PLZ/Ort) + Daten (Geburtstag/Eintritt). **Partner-Daten & Notizen bewusst ausgelassen** (DSGVO-Datensparsamkeit).
+- **Helfer** `src/lib/lionsExport.ts`: `buildMemberCsv` (Excel-tauglich, gequotet, CRLF), `formatDate` (DD.MM.YYYY), Status-Label, `exportFilename`. Tests `lionsExport.test.ts` (8 Vitest → gesamt 31 Vitest).
+- **Seite** `/mitglieder/export` (`+page.ts` lädt alle Mitglieder via Verzeichnis-RLS; `+page.svelte` gated `export_lions`, BOM im Blob für Umlaute). Link im „Mehr"-Hub gated `export_lions` (= Sekretär).
+- **Keine Migration/RLS-Änderung** (Verzeichnis-RLS erlaubt das Lesen ohnehin; Gate nur Feature-Ebene). Funktional per Playwright verifiziert (als Sekretär: Download liefert korrektes CSV, 8 Mitglieder, Header + Status-Labels + DD.MM.YYYY).
+- **Offen für später:** echtes Lions-Wiesbaden-Zielformat aufmappen, sobald die Spaltenvorgabe vorliegt.
 
 ## Design „Lions 2.0" — Phase 1: App-Shell + Bottom-Navigation (erledigt 2026-06-16, LIVE)
 

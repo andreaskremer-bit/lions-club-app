@@ -10,6 +10,7 @@
 		Bell,
 		BarChart3,
 		Award,
+		Download,
 		LogOut,
 		ArrowRight
 	} from '@lucide/svelte';
@@ -79,6 +80,14 @@
 			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/vorstand'))}>
 				{#snippet iconLeft()}<Award size={18} />{/snippet}
 				Vorstand & Ämter
+				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+			</Button>
+		{/if}
+
+		{#if permissions.includes('export_lions')}
+			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/mitglieder/export'))}>
+				{#snippet iconLeft()}<Download size={18} />{/snippet}
+				Lions-Export
 				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 			</Button>
 		{/if}
