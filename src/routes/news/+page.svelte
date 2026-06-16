@@ -105,7 +105,7 @@
 		min-width: 0;
 	}
 	.post__pin {
-		color: var(--gold, #b98a22);
+		color: var(--gold-700);
 		flex: none;
 	}
 	.post__title {

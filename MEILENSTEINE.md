@@ -185,4 +185,12 @@ Großer Design-Block, **phasenweise** umgesetzt. Die inhaltlichen Punchliste-Pun
 - **CLAUDE.md**-Designregel nachgezogen: Logo **vom Club freigegeben & in Nutzung** (nicht mehr „Platzhalter/nicht einbauen"); Monogramm nur noch Fallback.
 - Reine Frontend-Arbeit, kein DB-Push. **Verifikation per Screenshot** (Playwright/Chromium gegen lokalen Dev, OTP-Login via Mailpit) — Login + Start bestätigt.
 
-**Offene Folgephasen:** Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard) · Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten) · Phase 5 Punchliste-Reste (Datums-Chips „12.06.", WCAG-AA-Kontrast).
+## Design „Lions 2.0" — Phase 5: Punchliste-Reste / WCAG-AA (erledigt 2026-06-16, LIVE)
+
+- **C5 (Datums-Chip „1206.")**: in unserer App **nicht vorhanden** — alle Daten über `Intl.DateTimeFormat('de-DE', …)` mit echten Trennern („12. Juni", „Fr., 19. Juni um 21:00 Uhr"). War ein reiner Prototyp-Befund. Nichts zu tun.
+- **C6 (WCAG-AA-Kontrast)** exakt nachgerechnet (relative Luminanz): `text-secondary`/`text-muted` bestehen AA-normal überall (4.6–5.4:1). Einzige echte Verletzung: **`--gold-700` (#9a7218) = 3.89:1** für kleinen Text auf Creme → auf **#856010** abgedunkelt (jetzt ≥4.5:1 auf Creme/Card/Gold-100-Tint). Heller Akzent `--gold-600` (#b98a22, Punkte/Badges) bleibt — Gold-Identität erhalten.
+- News-`.post__pin`-Icon nutzte das helle `var(--gold, #b98a22)` (~2.8:1, kaputter Tokenverweis) → `var(--gold-700)`.
+- „Größe anheben": 11px-Mono-Eyebrows (`.lc-appbar__eyebrow`, Login `.brand__sub`) → `var(--text-xs)` (12px).
+- Reine Frontend/Token-Arbeit, kein DB-Push. Per Screenshot verifiziert (Login „WE SERVE" + Termine-Liste „Zugesagt"-Badge lesbar & weiterhin golden).
+
+**Offene Folgephasen:** Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard) · Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten).

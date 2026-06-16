@@ -28,7 +28,7 @@
 	--blue-50: #eef3fa; /* lightest tint bg */
 
 	/* ---- Lions Gold (accent — sparing) ---- */
-	--gold-700: #9a7218; /* text-on-light gold */
+	--gold-700: #856010; /* text-on-light gold — WCAG-AA auf Creme & Gold-Tint (>=4.5:1) */
 	--gold-600: #b98a22; /* accent */
 	--gold-400: #d2a847; /* lighter */
 	--gold-100: #f3e8cc; /* tint fill */

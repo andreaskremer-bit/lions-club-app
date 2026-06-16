@@ -635,7 +635,7 @@ textarea.lc-input {
 }
 .lc-appbar__eyebrow {
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: var(--text-xs);
 	letter-spacing: var(--tracking-label);
 	text-transform: uppercase;
 	color: var(--text-secondary);

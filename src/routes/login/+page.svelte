@@ -161,7 +161,7 @@
 	}
 	.brand__sub {
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: var(--text-xs);
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: var(--gold-700);
