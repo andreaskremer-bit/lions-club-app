@@ -176,7 +176,7 @@
 	.form {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-3);
+		gap: var(--space-5);
 	}
 	.muted {
 		font-size: var(--text-base);

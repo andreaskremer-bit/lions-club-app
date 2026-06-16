@@ -153,6 +153,13 @@
 	border-radius: var(--radius-md);
 	padding: var(--space-5);
 }
+/* Vertikaler Rhythmus zwischen gestapelten Karten-Kindern (v. a. Formularfelder):
+   klar größer als der Label→Eingabe-Abstand (space-2), damit jedes Label zu
+   seinem eigenen Feld gehört und nicht am Feld darüber „klebt". Kollabiert mit
+   vorhandenen Margins (z. B. Sektions-Überschriften) → kein doppelter Abstand. */
+.lc-card:not(.lc-card--flush) > * + * {
+	margin-top: var(--space-5);
+}
 .lc-card--lg {
 	border-radius: var(--radius-lg);
 	padding: var(--space-6);
