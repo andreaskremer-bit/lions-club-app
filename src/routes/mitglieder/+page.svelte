@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, ListRow, Avatar, Tag } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Switch, ListRow, Avatar, Tag } from '$lib/components/ui';
 	import { ChevronLeft, Search, UserPlus } from '@lucide/svelte';
 	import type { MemberListItem, MemberStatus } from './+page';
 
@@ -67,10 +67,7 @@
 			{#snippet icon()}<Search size={18} />{/snippet}
 		</Input>
 
-		<label class="show-inactive">
-			<input type="checkbox" bind:checked={showInactive} />
-			<span>Auch inaktive &amp; Ehrenmitglieder anzeigen</span>
-		</label>
+		<Switch label="Auch inaktive & Ehrenmitglieder anzeigen" bind:checked={showInactive} />
 
 		{#if data.loadError}
 			<p class="state state--error">Mitglieder konnten nicht geladen werden: {data.loadError}</p>
@@ -102,14 +99,6 @@
 </div>
 
 <style>
-	.show-inactive {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-		font-size: var(--text-sm);
-		color: var(--text-secondary);
-		min-height: 44px;
-	}
 	.shell {
 		display: flex;
 		flex-direction: column;

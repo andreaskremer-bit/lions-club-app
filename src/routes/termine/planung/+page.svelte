@@ -1,7 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card, SegmentedControl } from '$lib/components/ui';
+	import {
+		AppBar,
+		IconButton,
+		Input,
+		Select,
+		Button,
+		Card,
+		SegmentedControl,
+		HintCard
+	} from '$lib/components/ui';
 	import { ChevronLeft, Plus } from '@lucide/svelte';
 	import { seriesDates, type Rhythm, type EventType } from '$lib/dates';
 
@@ -183,12 +192,7 @@
 		<Card>
 			<h2 class="sec">Termin</h2>
 			<Input label="Titel (Programm/Thema)" bind:value={title} required />
-			<label class="field">
-				<span class="field__label">Typ</span>
-				<select bind:value={type}>
-					{#each typeOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-				</select>
-			</label>
+			<Select label="Typ" options={typeOptions} bind:value={type} />
 			<Input label="Ort" bind:value={location} oninput={() => (locationTouched = true)} />
 			<div class="row">
 				<Input label="Datum" type="date" bind:value={dateStr} class="d" />
@@ -212,7 +216,7 @@
 					/>
 				</div>
 			{:else}
-				<p class="hint">Clubabend/MV: Ende automatisch 2 Std. nach Beginn.</p>
+				<HintCard tone="info">Clubabend/MV: Ende automatisch 2 Std. nach Beginn.</HintCard>
 			{/if}
 			<Input
 				label="Erinnerung (Tage vorher)"
@@ -230,12 +234,7 @@
 		{#if mode === 'serie'}
 			<Card>
 				<h2 class="sec">Serie</h2>
-				<label class="field">
-					<span class="field__label">Rhythmus</span>
-					<select bind:value={rhythm}>
-						{#each rhythmOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-					</select>
-				</label>
+				<Select label="Rhythmus" options={rhythmOptions} bind:value={rhythm} />
 				<Input label="Anzahl Termine" type="number" min="1" max="52" bind:value={count} />
 				{#if previewDates.length}
 					<p class="grp">Vorschau ({previewDates.length})</p>
@@ -286,25 +285,6 @@
 		letter-spacing: 0.06em;
 		margin: 0 0 var(--space-3);
 	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.field__label {
-		font-size: var(--text-sm);
-		font-weight: 600;
-		color: var(--text-strong);
-	}
-	.field select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
-	}
 	.row {
 		display: flex;
 		gap: var(--space-3);
@@ -333,11 +313,6 @@
 	.err {
 		color: var(--clay, #b4502f);
 		font-size: var(--text-base);
-		margin: 0;
-	}
-	.hint {
-		font-size: var(--text-sm);
-		color: var(--text-secondary);
 		margin: 0;
 	}
 </style>

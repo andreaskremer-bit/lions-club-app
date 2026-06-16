@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Select, Checkbox, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Trash2, Plus } from '@lucide/svelte';
 	import type { QuestionType } from './+page';
 
@@ -119,12 +119,7 @@
 			<h2 class="sec">Neue Frage</h2>
 			<form onsubmit={addQuestion} class="form">
 				<Input label="Fragetext" bind:value={label} required />
-				<label class="field">
-					<span class="field__label">Typ</span>
-					<select bind:value={qtype}>
-						{#each typeOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-					</select>
-				</label>
+				<Select label="Typ" options={typeOptions} bind:value={qtype} />
 				{#if needsOptions}
 					<Input
 						label="Antwortoptionen (eine je Zeile)"
@@ -133,10 +128,7 @@
 						placeholder={optionsPlaceholder}
 					/>
 				{/if}
-				<label class="check">
-					<input type="checkbox" bind:checked={required} />
-					<span>Pflichtfrage</span>
-				</label>
+				<Checkbox label="Pflichtfrage" bind:checked={required} />
 				{#if err}<p class="err">{err}</p>{/if}
 				<Button type="submit" fullWidth disabled={busy}>
 					{#snippet iconLeft()}<Plus size={18} />{/snippet}
@@ -199,37 +191,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
-	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.field__label {
-		font-size: var(--text-sm);
-		font-weight: 600;
-		color: var(--text-strong);
-	}
-	.field select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
-	}
-	.check {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-		font-size: var(--text-base);
-		color: var(--text-strong);
-		min-height: 44px;
-	}
-	.check input {
-		width: 20px;
-		height: 20px;
 	}
 	.muted {
 		font-size: var(--text-base);

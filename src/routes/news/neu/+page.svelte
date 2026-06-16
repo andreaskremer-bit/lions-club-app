@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Checkbox, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Send } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -56,14 +56,8 @@
 		<Card>
 			<Input label="Titel" bind:value={title} required />
 			<Input label="Text" multiline bind:value={body} required />
-			<label class="check">
-				<input type="checkbox" bind:checked={pinned} />
-				<span>Oben anpinnen</span>
-			</label>
-			<label class="check">
-				<input type="checkbox" bind:checked={notify} />
-				<span>Mitglieder benachrichtigen</span>
-			</label>
+			<Checkbox label="Oben anpinnen" bind:checked={pinned} />
+			<Checkbox label="Mitglieder benachrichtigen" bind:checked={notify} />
 		</Card>
 
 		{#if err}<p class="err">{err}</p>{/if}
@@ -89,14 +83,6 @@
 		flex-direction: column;
 		gap: var(--space-4);
 		padding: var(--screen-pad);
-	}
-	.check {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-		min-height: 44px;
-		font-size: var(--text-base);
-		color: var(--text-strong);
 	}
 	.err {
 		color: var(--clay, #b4502f);

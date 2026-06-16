@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -12,6 +12,11 @@
 	let title = $state('');
 	let email = $state('');
 	let status = $state<'aktiv' | 'inaktiv' | 'ehrenmitglied'>('aktiv');
+	const statusOptions: { value: typeof status; label: string }[] = [
+		{ value: 'aktiv', label: 'aktiv' },
+		{ value: 'inaktiv', label: 'inaktiv' },
+		{ value: 'ehrenmitglied', label: 'Ehrenmitglied' }
+	];
 	let mobile = $state('');
 	let phone = $state('');
 	let phone_office = $state('');
@@ -83,14 +88,7 @@
 					required
 					hint="Login-Adresse; Einladung folgt separat."
 				/>
-				<label class="field">
-					<span class="field__label">Status</span>
-					<select bind:value={status}>
-						<option value="aktiv">aktiv</option>
-						<option value="inaktiv">inaktiv</option>
-						<option value="ehrenmitglied">Ehrenmitglied</option>
-					</select>
-				</label>
+				<Select label="Status" options={statusOptions} bind:value={status} />
 			</Card>
 
 			<Card>
@@ -135,25 +133,6 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		margin: 0 0 var(--space-3);
-	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.field__label {
-		font-size: var(--text-sm);
-		font-weight: 600;
-		color: var(--text-strong);
-	}
-	.field select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
 	}
 	.err {
 		color: var(--clay, #b4502f);

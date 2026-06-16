@@ -199,4 +199,14 @@ Großer Design-Block, **phasenweise** umgesetzt. Die inhaltlichen Punchliste-Pun
 - „Größe anheben": 11px-Mono-Eyebrows (`.lc-appbar__eyebrow`, Login `.brand__sub`) → `var(--text-xs)` (12px).
 - Reine Frontend/Token-Arbeit, kein DB-Push. Per Screenshot verifiziert (Login „WE SERVE" + Termine-Liste „Zugesagt"-Badge lesbar & weiterhin golden).
 
-**Offene Folgephasen:** Phase 3 fehlende Komponenten (Select/Checkbox/Switch/HintCard) · Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten).
+## Design „Lions 2.0" — Phase 3: fehlende Komponenten (erledigt 2026-06-16, LIVE)
+
+Die vier Referenz-Komponenten gebaut, die noch fehlten — **Select, Checkbox, Switch, HintCard** (Specs aus `design-referenz/components/{forms,feedback}/*.prompt.md`).
+
+- **CSS** als `.lc-select/.lc-check/.lc-switch/.lc-hint` in `components.css` (Referenz-CSS nutzt unsere Tokens). Svelte-5-Runes wie `Input.svelte`, Lucide-Icons, aus `index.ts` exportiert (`SelectOption`).
+- **Select generisch** (`generics="T extends string"`), damit `bind:value` an typisierte Unions (EventType/MemberStatus/QuestionType) bindbar bleibt. **Checkbox**: zwei statische Inputs (Svelte verbietet dynamisches `type` mit `bind:checked`).
+- **Adoptiert**: termine/planung (Typ+Rhythmus + Serie-Hinweis als HintCard), termine/[id]/bearbeiten, mitglieder/neu + [id]/bearbeiten (Status), mitglieder-Liste (show-inactive → Switch), news/neu + [id]/bearbeiten + dokumente/neu + [id]/bearbeiten (Selects + Checkbox-Opt-ins), termine/[id]/fragen. Viel totes `.field`/`.check`-CSS entfernt; `notify` (dokumente) als writable `$derived`.
+- **Bewusst inline gelassen**: numerische Jahr-Selects in `vorstand`/`auswertung` (Select ist string-basiert) — Folge-Aufgabe.
+- Reine Frontend-Arbeit, kein DB-Push. Per Screenshot verifiziert; check/lint/prettier grün.
+
+**Offene Folgephasen:** Phase 4 CSS-Refactoring (`.shell`/`.hero`/`.post`/`.bday` → zentrale Layout-Komponenten).

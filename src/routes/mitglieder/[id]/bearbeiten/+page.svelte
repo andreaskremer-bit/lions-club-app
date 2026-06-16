@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card, Avatar } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Select, Button, Card, Avatar } from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { MemberStatus } from '../../+page';
 
@@ -30,6 +30,11 @@
 	let partner_mobile = $state(init.partner_mobile ?? '');
 	// Status nur für Berechtigte
 	let status = $state<MemberStatus>(init.status);
+	const statusOptions: { value: MemberStatus; label: string }[] = [
+		{ value: 'aktiv', label: 'aktiv' },
+		{ value: 'inaktiv', label: 'inaktiv' },
+		{ value: 'ehrenmitglied', label: 'Ehrenmitglied' }
+	];
 
 	let saving = $state(false);
 	let uploading = $state(false);
@@ -174,14 +179,7 @@
 				<Input label="Nachname" bind:value={last_name} required />
 				<Input label="Geburtstag" type="date" bind:value={birthday} />
 				{#if data.canEditMaster}
-					<label class="field">
-						<span class="field__label">Status</span>
-						<select bind:value={status}>
-							<option value="aktiv">aktiv</option>
-							<option value="inaktiv">inaktiv</option>
-							<option value="ehrenmitglied">Ehrenmitglied</option>
-						</select>
-					</label>
+					<Select label="Status" options={statusOptions} bind:value={status} />
 				{/if}
 			</Card>
 
@@ -274,25 +272,6 @@
 	}
 	.row :global(.ort) {
 		flex: 1;
-	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.field__label {
-		font-size: var(--text-sm);
-		font-weight: 600;
-		color: var(--text-strong);
-	}
-	.field select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
 	}
 	.photo {
 		display: flex;

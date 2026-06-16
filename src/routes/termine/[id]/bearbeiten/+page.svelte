@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
 	import type { EventType } from '$lib/dates';
 
@@ -138,12 +138,7 @@
 		{:else}
 			<Card>
 				<Input label="Titel (Programm/Thema)" bind:value={title} required />
-				<label class="field">
-					<span class="field__label">Typ</span>
-					<select bind:value={type}>
-						{#each typeOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-					</select>
-				</label>
+				<Select label="Typ" options={typeOptions} bind:value={type} />
 				<Input label="Referent/in (optional)" bind:value={speaker} />
 				<Input label="Ort" bind:value={location} />
 				<div class="row">
@@ -189,25 +184,6 @@
 		flex-direction: column;
 		gap: var(--space-4);
 		padding: var(--screen-pad);
-	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
-	.field__label {
-		font-size: var(--text-sm);
-		font-weight: 600;
-		color: var(--text-strong);
-	}
-	.field select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
 	}
 	.row {
 		display: flex;

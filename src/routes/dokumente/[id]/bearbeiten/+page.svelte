@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
 	import {
 		categoryOptions,
@@ -26,6 +26,14 @@
 	let newFile = $state<File | null>(null);
 	let busy = $state(false);
 	let err = $state('');
+
+	let eventOptions = $derived([
+		{ value: '', label: '— keiner —' },
+		...data.events.map((ev) => ({
+			value: ev.id,
+			label: `${eventFmt.format(new Date(ev.starts_at))} · ${ev.title}`
+		}))
+	]);
 
 	const eventFmt = new Intl.DateTimeFormat('de-DE', {
 		day: '2-digit',
@@ -128,23 +136,10 @@
 		{:else}
 			<Card>
 				<Input label="Titel" bind:value={title} required />
-				<label class="field">
-					<span class="field__label">Kategorie</span>
-					<select bind:value={category}>
-						{#each categoryOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-					</select>
-				</label>
+				<Select label="Kategorie" options={categoryOptions} bind:value={category} />
 				<Input label="Datum (Bezug)" type="date" bind:value={docDate} />
 				<Input label="Beschreibung" multiline bind:value={description} />
-				<label class="field">
-					<span class="field__label">Termin (optional)</span>
-					<select bind:value={eventId}>
-						<option value="">— keiner —</option>
-						{#each data.events as ev (ev.id)}
-							<option value={ev.id}>{eventFmt.format(new Date(ev.starts_at))} · {ev.title}</option>
-						{/each}
-					</select>
-				</label>
+				<Select label="Termin (optional)" options={eventOptions} bind:value={eventId} />
 			</Card>
 
 			<Card>
@@ -181,24 +176,10 @@
 		gap: var(--space-4);
 		padding: var(--screen-pad);
 	}
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-	}
 	.field__label {
 		font-size: var(--text-sm);
 		font-weight: 600;
 		color: var(--text-strong);
-	}
-	.field select {
-		font-size: var(--text-base);
-		padding: var(--space-2);
-		border: 1px solid var(--hairline, rgba(0, 0, 0, 0.2));
-		border-radius: var(--radius-sm, 8px);
-		background: var(--surface, #fff);
-		color: var(--text-strong);
-		min-height: 44px;
 	}
 	.filepick {
 		display: flex;

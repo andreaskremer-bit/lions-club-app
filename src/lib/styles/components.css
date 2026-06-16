@@ -711,3 +711,240 @@ textarea.lc-input {
 	align-items: center;
 	justify-content: center;
 }
+
+/* ── Select ─────────────────────────────────────────────────────────────────
+   Natives <select> mit Feld-Styling + Custom-Chevron (Lions 2.0). */
+.lc-select-field {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+.lc-select {
+	appearance: none;
+	-webkit-appearance: none;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	color: var(--text-strong);
+	background: var(--surface-card);
+	border: 1px solid var(--border-field);
+	border-radius: var(--radius-md);
+	height: 48px;
+	width: 100%;
+	padding: 0 44px 0 var(--space-4);
+	cursor: pointer;
+	transition:
+		border-color var(--dur-fast) var(--ease-standard),
+		box-shadow var(--dur-fast) var(--ease-standard);
+}
+.lc-select:hover {
+	border-color: var(--border-strong);
+}
+.lc-select:focus {
+	outline: none;
+	border-color: var(--border-focus);
+	box-shadow: var(--focus-ring);
+}
+.lc-select__chev {
+	position: absolute;
+	right: var(--space-4);
+	pointer-events: none;
+	color: var(--text-secondary);
+	display: inline-flex;
+}
+.lc-select__chev svg {
+	width: 18px;
+	height: 18px;
+}
+
+/* ── Checkbox / Radio ───────────────────────────────────────────────────────
+   Eigenes Box-Styling, blaue Füllung wenn aktiv; optional Beschreibung. */
+.lc-check {
+	display: inline-flex;
+	align-items: flex-start;
+	gap: var(--space-3);
+	cursor: pointer;
+	user-select: none;
+}
+.lc-check__box {
+	flex: none;
+	width: 24px;
+	height: 24px;
+	margin-top: 1px;
+	border: 1.5px solid var(--border-field);
+	border-radius: var(--radius-xs);
+	background: var(--surface-card);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-on-primary);
+	transition:
+		background var(--dur-fast) var(--ease-standard),
+		border-color var(--dur-fast) var(--ease-standard);
+}
+.lc-check__box svg {
+	width: 16px;
+	height: 16px;
+	opacity: 0;
+	transform: scale(0.6);
+	transition:
+		opacity var(--dur-fast),
+		transform var(--dur-fast) var(--ease-out);
+}
+.lc-check input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+.lc-check input:checked + .lc-check__box {
+	background: var(--primary);
+	border-color: var(--primary);
+}
+.lc-check input:checked + .lc-check__box svg {
+	opacity: 1;
+	transform: scale(1);
+}
+.lc-check input:focus-visible + .lc-check__box {
+	box-shadow: var(--focus-ring);
+}
+.lc-check--radio .lc-check__box {
+	border-radius: var(--radius-pill);
+}
+.lc-check__dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--text-on-primary);
+	opacity: 0;
+	transform: scale(0.4);
+	transition:
+		opacity var(--dur-fast),
+		transform var(--dur-fast) var(--ease-out);
+}
+.lc-check--radio input:checked + .lc-check__box .lc-check__dot {
+	opacity: 1;
+	transform: scale(1);
+}
+.lc-check__text {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+.lc-check__label {
+	font-size: var(--text-base);
+	color: var(--text-strong);
+	font-weight: var(--fw-medium);
+	line-height: 1.35;
+}
+.lc-check__desc {
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+}
+
+/* ── Switch ─────────────────────────────────────────────────────────────────
+   Toggle für Einstellungen & Anwesenheit (tone="present" = Sage). */
+.lc-switch {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-3);
+	cursor: pointer;
+	user-select: none;
+}
+.lc-switch input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+.lc-switch__track {
+	position: relative;
+	width: 46px;
+	height: 28px;
+	flex: none;
+	background: var(--cream-300);
+	border-radius: var(--radius-pill);
+	transition: background var(--dur-normal) var(--ease-standard);
+}
+.lc-switch__thumb {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 22px;
+	height: 22px;
+	background: #fff;
+	border-radius: 50%;
+	box-shadow: var(--shadow-sm);
+	transition: transform var(--dur-normal) var(--ease-out);
+}
+.lc-switch input:checked + .lc-switch__track {
+	background: var(--primary);
+}
+.lc-switch input:checked + .lc-switch__track .lc-switch__thumb {
+	transform: translateX(18px);
+}
+.lc-switch input:focus-visible + .lc-switch__track {
+	box-shadow: var(--focus-ring);
+}
+.lc-switch input:disabled + .lc-switch__track {
+	opacity: 0.5;
+}
+.lc-switch--present input:checked + .lc-switch__track {
+	background: var(--present-dot);
+}
+.lc-switch__label {
+	font-size: var(--text-base);
+	color: var(--text-strong);
+	font-weight: var(--fw-medium);
+}
+
+/* ── HintCard ───────────────────────────────────────────────────────────────
+   Ruhiger Inline-Hinweis mit 4px-Farbstreifen links; nie laut. */
+.lc-hint {
+	display: flex;
+	gap: var(--space-3);
+	background: var(--surface-card);
+	border: 1px solid var(--border-hairline);
+	border-left: 4px solid var(--tone-accent, var(--border-strong));
+	border-radius: var(--radius-md);
+	padding: var(--space-4);
+}
+.lc-hint__icon {
+	flex: none;
+	color: var(--tone-accent);
+	margin-top: 1px;
+}
+.lc-hint__icon svg {
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+.lc-hint__body {
+	min-width: 0;
+}
+.lc-hint__title {
+	font-family: var(--font-sans);
+	font-weight: var(--fw-semibold);
+	font-size: var(--text-base);
+	color: var(--text-strong);
+	margin: 0 0 2px;
+}
+.lc-hint__text {
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	margin: 0;
+}
+.lc-hint--info {
+	--tone-accent: var(--blue-600);
+	background: var(--surface-blue);
+}
+.lc-hint--accent {
+	--tone-accent: var(--gold-600);
+	background: var(--surface-gold);
+}
+.lc-hint--warning {
+	--tone-accent: var(--clay-600);
+	background: var(--surface-clay);
+}
+.lc-hint--neutral {
+	--tone-accent: var(--border-strong);
+}
