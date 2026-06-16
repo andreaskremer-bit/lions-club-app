@@ -137,3 +137,13 @@ Kurze „erledigt / offen"-Notiz je Meilenstein (Lieferform laut HANDOFF.md).
 **M6-Inhalte damit komplett (Dokumente, News, Galerie).**
 
 **Offen (Go-live):** Pro-Plan; OAuth2-Mailversand; M5/M6-Migrationen aufs Remote pushen + Edge Functions deployen; `PUBLIC_GALLERY_URL` als Netlify-Env setzen; M5/M6 scharfstellen.
+
+## P2.1 – Kleinverbesserungen (erledigt 2026-06-16, LIVE, Commit `5be1b8b`)
+
+Drei vom Club gewünschte Detailverbesserungen; Reihenfolge eingehalten (`supabase db push` zuerst, dann `git push`).
+
+- **Partner als Begleitperson** (`/termine/[id]`): Button „<Partnername> hinzufügen" übernimmt den am Mitglied gepflegten Partner (`partner_first_name/last_name`) als `companion` — nur wenn ein Partner gepflegt ist, du zugesagt hast und er noch nicht eingetragen ist (kein Doppel). Freitext-Eingabe für sonstige Gäste bleibt. Keine Migration.
+- **Referent/in-Feld** `event.speaker` (Migration `20260621120100_event_speaker.sql`, nullable; keine RLS/Grant-Änderung): Eingabe „Referent/in (optional)" beim Anlegen (`/termine/planung`, nur Einzeltermin — bei Serien i. d. R. verschieden) und Bearbeiten; Anzeige unter dem Titel auf der Detailseite.
+- **Startseite** (`/+page.svelte` + `/+page.ts`): zwei anklickbare Karten „Nächster Termin" (`starts_at >= now`, limit 1 → Detailseite) und „Neueste News" (pinned/published_at, limit 1 → Beitrag), je mit Leer-Zustand. Veraltete M0-Begrüßung entfernt.
+
+`npm run check` (0 Fehler) + ESLint grün. Migration via `supabase db push` aufs Remote angewendet, dann gepusht → Netlify-Auto-Deploy.
