@@ -132,11 +132,22 @@
 		</Card>
 
 		<Card>
-			<span class="field__label">Datei</span>
-			<label class="filepick">
-				<input type="file" accept={ACCEPTED_FILE_TYPES} onchange={onFile} disabled={busy} />
-				<span>{file ? file.name : 'Datei wählen (PDF, Word, …)'}</span>
-			</label>
+			<div class="filepick">
+				<span class="filepick__label">Datei</span>
+				<label class="filepick__control">
+					<input
+						class="filepick__input"
+						type="file"
+						accept={ACCEPTED_FILE_TYPES}
+						onchange={onFile}
+						disabled={busy}
+					/>
+					<span class="filepick__btn">Datei wählen</span>
+					<span class="filepick__name" class:filepick__name--empty={!file}>
+						{file ? file.name : 'PDF, Word, … bis 20 MB'}
+					</span>
+				</label>
+			</div>
 			<Checkbox label="Mitglieder benachrichtigen" bind:checked={notify} />
 		</Card>
 
@@ -150,19 +161,77 @@
 </div>
 
 <style>
-	.field__label {
+	.filepick {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+	.filepick__label {
 		font-size: var(--text-sm);
 		font-weight: 600;
 		color: var(--text-strong);
 	}
-	.filepick {
+	.filepick__control {
 		display: flex;
 		align-items: center;
-		gap: var(--space-2);
-		min-height: 44px;
+		gap: var(--space-3);
+		min-height: 48px;
+		padding: var(--space-2) var(--space-3);
+		background: var(--surface-card);
+		border: 1px solid var(--border-field);
+		border-radius: var(--radius-md);
 		cursor: pointer;
+		transition:
+			border-color var(--dur-fast) var(--ease-standard),
+			box-shadow var(--dur-fast) var(--ease-standard);
+	}
+	.filepick__control:hover {
+		border-color: var(--border-strong);
+	}
+	.filepick__control:focus-within {
+		border-color: var(--border-focus);
+		box-shadow: var(--focus-ring);
+	}
+	.filepick__control:has(.filepick__input:disabled) {
+		opacity: 0.6;
+		cursor: default;
+	}
+	/* Natives File-Input visuell entfernen, aber fokussierbar lassen. */
+	.filepick__input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.filepick__btn {
+		flex: none;
+		display: inline-flex;
+		align-items: center;
+		height: 36px;
+		padding: 0 var(--space-4);
+		border-radius: var(--radius-sm);
+		background: var(--surface-fill);
+		border: 1px solid var(--border-field);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--text-strong);
+	}
+	.filepick__name {
+		min-width: 0;
+		flex: 1;
 		font-size: var(--text-base);
 		color: var(--text-body);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.filepick__name--empty {
+		color: var(--text-muted);
 	}
 	.err {
 		color: var(--clay, #b4502f);
