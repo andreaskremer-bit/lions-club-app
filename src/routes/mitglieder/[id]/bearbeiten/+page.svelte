@@ -28,8 +28,9 @@
 	let partner_birthday = $state(init.partner_birthday ?? '');
 	let partner_email = $state(init.partner_email ?? '');
 	let partner_mobile = $state(init.partner_mobile ?? '');
-	// Status nur für Berechtigte
+	// Status + Mitgliedsnummer nur für Berechtigte (Spaltenschutz-Trigger)
 	let status = $state<MemberStatus>(init.status);
+	let lions_member_no = $state(init.lions_member_no ?? '');
 	const statusOptions: { value: MemberStatus; label: string }[] = [
 		{ value: 'aktiv', label: 'aktiv' },
 		{ value: 'inaktiv', label: 'inaktiv' },
@@ -113,8 +114,11 @@
 			partner_email: orNull(partner_email),
 			partner_mobile: orNull(partner_mobile)
 		};
-		// Status darf nur mit edit_member_master geändert werden (sonst Spaltenschutz-Trigger).
-		if (data.canEditMaster) payload.status = status;
+		// Status + Mitgliedsnummer nur mit edit_member_master (sonst Spaltenschutz-Trigger).
+		if (data.canEditMaster) {
+			payload.status = status;
+			payload.lions_member_no = orNull(lions_member_no);
+		}
 
 		const { error: err } = await supabase.from('member').update(payload).eq('id', m.id);
 		saving = false;
@@ -180,6 +184,7 @@
 				<Input label="Geburtstag" type="date" bind:value={birthday} />
 				{#if data.canEditMaster}
 					<Select label="Status" options={statusOptions} bind:value={status} />
+					<Input label="Lions-Mitgliedsnummer" bind:value={lions_member_no} />
 				{/if}
 			</Card>
 

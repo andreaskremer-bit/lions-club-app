@@ -116,6 +116,12 @@
 		<Card>
 			<h2 class="sec">Im Club</h2>
 			<dl class="facts">
+				{#if m.lions_member_no}
+					<div>
+						<dt>Mitgliedsnummer</dt>
+						<dd>{m.lions_member_no}</dd>
+					</div>
+				{/if}
 				{#if formatDate(m.birthday)}
 					<div>
 						<dt>Geburtstag</dt>

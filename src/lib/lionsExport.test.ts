@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildMemberCsv, formatDate, exportFilename, type ExportMember } from './lionsExport';
 
 const base: ExportMember = {
+	lions_member_no: '1234567',
 	title: 'Dr.',
 	first_name: 'Anna',
 	last_name: 'Aktiv',

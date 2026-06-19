@@ -8,7 +8,7 @@ export const load: PageLoad = async ({ parent }) => {
 	const { data } = await supabase
 		.from('member')
 		.select(
-			'title, first_name, last_name, status, email, phone, mobile, phone_office, street, zip, city, birthday, joined_on'
+			'lions_member_no, title, first_name, last_name, status, email, phone, mobile, phone_office, street, zip, city, birthday, joined_on'
 		)
 		.order('last_name')
 		.order('first_name');

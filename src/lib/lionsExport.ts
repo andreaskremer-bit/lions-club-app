@@ -6,6 +6,7 @@
 export type MemberStatus = 'aktiv' | 'inaktiv' | 'ehrenmitglied';
 
 export type ExportMember = {
+	lions_member_no: string | null;
 	title: string | null;
 	first_name: string;
 	last_name: string;
@@ -28,6 +29,7 @@ const STATUS_LABEL: Record<MemberStatus, string> = {
 };
 
 const HEADERS = [
+	'Mitgliedsnummer',
 	'Titel',
 	'Vorname',
 	'Nachname',
@@ -57,6 +59,7 @@ function csvCell(v: string | null): string {
 
 function row(m: ExportMember): string {
 	return [
+		m.lions_member_no,
 		m.title,
 		m.first_name,
 		m.last_name,

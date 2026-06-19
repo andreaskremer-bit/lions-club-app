@@ -17,6 +17,7 @@
 		{ value: 'inaktiv', label: 'inaktiv' },
 		{ value: 'ehrenmitglied', label: 'Ehrenmitglied' }
 	];
+	let lions_member_no = $state('');
 	let mobile = $state('');
 	let phone = $state('');
 	let phone_office = $state('');
@@ -45,6 +46,7 @@
 				title: orNull(title),
 				email: email.trim(),
 				status,
+				lions_member_no: orNull(lions_member_no),
 				mobile: orNull(mobile),
 				phone: orNull(phone),
 				phone_office: orNull(phone_office),
@@ -89,6 +91,7 @@
 					hint="Login-Adresse; Einladung folgt separat."
 				/>
 				<Select label="Status" options={statusOptions} bind:value={status} />
+				<Input label="Lions-Mitgliedsnummer" bind:value={lions_member_no} />
 			</Card>
 
 			<Card>

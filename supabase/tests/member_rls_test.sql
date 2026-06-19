@@ -3,7 +3,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(17);
+select plan(19);
 
 -- Saubere Ausgangslage unabhängig vom Dev-Seed (wird durch rollback wiederhergestellt).
 -- auth.users cascaded auf member → member_amt/event_response/companion.
@@ -60,6 +60,14 @@ select throws_ok(
      where user_id = '00000000-0000-0000-0000-000000000001'::uuid $$,
   'P0001', null,
   'Mitglied kann eigenen Status NICHT ändern (Spaltenschutz)'
+);
+
+-- (4b) darf eigene Mitgliedsnummer NICHT ändern (Spaltenschutz)
+select throws_ok(
+  $$ update public.member set lions_member_no = '9999999'
+     where user_id = '00000000-0000-0000-0000-000000000001'::uuid $$,
+  'P0001', null,
+  'Mitglied kann eigene Mitgliedsnummer NICHT ändern (Spaltenschutz)'
 );
 
 -- (5) kann fremde Stammdaten NICHT ändern (0 Zeilen, bleibt unverändert)
@@ -126,6 +134,13 @@ select lives_ok(
 -- (13) hat edit_member_master
 select is(public.has_permission('edit_member_master'), true,
   'Sekretär hat edit_member_master');
+
+-- (13b) darf fremde Mitgliedsnummer setzen
+update public.member set lions_member_no = '1234567' where email = 'mitglied@example.com';
+select is(
+  (select lions_member_no from public.member where email = 'mitglied@example.com'),
+  '1234567', 'Sekretär darf fremde Mitgliedsnummer setzen'
+);
 
 -- ── Rolle: Webmaster (manage_roles, delete_member) ──────────────────────────
 reset role;
