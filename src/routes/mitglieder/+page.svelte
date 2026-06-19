@@ -17,27 +17,31 @@
 		return [m.title, m.first_name, m.last_name].filter(Boolean).join(' ');
 	}
 
-	/** Wichtigstes Amt (kleinste sort_order) als Objekt; sonst null. */
-	function topAmt(m: MemberListItem) {
-		return (
-			m.member_amt
-				.map((r) => r.amt)
-				.filter((a): a is NonNullable<typeof a> => !!a)
-				.sort((a, b) => a.sort_order - b.sort_order)[0] ?? null
-		);
+	/** Alle Ämter des aktuellen Lions-Jahres, nach sort_order. */
+	function amtList(m: MemberListItem) {
+		return m.member_amt
+			.map((r) => r.amt)
+			.filter((a): a is NonNullable<typeof a> => !!a)
+			.sort((a, b) => a.sort_order - b.sort_order);
 	}
-	/** Volles Amt für `title`/Suche; „Mitglied" wenn kein Amt. */
-	const amtFull = (m: MemberListItem) => topAmt(m)?.label ?? 'Mitglied';
+	/** Volle Amtsnamen für `title` (mehrere mit Komma); leer wenn keine. */
+	const amtTitle = (m: MemberListItem) =>
+		amtList(m)
+			.map((a) => a.label)
+			.join(', ');
+	/** Für die Suche: Name + alle vollen Amtsnamen (oder „Mitglied"). */
+	const amtFull = (m: MemberListItem) => amtTitle(m) || 'Mitglied';
 
 	/**
 	 * Untertitel: inaktive/Ehrenmitglieder haben keine Ämter → reines Status-Label.
-	 * Aktive zeigen nur ihr Amts-Kürzel (kein Amt ⇒ leer, „Mitglied" wird NICHT angezeigt).
+	 * Aktive zeigen ALLE Amts-Kürzel (mehrere mit „ · "; kein Amt ⇒ leer, kein „Mitglied").
 	 */
 	function roleLine(m: MemberListItem): string {
 		if (m.status === 'ehrenmitglied') return 'Ehrenmitglied';
 		if (m.status === 'inaktiv') return 'Mitglied (inaktiv)';
-		const a = topAmt(m);
-		return a ? (a.abbr ?? a.label) : '';
+		return amtList(m)
+			.map((a) => a.abbr ?? a.label)
+			.join(' · ');
 	}
 
 	const tel = (m: MemberListItem) => m.mobile || m.phone;
@@ -108,7 +112,7 @@
 									<span
 										class="mrow__role"
 										class:mrow__role--muted={m.status === 'inaktiv'}
-										title={topAmt(m)?.label}>{roleLine(m)}</span
+										title={amtTitle(m) || undefined}>{roleLine(m)}</span
 									>
 								{/if}
 							</span>
