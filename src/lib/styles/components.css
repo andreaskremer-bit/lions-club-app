@@ -409,6 +409,14 @@
 	border-color: var(--border-focus);
 	box-shadow: var(--focus-ring);
 }
+.lc-input:disabled {
+	background: var(--surface-fill);
+	color: var(--text-secondary);
+	cursor: not-allowed;
+}
+.lc-input:disabled:hover {
+	border-color: var(--border-field);
+}
 .lc-input--has-icon {
 	padding-left: 44px;
 }

@@ -26,6 +26,15 @@
 		return ämter[0]?.label ?? 'Mitglied';
 	}
 
+	/** Untertitel inkl. Status: Ehrenmitglied ersetzt „Mitglied", inaktiv als Zusatz. */
+	function roleLine(m: MemberListItem): string {
+		const amt = primaryAmt(m);
+		if (m.status === 'ehrenmitglied')
+			return amt === 'Mitglied' ? 'Ehrenmitglied' : `${amt} · Ehrenmitglied`;
+		if (m.status === 'inaktiv') return `${amt} (inaktiv)`;
+		return amt;
+	}
+
 	const tel = (m: MemberListItem) => m.mobile || m.phone;
 
 	// Dezente Avatar-Tönung (stabil je Mitglied) für etwas Farbe in der Liste.
@@ -90,7 +99,9 @@
 							/>
 							<span class="mrow__text">
 								<span class="mrow__name">{fullName(m)}</span>
-								<span class="mrow__role">{primaryAmt(m)}</span>
+								<span class="mrow__role" class:mrow__role--muted={m.status === 'inaktiv'}
+									>{roleLine(m)}</span
+								>
 							</span>
 						</button>
 						{#if tel(m)}
@@ -160,6 +171,9 @@
 	.mrow__role {
 		font-size: var(--text-sm);
 		color: var(--text-secondary);
+	}
+	.mrow__role--muted {
+		color: var(--text-muted);
 	}
 	.mrow__act {
 		flex: none;

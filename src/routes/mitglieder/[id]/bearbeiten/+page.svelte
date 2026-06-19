@@ -16,6 +16,7 @@
 	let title = $state(init.title ?? '');
 	let first_name = $state(init.first_name);
 	let last_name = $state(init.last_name);
+	let email = $state(init.email);
 	let phone = $state(init.phone ?? '');
 	let phone_office = $state(init.phone_office ?? '');
 	let mobile = $state(init.mobile ?? '');
@@ -95,6 +96,10 @@
 			error = 'Vor- und Nachname dürfen nicht leer sein.';
 			return;
 		}
+		if (data.canEditMaster && !email.trim()) {
+			error = 'E-Mail darf nicht leer sein.';
+			return;
+		}
 		saving = true;
 		error = '';
 		const payload: Record<string, unknown> = {
@@ -121,11 +126,28 @@
 		}
 
 		const { error: err } = await supabase.from('member').update(payload).eq('id', m.id);
-		saving = false;
 		if (err) {
+			saving = false;
 			error = 'Speichern fehlgeschlagen: ' + err.message;
 			return;
 		}
+
+		// E-Mail (Verzeichnis + Login) synchron über die Server-Route — nur bei Änderung.
+		if (data.canEditMaster && email.trim().toLowerCase() !== init.email.toLowerCase()) {
+			const res = await fetch(`/api/mitglieder/${m.id}/email`, {
+				method: 'PATCH',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ email: email.trim() })
+			});
+			if (!res.ok) {
+				saving = false;
+				const b = await res.json().catch(() => ({}));
+				error = b?.message ?? 'E-Mail ändern fehlgeschlagen.';
+				return;
+			}
+		}
+
+		saving = false;
 		await goto(resolve('/mitglieder/[id]', { id: m.id }), { invalidateAll: true });
 	}
 
@@ -181,6 +203,14 @@
 				<Input label="Titel" bind:value={title} placeholder="z. B. Dr." />
 				<Input label="Vorname" bind:value={first_name} required />
 				<Input label="Nachname" bind:value={last_name} required />
+				<Input
+					label="E-Mail"
+					type="email"
+					bind:value={email}
+					required={data.canEditMaster}
+					disabled={!data.canEditMaster}
+					hint={data.canEditMaster ? undefined : 'Nur durch berechtigte Ämter änderbar.'}
+				/>
 				<Input label="Geburtstag" type="date" bind:value={birthday} />
 				{#if data.canEditMaster}
 					<Select label="Status" options={statusOptions} bind:value={status} />
