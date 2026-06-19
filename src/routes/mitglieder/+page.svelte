@@ -17,18 +17,26 @@
 		return [m.title, m.first_name, m.last_name].filter(Boolean).join(' ');
 	}
 
-	/** Wichtigstes Amt (kleinste sort_order) als Untertitel; sonst „Mitglied". */
-	function primaryAmt(m: MemberListItem): string {
-		const ämter = m.member_amt
-			.map((r) => r.amt)
-			.filter((a): a is NonNullable<typeof a> => !!a)
-			.sort((a, b) => a.sort_order - b.sort_order);
-		return ämter[0]?.label ?? 'Mitglied';
+	/** Wichtigstes Amt (kleinste sort_order) als Objekt; sonst null. */
+	function topAmt(m: MemberListItem) {
+		return (
+			m.member_amt
+				.map((r) => r.amt)
+				.filter((a): a is NonNullable<typeof a> => !!a)
+				.sort((a, b) => a.sort_order - b.sort_order)[0] ?? null
+		);
 	}
+	/** Geschlechtsneutrales Kürzel fürs Anzeigen (abbr → label → „Mitglied"). */
+	const amtShort = (m: MemberListItem) => {
+		const a = topAmt(m);
+		return a ? (a.abbr ?? a.label) : 'Mitglied';
+	};
+	/** Volles Amt für `title`/Suche; „Mitglied" wenn kein Amt. */
+	const amtFull = (m: MemberListItem) => topAmt(m)?.label ?? 'Mitglied';
 
 	/** Untertitel inkl. Status: Ehrenmitglied ersetzt „Mitglied", inaktiv als Zusatz. */
 	function roleLine(m: MemberListItem): string {
-		const amt = primaryAmt(m);
+		const amt = amtShort(m);
 		if (m.status === 'ehrenmitglied')
 			return amt === 'Mitglied' ? 'Ehrenmitglied' : `${amt} · Ehrenmitglied`;
 		if (m.status === 'inaktiv') return `${amt} (inaktiv)`;
@@ -49,7 +57,7 @@
 			if (!showInactive && m.status !== 'aktiv') return false;
 			const q = query.trim().toLowerCase();
 			if (!q) return true;
-			return `${m.first_name} ${m.last_name} ${primaryAmt(m)}`.toLowerCase().includes(q);
+			return `${m.first_name} ${m.last_name} ${amtFull(m)}`.toLowerCase().includes(q);
 		})
 	);
 </script>
@@ -99,8 +107,10 @@
 							/>
 							<span class="mrow__text">
 								<span class="mrow__name">{fullName(m)}</span>
-								<span class="mrow__role" class:mrow__role--muted={m.status === 'inaktiv'}
-									>{roleLine(m)}</span
+								<span
+									class="mrow__role"
+									class:mrow__role--muted={m.status === 'inaktiv'}
+									title={topAmt(m)?.label}>{roleLine(m)}</span
 								>
 							</span>
 						</button>

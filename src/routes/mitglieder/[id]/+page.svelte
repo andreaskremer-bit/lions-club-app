@@ -81,7 +81,7 @@
 			<div class="head__tags">
 				<Tag tone={statusTone[m.status]} dot>{statusLabel[m.status]}</Tag>
 				{#each ämter as a (a.label)}
-					<Tag tone="blue" outline>{a.label}</Tag>
+					<Tag tone="blue" outline title={a.label}>{a.abbr ?? a.label}</Tag>
 				{/each}
 			</div>
 		</header>

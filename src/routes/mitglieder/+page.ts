@@ -3,7 +3,7 @@ import { lionsStartYear } from '$lib/dates';
 
 export type MemberStatus = 'aktiv' | 'inaktiv' | 'ehrenmitglied';
 
-type AmtRef = { label: string; sort_order: number; display_only: boolean };
+type AmtRef = { label: string; abbr: string | null; sort_order: number; display_only: boolean };
 
 export type MemberListItem = {
 	id: string;
@@ -25,7 +25,7 @@ export const load: PageLoad = async ({ parent }) => {
 	const { data, error } = await supabase
 		.from('member')
 		.select(
-			'id, first_name, last_name, title, status, mobile, phone, email, photo_path, member_amt(amt(label, sort_order, display_only))'
+			'id, first_name, last_name, title, status, mobile, phone, email, photo_path, member_amt(amt(label, abbr, sort_order, display_only))'
 		)
 		.eq('member_amt.lions_year', lionsStartYear(new Date()))
 		.order('last_name')
