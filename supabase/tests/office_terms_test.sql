@@ -22,7 +22,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000f0006', 'roles@ot.example');
 
 -- Zuordnungen relativ zum aktuellen Lions-Jahr (0=aktuell, 1=kommend, -1=vorig).
--- clubmaster=manage_events, presse=display_only, webmaster=manage_roles.
+-- clubmaster=manage_events, leo_club=display_only (rechtelos), webmaster=manage_roles.
 insert into public.member_amt (member_id, amt_id, lions_year)
 select m.id, a.id, public.current_lions_year() + v.off
 from public.member m
@@ -31,7 +31,7 @@ join (values
   ('next@ot.example', 'clubmaster', 1),
   ('prev@ot.example', 'clubmaster', -1),
   ('pp@ot.example', 'praesident', -1),
-  ('pr@ot.example', 'presse', 0),
+  ('pr@ot.example', 'leo_club', 0),
   ('roles@ot.example', 'webmaster', 0)
 ) as v(email, amt_key, off) on v.email = m.email
 join public.amt a on a.key = v.amt_key;
@@ -50,7 +50,7 @@ select is(public.has_permission('manage_events'), false, 'Kommendes Lions-Jahr g
 set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000f0003","role":"authenticated"}';
 select is(public.has_permission('manage_events'), false, 'Voriges Lions-Jahr gibt kein Recht mehr');
 
--- (4) display_only-Beauftragter (Presse) hat keine Rechte.
+-- (4) display_only-Beauftragter (Leo-Club, rechtelos) hat keine Rechte.
 set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000f0005","role":"authenticated"}';
 select is(public.has_permission('publish_content'), false, 'display_only-Beauftragter hat keine Rechte');
 
