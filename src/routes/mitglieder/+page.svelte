@@ -26,21 +26,18 @@
 				.sort((a, b) => a.sort_order - b.sort_order)[0] ?? null
 		);
 	}
-	/** Geschlechtsneutrales Kürzel fürs Anzeigen (abbr → label → „Mitglied"). */
-	const amtShort = (m: MemberListItem) => {
-		const a = topAmt(m);
-		return a ? (a.abbr ?? a.label) : 'Mitglied';
-	};
 	/** Volles Amt für `title`/Suche; „Mitglied" wenn kein Amt. */
 	const amtFull = (m: MemberListItem) => topAmt(m)?.label ?? 'Mitglied';
 
-	/** Untertitel inkl. Status: Ehrenmitglied ersetzt „Mitglied", inaktiv als Zusatz. */
+	/**
+	 * Untertitel: inaktive/Ehrenmitglieder haben keine Ämter → reines Status-Label.
+	 * Aktive zeigen nur ihr Amts-Kürzel (kein Amt ⇒ leer, „Mitglied" wird NICHT angezeigt).
+	 */
 	function roleLine(m: MemberListItem): string {
-		const amt = amtShort(m);
-		if (m.status === 'ehrenmitglied')
-			return amt === 'Mitglied' ? 'Ehrenmitglied' : `${amt} · Ehrenmitglied`;
-		if (m.status === 'inaktiv') return `${amt} (inaktiv)`;
-		return amt;
+		if (m.status === 'ehrenmitglied') return 'Ehrenmitglied';
+		if (m.status === 'inaktiv') return 'Mitglied (inaktiv)';
+		const a = topAmt(m);
+		return a ? (a.abbr ?? a.label) : '';
 	}
 
 	const tel = (m: MemberListItem) => m.mobile || m.phone;
@@ -107,11 +104,13 @@
 							/>
 							<span class="mrow__text">
 								<span class="mrow__name">{fullName(m)}</span>
-								<span
-									class="mrow__role"
-									class:mrow__role--muted={m.status === 'inaktiv'}
-									title={topAmt(m)?.label}>{roleLine(m)}</span
-								>
+								{#if roleLine(m)}
+									<span
+										class="mrow__role"
+										class:mrow__role--muted={m.status === 'inaktiv'}
+										title={topAmt(m)?.label}>{roleLine(m)}</span
+									>
+								{/if}
 							</span>
 						</button>
 						{#if tel(m)}
