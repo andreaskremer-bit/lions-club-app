@@ -131,7 +131,7 @@
 									onclick={() => goto(resolve('/mitglieder/[id]', { id: m.id }))}
 								>
 									<Avatar
-										name={`${m.first_name} ${m.last_name}`}
+										name={`${m.last_name} ${m.first_name}`}
 										src={(m.photo_path && data.photoUrls[m.photo_path]) || null}
 										size="lg"
 										tone={avatarTone(m.id)}
