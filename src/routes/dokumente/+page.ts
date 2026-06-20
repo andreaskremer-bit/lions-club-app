@@ -9,6 +9,8 @@ export const load: PageLoad = async ({ parent }) => {
 	const { data } = await supabase
 		.from('document')
 		.select(COLS)
+		// Termin-Anhänge erscheinen nur am jeweiligen Termin, nicht in der Ablage.
+		.is('event_id', null)
 		.order('doc_date', { ascending: false, nullsFirst: false })
 		.order('created_at', { ascending: false });
 	return { documents: (data ?? []) as DocumentRow[] };

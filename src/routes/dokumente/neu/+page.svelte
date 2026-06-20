@@ -1,13 +1,22 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Select, Checkbox, Button, Card } from '$lib/components/ui';
+	import {
+		AppBar,
+		IconButton,
+		Input,
+		Select,
+		Checkbox,
+		Button,
+		Card,
+		FilePicker
+	} from '$lib/components/ui';
 	import { ChevronLeft, Plus } from '@lucide/svelte';
 	import {
 		categoryOptions,
 		notifyByDefault,
+		uploadDocument,
 		MAX_FILE_BYTES,
-		ACCEPTED_FILE_TYPES,
 		type DocumentCategory
 	} from '$lib/documents';
 
@@ -39,8 +48,7 @@
 		}))
 	]);
 
-	function onFile(e: Event) {
-		const f = (e.target as HTMLInputElement).files?.[0] ?? null;
+	function onFile(f: File | null) {
 		if (f && f.size > MAX_FILE_BYTES) {
 			err = 'Datei zu groß (max. 20 MB).';
 			file = null;
@@ -63,49 +71,24 @@
 		busy = true;
 		err = '';
 
-		// 1) Datensatz anlegen (noch ohne file_path).
-		const { data: created, error: insErr } = await supabase
-			.from('document')
-			.insert({
-				title: title.trim(),
-				category,
-				doc_date: docDate || null,
-				description: description.trim() || null,
-				event_id: eventId || null,
-				file_name: file.name,
-				mime_type: file.type || null,
-				size_bytes: file.size,
-				uploaded_by: data.memberId
-			})
-			.select('id')
-			.single();
-		if (insErr || !created) {
+		const res = await uploadDocument(supabase, {
+			file,
+			title: title.trim(),
+			category,
+			docDate,
+			description: description.trim() || null,
+			eventId: eventId || null,
+			memberId: data.memberId
+		});
+		if ('error' in res) {
 			busy = false;
-			err = 'Anlegen fehlgeschlagen: ' + (insErr?.message ?? 'unbekannt');
+			err = res.error;
 			return;
 		}
 
-		// 2) Datei hochladen, Pfad "<id>/<bereinigter-name>".
-		const safeName = file.name.replace(/[^\w.-]+/g, '_');
-		const path = `${created.id}/${safeName}`;
-		const { error: upErr } = await supabase.storage
-			.from('documents')
-			.upload(path, file, { contentType: file.type || undefined, upsert: true });
-		if (upErr) {
-			busy = false;
-			err = 'Upload fehlgeschlagen: ' + upErr.message;
-			return;
-		}
-		await supabase.from('document').update({ file_path: path }).eq('id', created.id);
-
-		// 3) Volltext serverseitig extrahieren (best-effort, nicht fatal).
-		supabase.functions
-			.invoke('extract-document-text', { body: { id: created.id } })
-			.catch(() => {});
-
-		// 4) Optional Mitglieder benachrichtigen.
+		// Optional Mitglieder benachrichtigen.
 		if (notify) {
-			await supabase.rpc('notify_document', { p_document_id: created.id });
+			await supabase.rpc('notify_document', { p_document_id: res.id });
 		}
 
 		busy = false;
@@ -134,19 +117,7 @@
 		<Card>
 			<div class="filepick">
 				<span class="filepick__label">Datei</span>
-				<label class="filepick__control">
-					<input
-						class="filepick__input"
-						type="file"
-						accept={ACCEPTED_FILE_TYPES}
-						onchange={onFile}
-						disabled={busy}
-					/>
-					<span class="filepick__btn">Datei wählen</span>
-					<span class="filepick__name" class:filepick__name--empty={!file}>
-						{file ? file.name : 'PDF, Word, … bis 20 MB'}
-					</span>
-				</label>
+				<FilePicker {file} disabled={busy} onpick={onFile} />
 			</div>
 			<Checkbox label="Mitglieder benachrichtigen" bind:checked={notify} />
 		</Card>
@@ -170,68 +141,6 @@
 		font-size: var(--text-sm);
 		font-weight: 600;
 		color: var(--text-strong);
-	}
-	.filepick__control {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		min-height: 48px;
-		padding: var(--space-2) var(--space-3);
-		background: var(--surface-card);
-		border: 1px solid var(--border-field);
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		transition:
-			border-color var(--dur-fast) var(--ease-standard),
-			box-shadow var(--dur-fast) var(--ease-standard);
-	}
-	.filepick__control:hover {
-		border-color: var(--border-strong);
-	}
-	.filepick__control:focus-within {
-		border-color: var(--border-focus);
-		box-shadow: var(--focus-ring);
-	}
-	.filepick__control:has(.filepick__input:disabled) {
-		opacity: 0.6;
-		cursor: default;
-	}
-	/* Natives File-Input visuell entfernen, aber fokussierbar lassen. */
-	.filepick__input {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-		border: 0;
-	}
-	.filepick__btn {
-		flex: none;
-		display: inline-flex;
-		align-items: center;
-		height: 36px;
-		padding: 0 var(--space-4);
-		border-radius: var(--radius-sm);
-		background: var(--surface-fill);
-		border: 1px solid var(--border-field);
-		font-size: var(--text-sm);
-		font-weight: 600;
-		color: var(--text-strong);
-	}
-	.filepick__name {
-		min-width: 0;
-		flex: 1;
-		font-size: var(--text-base);
-		color: var(--text-body);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.filepick__name--empty {
-		color: var(--text-muted);
 	}
 	.err {
 		color: var(--clay, #b4502f);

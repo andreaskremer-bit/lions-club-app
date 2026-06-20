@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
+	import EventDocuments from '$lib/components/EventDocuments.svelte';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
 	import type { EventType } from '$lib/dates';
 
@@ -138,8 +139,9 @@
 		{:else}
 			<Card>
 				<Input label="Titel (Programm/Thema)" bind:value={title} required />
-				<Select label="Typ" options={typeOptions} bind:value={type} />
+				<Input label="Beschreibung" multiline bind:value={description} />
 				<Input label="Referent/in (optional)" bind:value={speaker} />
+				<Select label="Typ" options={typeOptions} bind:value={type} />
 				<Input label="Ort" bind:value={location} />
 				<div class="row">
 					<Input label="Datum (Beginn)" type="date" bind:value={startDate} class="d" />
@@ -156,8 +158,15 @@
 					max="60"
 					bind:value={reminderDays}
 				/>
-				<Input label="Beschreibung" multiline bind:value={description} />
 			</Card>
+
+			<EventDocuments
+				{supabase}
+				eventId={ev.id}
+				canManage={(data.permissions ?? []).includes('manage_events') ||
+					(data.permissions ?? []).includes('publish_content')}
+				memberId={data.memberId}
+			/>
 
 			{#if err}<p class="err">{err}</p>{/if}
 

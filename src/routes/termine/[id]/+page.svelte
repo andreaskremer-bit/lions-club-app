@@ -5,6 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Button, Card, Tag, Input } from '$lib/components/ui';
 	import AnswerField from '$lib/components/AnswerField.svelte';
+	import EventDocuments from '$lib/components/EventDocuments.svelte';
 	import {
 		ChevronLeft,
 		Check,
@@ -205,6 +206,14 @@
 		{#if e.description}
 			<Card><p class="desc">{e.description}</p></Card>
 		{/if}
+
+		<EventDocuments
+			{supabase}
+			eventId={e.id}
+			canManage={data.permissions.includes('manage_events') ||
+				data.permissions.includes('publish_content')}
+			memberId={data.myMemberId}
+		/>
 
 		{#if e.donation_required && data.permissions.includes('record_attendance')}
 			<Button

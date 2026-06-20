@@ -9,10 +9,12 @@
 		Button,
 		Card,
 		SegmentedControl,
-		HintCard
+		HintCard,
+		FilePicker
 	} from '$lib/components/ui';
 	import { ChevronLeft, Plus } from '@lucide/svelte';
 	import { seriesDates, type Rhythm, type EventType } from '$lib/dates';
+	import { uploadDocument, MAX_FILE_BYTES } from '$lib/documents';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -63,6 +65,19 @@
 
 	let busy = $state(false);
 	let err = $state('');
+
+	// Optionaler Dokument-Anhang (nur Einzeltermin) — wird nach dem Anlegen
+	// hochgeladen und löst keine Benachrichtigung aus.
+	let docFile = $state<File | null>(null);
+	function onDocFile(f: File | null) {
+		if (f && f.size > MAX_FILE_BYTES) {
+			err = 'Datei zu groß (max. 20 MB).';
+			docFile = null;
+			return;
+		}
+		err = '';
+		docFile = f;
+	}
 
 	const orNull = (v: string) => (v.trim() === '' ? null : v.trim());
 
@@ -146,11 +161,25 @@
 			})
 			.select('id')
 			.single();
-		busy = false;
 		if (error) {
+			busy = false;
 			err = 'Anlegen fehlgeschlagen: ' + error.message;
 			return;
 		}
+
+		// Optionalen Anhang hochladen (best-effort — der Termin ist bereits angelegt;
+		// bei Fehler kann das Dokument auf der Termin-Seite ergänzt werden).
+		if (docFile) {
+			await uploadDocument(supabase, {
+				file: docFile,
+				title: docFile.name.replace(/\.[^.]+$/, ''),
+				category: 'sonstige',
+				eventId: created.id,
+				memberId: data.memberId
+			});
+		}
+
+		busy = false;
 		await goto(resolve('/termine/[id]', { id: created.id }), { invalidateAll: true });
 	}
 
@@ -192,6 +221,10 @@
 		<Card>
 			<h2 class="sec">Termin</h2>
 			<Input label="Titel (Programm/Thema)" bind:value={title} required />
+			{#if mode === 'einzeln'}
+				<Input label="Beschreibung" multiline bind:value={description} />
+				<Input label="Referent/in (optional)" bind:value={speaker} />
+			{/if}
 			<Select label="Typ" options={typeOptions} bind:value={type} />
 			<Input label="Ort" bind:value={location} oninput={() => (locationTouched = true)} />
 			<div class="row">
@@ -226,8 +259,10 @@
 				bind:value={reminderDays}
 			/>
 			{#if mode === 'einzeln'}
-				<Input label="Referent/in (optional)" bind:value={speaker} />
-				<Input label="Beschreibung" multiline bind:value={description} />
+				<div class="docfield">
+					<span class="docfield__label">Dokument (optional)</span>
+					<FilePicker file={docFile} disabled={busy} onpick={onDocFile} />
+				</div>
 			{/if}
 		</Card>
 
@@ -280,6 +315,16 @@
 	}
 	.row :global(.t) {
 		flex: 0 0 38%;
+	}
+	.docfield {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+	.docfield__label {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--text-strong);
 	}
 	.grp {
 		font-size: var(--text-base);

@@ -7,6 +7,7 @@ export { default as StatusBadge, STATUS_LABELS, type Status } from './StatusBadg
 export { default as Input } from './Input.svelte';
 export { default as Select, type SelectOption } from './Select.svelte';
 export { default as Checkbox } from './Checkbox.svelte';
+export { default as FilePicker } from './FilePicker.svelte';
 export { default as Switch } from './Switch.svelte';
 export { default as HintCard } from './HintCard.svelte';
 export { default as OtpInput } from './OtpInput.svelte';
