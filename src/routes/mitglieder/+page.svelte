@@ -131,7 +131,7 @@
 									onclick={() => goto(resolve('/mitglieder/[id]', { id: m.id }))}
 								>
 									<Avatar
-										name={`${m.last_name} ${m.first_name}`}
+										name={`${m.first_name} ${m.last_name}`}
 										src={(m.photo_path && data.photoUrls[m.photo_path]) || null}
 										size="lg"
 										tone={avatarTone(m.id)}
@@ -188,7 +188,7 @@
 		font-size: var(--text-sm);
 		font-weight: var(--fw-bold);
 		color: var(--primary);
-		padding: var(--space-3) 0 var(--space-1);
+		padding: var(--space-2) 0 var(--space-1);
 	}
 	.ltr::after {
 		content: '';
@@ -202,13 +202,19 @@
 		gap: var(--space-1);
 		border-bottom: 1px solid var(--border-hairline);
 	}
+	/* Keine doppelte Linie: die letzte Zeile vor einem Buchstaben-Trenner und die
+	   allerletzte Zeile verzichten auf die eigene Haarlinie — der Divider trennt. */
+	.mrow:has(+ .ltr),
+	.mrow:last-child {
+		border-bottom: none;
+	}
 	.mrow__main {
 		flex: 1;
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
 		min-width: 0;
-		padding: var(--space-3) var(--space-1) var(--space-3) 0;
+		padding: var(--space-2) var(--space-1) var(--space-2) 0;
 		background: none;
 		border: none;
 		text-align: left;
