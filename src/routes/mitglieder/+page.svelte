@@ -13,9 +13,11 @@
 
 	let aktivCount = $derived(data.members.filter((m) => m.status === 'aktiv').length);
 
-	function fullName(m: MemberListItem): string {
-		return [m.title, m.first_name, m.last_name].filter(Boolean).join(' ');
-	}
+	// Liste: „Nachname, Vorname" (Telefonbuch-Ordnung, deckt sich mit der DB-Sortierung).
+	// Akademischer Titel (Dr./Prof.) bewusst NUR auf der Profilseite, nicht in der Liste.
+	const listName = (m: MemberListItem) => `${m.last_name}, ${m.first_name}`;
+	// Für aria-Labels: schlichter Vor-/Nachname ohne Titel.
+	const plainName = (m: MemberListItem) => `${m.first_name} ${m.last_name}`;
 
 	/** Alle Ämter des aktuellen Lions-Jahres, nach sort_order. */
 	function amtList(m: MemberListItem) {
@@ -61,6 +63,27 @@
 			return `${m.first_name} ${m.last_name} ${amtFull(m)}`.toLowerCase().includes(q);
 		})
 	);
+
+	type MemberGroup = { letter: string | null; members: MemberListItem[] };
+	/**
+	 * Gruppierung nach Nachnamen-Anfangsbuchstaben (DB liefert bereits nach
+	 * last_name sortiert). Bei aktiver Suche KEINE Buchstaben-Header — dann ist
+	 * die Trefferliste die relevante Struktur.
+	 */
+	let groups = $derived.by<MemberGroup[]>(() => {
+		if (query.trim()) return [{ letter: null, members: filtered }];
+		const out: MemberGroup[] = [];
+		let cur: MemberGroup | null = null;
+		for (const m of filtered) {
+			const letter = (m.last_name[0] ?? '#').toUpperCase();
+			if (!cur || cur.letter !== letter) {
+				cur = { letter, members: [] };
+				out.push(cur);
+			}
+			cur.members.push(m);
+		}
+		return out;
+	});
 </script>
 
 <div class="shell">
@@ -93,43 +116,58 @@
 		{#if data.loadError}
 			<p class="state state--error">Mitglieder konnten nicht geladen werden: {data.loadError}</p>
 		{:else}
-			<div class="list">
-				{#each filtered as m (m.id)}
-					<div class="mrow">
-						<button
-							class="mrow__main"
-							onclick={() => goto(resolve('/mitglieder/[id]', { id: m.id }))}
-						>
-							<Avatar
-								name={`${m.first_name} ${m.last_name}`}
-								src={(m.photo_path && data.photoUrls[m.photo_path]) || null}
-								size="lg"
-								tone={avatarTone(m.id)}
-							/>
-							<span class="mrow__text">
-								<span class="mrow__name">{fullName(m)}</span>
-								{#if roleLine(m)}
-									<span
-										class="mrow__role"
-										class:mrow__role--muted={m.status === 'inaktiv'}
-										title={amtTitle(m) || undefined}>{roleLine(m)}</span
-									>
-								{/if}
-							</span>
-						</button>
-						{#if tel(m)}
-							<a class="mrow__act" href={`tel:${tel(m)}`} aria-label={`${fullName(m)} anrufen`}>
-								<Phone size={20} />
-							</a>
+			{#if filtered.length === 0}
+				<p class="state">Keine Mitglieder gefunden.</p>
+			{:else}
+				<div class="list">
+					{#each groups as g (g.letter ?? '_')}
+						{#if g.letter}
+							<div class="ltr" aria-hidden="true">{g.letter}</div>
 						{/if}
-						<a class="mrow__act" href={`mailto:${m.email}`} aria-label={`${fullName(m)} E-Mail`}>
-							<Mail size={20} />
-						</a>
-					</div>
-				{:else}
-					<p class="state">Keine Mitglieder gefunden.</p>
-				{/each}
-			</div>
+						{#each g.members as m (m.id)}
+							<div class="mrow">
+								<button
+									class="mrow__main"
+									onclick={() => goto(resolve('/mitglieder/[id]', { id: m.id }))}
+								>
+									<Avatar
+										name={`${m.first_name} ${m.last_name}`}
+										src={(m.photo_path && data.photoUrls[m.photo_path]) || null}
+										size="lg"
+										tone={avatarTone(m.id)}
+									/>
+									<span class="mrow__text">
+										<span class="mrow__name">{listName(m)}</span>
+										{#if roleLine(m)}
+											<span
+												class="mrow__role"
+												class:mrow__role--muted={m.status === 'inaktiv'}
+												title={amtTitle(m) || undefined}>{roleLine(m)}</span
+											>
+										{/if}
+									</span>
+								</button>
+								{#if tel(m)}
+									<a
+										class="mrow__act"
+										href={`tel:${tel(m)}`}
+										aria-label={`${plainName(m)} anrufen`}
+									>
+										<Phone size={20} />
+									</a>
+								{/if}
+								<a
+									class="mrow__act"
+									href={`mailto:${m.email}`}
+									aria-label={`${plainName(m)} E-Mail`}
+								>
+									<Mail size={20} />
+								</a>
+							</div>
+						{/each}
+					{/each}
+				</div>
+			{/if}
 		{/if}
 	</main>
 </div>
@@ -141,6 +179,22 @@
 	.list {
 		display: flex;
 		flex-direction: column;
+	}
+	/* Dezenter, nicht-klebender Buchstaben-Trenner zur schnellen Orientierung. */
+	.ltr {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+		font-weight: var(--fw-bold);
+		color: var(--primary);
+		padding: var(--space-3) 0 var(--space-1);
+	}
+	.ltr::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--border-hairline);
 	}
 	.mrow {
 		display: flex;
