@@ -89,7 +89,7 @@
 		<Card>
 			<h2 class="sec">Kontakt</h2>
 			{#if m.mobile}
-				<ListRow href={`tel:${m.mobile}`} title={m.mobile} subtitle="Handy">
+				<ListRow href={`tel:${m.mobile}`} title={m.mobile} subtitle="Mobil">
 					{#snippet lead()}<Smartphone size={20} />{/snippet}
 				</ListRow>
 			{/if}
@@ -171,7 +171,7 @@
 					{/if}
 					{#if m.partner_mobile}
 						<div>
-							<dt>Handy</dt>
+							<dt>Mobil</dt>
 							<dd><a href={`tel:${m.partner_mobile}`}>{m.partner_mobile}</a></dd>
 						</div>
 					{/if}

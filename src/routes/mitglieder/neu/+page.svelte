@@ -96,7 +96,7 @@
 
 			<Card>
 				<h2 class="sec">Kontakt &amp; Daten</h2>
-				<Input label="Handy" type="tel" bind:value={mobile} />
+				<Input label="Mobil" type="tel" bind:value={mobile} />
 				<Input label="Festnetz" type="tel" bind:value={phone} />
 				<Input label="Büro" type="tel" bind:value={phone_office} />
 				<Input label="Ort" bind:value={city} />

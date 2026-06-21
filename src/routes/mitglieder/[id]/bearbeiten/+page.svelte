@@ -220,7 +220,7 @@
 
 			<Card>
 				<h2 class="sec">Kontakt</h2>
-				<Input label="Handy" type="tel" bind:value={mobile} />
+				<Input label="Mobil" type="tel" bind:value={mobile} />
 				<Input label="Festnetz" type="tel" bind:value={phone} />
 				<Input label="Büro" type="tel" bind:value={phone_office} />
 				<Input label="Straße" bind:value={street} />
@@ -235,7 +235,7 @@
 				<Input label="Vorname" bind:value={partner_first_name} />
 				<Input label="Nachname" bind:value={partner_last_name} />
 				<Input label="Geburtstag" type="date" bind:value={partner_birthday} />
-				<Input label="Handy" type="tel" bind:value={partner_mobile} />
+				<Input label="Mobil" type="tel" bind:value={partner_mobile} />
 				<Input label="E-Mail" type="email" bind:value={partner_email} />
 			</Card>
 
