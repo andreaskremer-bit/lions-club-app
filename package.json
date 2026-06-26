@@ -16,6 +16,7 @@
 		"db:stop": "supabase stop",
 		"db:reset": "supabase db reset",
 		"db:test": "supabase test db",
+		"db:remote": "bash scripts/db-remote.sh",
 		"test:unit": "vitest run",
 		"test:e2e": "playwright test"
 	},
