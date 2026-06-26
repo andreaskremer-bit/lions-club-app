@@ -23,22 +23,29 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		data: { session }
 	} = await supabase.auth.getSession();
 
-	const {
-		data: { user }
-	} = await supabase.auth.getUser();
+	// User wurde bereits serverseitig in hooks.server.ts via getUser() gegen den
+	// Auth-Server validiert und über +layout.server.ts als data.user durchgereicht.
+	// Kein zweiter getUser()-Netzwerk-Roundtrip im Client (spart Latenz beim Start).
+	const user = data.user;
 
-	// Eigene Member-ID + Rechte (aus Ämtern) zentral bereitstellen — für rechte-
-	// abhängige UI (z. B. Anwesenheit erfassen, Schatzmeister-Auswertung).
+	// Eigene Member-ID + Rechte (aus Ämtern) und ungelesene Benachrichtigungen
+	// zentral bereitstellen — beide Queries hängen nicht voneinander ab und laufen
+	// daher parallel (ein Roundtrip statt zwei).
 	let memberId: string | null = null;
 	let permissions: string[] = [];
+	let unread = 0;
 	if (user) {
-		const { data } = await supabase
-			.from('member')
-			.select('id, member_amt(amt(amt_permission(permission)))')
-			.eq('user_id', user.id)
-			.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Rechte des aktuellen LJ
-			.maybeSingle();
-		const m = data as {
+		const [memberRes, unreadRes] = await Promise.all([
+			supabase
+				.from('member')
+				.select('id, member_amt(amt(amt_permission(permission)))')
+				.eq('user_id', user.id)
+				.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Rechte des aktuellen LJ
+				.maybeSingle(),
+			supabase.from('notification').select('id', { count: 'exact', head: true }).is('read_at', null)
+		]);
+
+		const m = memberRes.data as {
 			id: string;
 			member_amt: { amt: { amt_permission: { permission: string }[] } | null }[];
 		} | null;
@@ -48,16 +55,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 			for (const p of ma.amt?.amt_permission ?? []) set.add(p.permission);
 		}
 		permissions = [...set];
-	}
 
-	// Ungelesene Benachrichtigungen — zentral fürs TabBar-Badge auf jeder Seite.
-	let unread = 0;
-	if (user) {
-		const { count } = await supabase
-			.from('notification')
-			.select('id', { count: 'exact', head: true })
-			.is('read_at', null);
-		unread = count ?? 0;
+		unread = unreadRes.count ?? 0;
 	}
 
 	return { supabase, session, user, memberId, permissions, unread };
