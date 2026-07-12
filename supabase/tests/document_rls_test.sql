@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(13);
 
 truncate auth.users, public.member cascade;
 
@@ -84,6 +84,35 @@ select is(
   (select count(*)::int from public.document
    where search_tsv @@ websearch_to_tsquery('german', 'Sommerfest')),
   1, 'Volltextsuche findet Dokument über Dateiinhalt'
+);
+
+-- ── search_documents: Teilwort- + Volltextsuche ─────────────────────────────
+-- (9) Wortanfang trifft (Live-Suche beim Tippen).
+select is(
+  (select count(*)::int from public.search_documents('Somm')),
+  1, 'search_documents findet Wortanfang ("Somm" → Sommerfest)'
+);
+
+-- (10) Teilstring mitten im Wort trifft.
+select is(
+  (select count(*)::int from public.search_documents('merfe')),
+  1, 'search_documents findet Teilstring im Wortinneren ("merfe" → Sommerfest)'
+);
+
+-- (11) Stemming der Volltextsuche bleibt erhalten.
+select is(
+  (select count(*)::int from public.search_documents('Beschlüsse')),
+  1, 'search_documents stemmt weiterhin ("Beschlüsse" → Beschluss)'
+);
+
+-- (12) Mehrere Suchwörter sind UND-verknüpft.
+select is(
+  (select count(*)::int from public.search_documents('Somm Kassen')),
+  1, 'search_documents UND-verknüpft Suchwörter (beide treffen)'
+);
+select is(
+  (select count(*)::int from public.search_documents('Somm Winter')),
+  0, 'search_documents UND-verknüpft Suchwörter (eines trifft nicht → leer)'
 );
 
 select * from finish();

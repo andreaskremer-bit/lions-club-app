@@ -33,12 +33,13 @@
 
 	async function runQuery() {
 		loading = true;
-		let q = supabase.from('document').select(COLS);
+		const term = searchTerm.trim();
+		// Mit Suchbegriff: search_documents (Teilwort/ILIKE + deutsche Volltextsuche
+		// über Titel + Beschreibung + Dateiinhalt), sonst direkt die Tabelle.
+		let q = term
+			? supabase.rpc('search_documents', { term }).select(COLS)
+			: supabase.from('document').select(COLS);
 		if (category) q = q.eq('category', category);
-		if (searchTerm.trim()) {
-			// Postgres-Volltext (deutsch) über Titel + Beschreibung + Dateiinhalt.
-			q = q.textSearch('search_tsv', searchTerm.trim(), { type: 'websearch', config: 'german' });
-		}
 		if (sort === 'titel') q = q.order('title');
 		else if (sort === 'kategorie')
 			q = q.order('category').order('doc_date', { ascending: false, nullsFirst: false });
@@ -46,7 +47,8 @@
 			q = q
 				.order('doc_date', { ascending: false, nullsFirst: false })
 				.order('created_at', { ascending: false });
-		const { data: rows } = await q;
+		const { data: rows, error } = await q;
+		if (error) console.error('Dokumentsuche fehlgeschlagen:', error.message);
 		docs = (rows ?? []) as DocumentRow[];
 		loading = false;
 	}
