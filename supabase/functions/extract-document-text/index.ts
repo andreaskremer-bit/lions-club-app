@@ -61,7 +61,8 @@ Deno.serve(async (req) => {
 	const { data: file, error: dlErr } = await supabase.storage
 		.from('documents')
 		.download(doc.file_path);
-	if (dlErr || !file) return new Response('Download fehlgeschlagen', { status: 500, headers: CORS });
+	if (dlErr || !file)
+		return new Response('Download fehlgeschlagen', { status: 500, headers: CORS });
 
 	const bytes = new Uint8Array(await file.arrayBuffer());
 	const name = (doc.file_name ?? doc.file_path).toLowerCase();

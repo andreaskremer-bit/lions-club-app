@@ -8,6 +8,7 @@
 ---
 
 ## Problem mit der aktuellen Lösung (Drive-Link)
+
 - **Nicht fail-safe:** Funktioniert nur, wenn das Mitglied im richtigen Google-Konto
   eingeloggt ist / Zugriff hat. Sonst „Zugriff anfragen".
 - **DSGVO:** Ist der Ordner „jeder mit Link", sind erkennbare Mitglieder-Fotos faktisch
@@ -15,11 +16,14 @@
 - Kein Einfluss auf Darstellung/Erlebnis.
 
 ## Geprüfte Alternative: In-App-Viewer **direkt über den Drive-Share**
+
 Technisch baubar (Anzeige im `<img>`/Lightbox hat **kein** CORS-Problem). Aber zwei harte Haken:
+
 1. **API-Key-Listing braucht einen öffentlichen Ordner** → Mitglieder-Fotos öffentlich + kein
    Zugriffsschutz in der App (DSGVO-Problem).
 2. **Nutzbare Drive-Bild-URLs sind inoffiziell/fragil** (Google kann sie ändern, Rate-Limits,
    „Scan-Warnung").
+
 - **Privat-Variante (Service-Account-Proxy):** hält den Ordner privat, aber das Backend
   **proxyt die Bytes** → zählt gegen die **Free-Egress**. Dann hostet man de facto selbst →
   Supabase Storage ist einfacher.
@@ -27,16 +31,19 @@ Technisch baubar (Anzeige im `<img>`/Lightbox hat **kein** CORS-Problem). Aber z
   — beides untergräbt Datenschutz bzw. Free.
 
 ## Empfohlene Lösung: **Supabase Storage + reduzierte Bilder (Variante B)**
+
 Drive bleibt **einzige Verwaltungs-Oberfläche** (anlegen/sortieren/löschen nur dort).
 Die App ist reiner **Viewer**; **kein Upload durch Mitglieder**.
 
 **Sync-Job (Polling + Spiegelung), z. B. täglich als GitHub Action:**
+
 1. Drive-Ordner (inkl. Unterordner = Alben) per Drive-API listen.
 2. Vergleich per **Drive-Datei-ID** mit Supabase:
    - **Neu** → herunterladen, **herunterrechnen** (max. ~1600px ≈ 200–400 KB), in `gallery`-Bucket.
    - **In Drive gelöscht** → in Supabase ebenfalls löschen (Löschungen fließen mit).
    - **Unverändert** → überspringen.
 3. Neue Unterordner → neue Alben.
+
 - **Drive-Zugriff:** Google-**Service-Account** (Ordner mit dessen Mail teilen) → Ordner bleibt **privat**.
 - **Lauf-Ort:** GitHub Action (Node + `sharp` zum Herunterrechnen) schreibt via Supabase-
   **Service-Key** (CI-Secret, nie im Repo/Client) in den `gallery`-Bucket.
@@ -48,6 +55,7 @@ Die App ist reiner **Viewer**; **kein Upload durch Mitglieder**.
 tausende Bilder passen in 1 GB, Egress moderat. (Ziel ist **Free**, nicht Pro.)
 
 ## Frage „Original im Drive öffnen"-Link
+
 - Belastet das **Supabase-Kontingent NICHT** (Mitglied ↔ Google direkt; in der DB nur die
   Drive-Datei-ID als String).
 - **Aber:** funktioniert nur, wenn das Mitglied das Original in Drive **öffnen darf** → kollidiert
@@ -60,6 +68,7 @@ tausende Bilder passen in 1 GB, Egress moderat. (Ziel ist **Free**, nicht Pro.)
      Storage + Egress → auf Free der Knackpunkt.
 
 ## Offene Entscheidungen (für die interne Klärung)
+
 1. **Sync-Takt:** täglich vs. alle paar Stunden (+ optional „Jetzt aktualisieren"-Button)?
 2. **Alben** = Drive-Unterordner 1:1, oder erstmal flach?
 3. **Originale:** Option 1, 2 oder 3 (siehe oben)?
@@ -67,6 +76,7 @@ tausende Bilder passen in 1 GB, Egress moderat. (Ziel ist **Free**, nicht Pro.)
 5. Bewertung der Fotos: eher unkritisch/öffentlich-ok vs. clubintern/heikel (beeinflusst 2/3).
 
 ## Bei „los" zu bauen (grob)
+
 `gallery`-Bucket + `gallery_album`/`gallery_photo`-Tabellen (Drive-ID unique) + RLS/pgTAP ·
 Sync-GitHub-Action (Service-Account-JSON + Service-Key als CI-Secrets) · Grid + Lightbox-
 Komponente · ggf. „Jetzt aktualisieren"-Route. Alles mit etablierten Bausteinen (signierte URLs,

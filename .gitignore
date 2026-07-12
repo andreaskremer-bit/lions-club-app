@@ -28,3 +28,6 @@ vite.config.ts.timestamp-*
 
 # Claude Code – persönliche, lokale Settings (Permissions, Pfade)
 .claude/settings.local.json
+
+# Ad-hoc-Exporte mit Mitgliederdaten (PII) – nie committen
+berechtigungen*.csv

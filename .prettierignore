@@ -10,3 +10,6 @@ bun.lockb
 
 # Reine Design-Referenz (React), nicht formatieren
 /design-referenz/
+
+# Supabase-CLI-Artefakte (git-ignoriert)
+/supabase/.temp/
