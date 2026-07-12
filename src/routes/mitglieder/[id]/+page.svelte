@@ -56,6 +56,12 @@
 			year: 'numeric'
 		}).format(new Date(d));
 	}
+
+	// Partner-Wunsch „Geburtstag ja, Alter nein": nur Tag + Monat, ohne Jahr.
+	function formatDayMonth(d: string | null): string | null {
+		if (!d) return null;
+		return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long' }).format(new Date(d));
+	}
 </script>
 
 <div class="shell">
@@ -163,10 +169,14 @@
 						<dt>Name</dt>
 						<dd>{[m.partner_first_name, m.partner_last_name].filter(Boolean).join(' ')}</dd>
 					</div>
-					{#if formatDate(m.partner_birthday)}
+					{#if m.partner_birthday}
 						<div>
 							<dt>Geburtstag</dt>
-							<dd>{formatDate(m.partner_birthday)}</dd>
+							<dd>
+								{m.partner_birthday_show_age
+									? formatDate(m.partner_birthday)
+									: formatDayMonth(m.partner_birthday)}
+							</dd>
 						</div>
 					{/if}
 					{#if m.partner_mobile}

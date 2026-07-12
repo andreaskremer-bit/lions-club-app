@@ -2,7 +2,16 @@
 	import { untrack } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Select, Button, Card, Avatar } from '$lib/components/ui';
+	import {
+		AppBar,
+		IconButton,
+		Input,
+		Select,
+		Button,
+		Card,
+		Avatar,
+		Switch
+	} from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { MemberStatus } from '../../+page';
 
@@ -27,6 +36,7 @@
 	let partner_first_name = $state(init.partner_first_name ?? '');
 	let partner_last_name = $state(init.partner_last_name ?? '');
 	let partner_birthday = $state(init.partner_birthday ?? '');
+	let partner_birthday_show_age = $state(init.partner_birthday_show_age ?? true);
 	let partner_email = $state(init.partner_email ?? '');
 	let partner_mobile = $state(init.partner_mobile ?? '');
 	// Status + Mitgliedsnummer nur für Berechtigte (Spaltenschutz-Trigger)
@@ -116,6 +126,7 @@
 			partner_first_name: orNull(partner_first_name),
 			partner_last_name: orNull(partner_last_name),
 			partner_birthday: orNull(partner_birthday),
+			partner_birthday_show_age,
 			partner_email: orNull(partner_email),
 			partner_mobile: orNull(partner_mobile)
 		};
@@ -235,6 +246,12 @@
 				<Input label="Vorname" bind:value={partner_first_name} />
 				<Input label="Nachname" bind:value={partner_last_name} />
 				<Input label="Geburtstag" type="date" bind:value={partner_birthday} />
+				{#if partner_birthday}
+					<Switch label="Alter anzeigen" bind:checked={partner_birthday_show_age} />
+					{#if !partner_birthday_show_age}
+						<p class="muted">Geburtstagsliste und Profil zeigen nur Tag und Monat, ohne Jahr.</p>
+					{/if}
+				{/if}
 				<Input label="Mobil" type="tel" bind:value={partner_mobile} />
 				<Input label="E-Mail" type="email" bind:value={partner_email} />
 			</Card>

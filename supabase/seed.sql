@@ -22,6 +22,12 @@ set partner_first_name = 'Elke', partner_last_name = 'Vorsteher',
     phone = '+49 228 111222', phone_office = '+49 228 555000'
 where email = 'praesident@example.com';
 
+-- Partnerin mit verstecktem Alter (Geburtstagsliste/Profil ohne Jahr) beim Schatzmeister.
+update public.member
+set partner_first_name = 'Margarete', partner_last_name = 'Kassenwart',
+    partner_birthday = '1946-03-14', partner_birthday_show_age = false
+where email = 'schatzmeister@example.com';
+
 -- Empfänger-Gate: lokal alle Test-Mitglieder freischalten (in-App-Reminder sichtbar).
 -- Auf dem Remote bleibt der Default false und nur einzelne werden manuell freigeschaltet.
 update public.member set notifications_enabled = true;

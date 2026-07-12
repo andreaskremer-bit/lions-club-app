@@ -1,23 +1,52 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Avatar, Tag } from '$lib/components/ui';
+	import { AppBar, IconButton, Avatar, Tag, SegmentedControl } from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 	import { nextBirthdayInfo, type BirthdayInfo } from '$lib/dates';
-	import type { BdayMember } from './+page';
 
 	let { data } = $props();
 
 	const dayFmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long' });
 	const monthGroupFmt = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
 
-	type Row = BdayMember & BirthdayInfo;
+	let view = $state<'mitglieder' | 'partner'>('mitglieder');
+	const viewOptions = [
+		{ value: 'mitglieder', label: 'Mitglieder' },
+		{ value: 'partner', label: 'Partner/innen' }
+	];
 
-	let rows = $derived.by((): Row[] =>
-		data.members
-			.map((m) => ({ ...m, ...nextBirthdayInfo(m.birthday) }))
-			.sort((a, b) => a.days - b.days)
-	);
+	// Einheitliche Zeile für beide Ansichten; `showAge` steuert „wird X"
+	// (Partner-Wunsch „Geburtstag ja, Alter nein" via partner_birthday_show_age).
+	type Row = {
+		memberId: string;
+		name: string;
+		showAge: boolean;
+	} & BirthdayInfo;
+
+	let rows = $derived.by((): Row[] => {
+		const list: Row[] =
+			view === 'mitglieder'
+				? data.members
+						.filter((m) => m.birthday)
+						.map((m) => ({
+							memberId: m.id,
+							name: `${m.first_name} ${m.last_name}`,
+							showAge: true,
+							...nextBirthdayInfo(m.birthday!)
+						}))
+				: data.members
+						.filter((m) => m.partner_birthday)
+						.map((m) => ({
+							memberId: m.id,
+							name:
+								[m.partner_first_name, m.partner_last_name].filter(Boolean).join(' ') ||
+								'Partner/in',
+							showAge: m.partner_birthday_show_age,
+							...nextBirthdayInfo(m.partner_birthday!)
+						}));
+		return list.sort((a, b) => a.days - b.days);
+	});
 
 	// Nach Monat des nächsten Geburtstags gruppieren (Reihenfolge bleibt erhalten).
 	let grouped = $derived.by(() => {
@@ -51,16 +80,22 @@
 	</AppBar>
 
 	<main class="shell__body">
+		<SegmentedControl options={viewOptions} bind:value={view} />
+
 		{#each grouped as g (g.key)}
 			<div class="group">
 				<p class="month">{g.label}</p>
 				<div class="list">
-					{#each g.rows as r (r.id)}
-						<a class="bday" href={resolve('/mitglieder/[id]', { id: r.id })}>
-							<Avatar name={`${r.first_name} ${r.last_name}`} size="sm" />
+					{#each g.rows as r (r.memberId)}
+						<a class="bday" href={resolve('/mitglieder/[id]', { id: r.memberId })}>
+							<Avatar name={r.name} size="sm" />
 							<span class="bday__main">
-								<span class="bday__name">{r.first_name} {r.last_name}</span>
-								<span class="bday__date">{dayFmt.format(r.date)} · wird {r.turning}</span>
+								<span class="bday__name">{r.name}</span>
+								<span class="bday__date">
+									{r.showAge
+										? `${dayFmt.format(r.date)} · wird ${r.turning}`
+										: dayFmt.format(r.date)}
+								</span>
 							</span>
 							{#if r.today}
 								<Tag tone="gold" dot>heute</Tag>

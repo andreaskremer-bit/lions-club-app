@@ -24,6 +24,7 @@ export type EditMember = {
 	partner_first_name: string | null;
 	partner_last_name: string | null;
 	partner_birthday: string | null;
+	partner_birthday_show_age: boolean;
 	partner_email: string | null;
 	partner_mobile: string | null;
 	member_amt: { amt_id: string; lions_year: number }[];
@@ -39,7 +40,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 		supabase
 			.from('member')
 			.select(
-				'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_first_name, partner_last_name, partner_birthday, partner_email, partner_mobile, member_amt(amt_id, lions_year)'
+				'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, member_amt(amt_id, lions_year)'
 			)
 			.eq('id', params.id)
 			.maybeSingle(),
