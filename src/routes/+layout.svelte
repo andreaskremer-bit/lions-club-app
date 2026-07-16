@@ -41,6 +41,15 @@
 
 	// Auth-Statusänderungen (Login/Logout/Token-Refresh) spiegeln und Daten neu laden.
 	onMount(() => {
+		// Service Worker aktiv registrieren. vite-pwa injiziert die Registrierung unter
+		// SvelteKit/adapter-netlify NICHT ins HTML -> ohne dies bleibt der SW inaktiv,
+		// `navigator.serviceWorker.ready` (siehe Push-Aktivierung) hängt und der
+		// Aktivieren-Button bleibt grau. registerType:'autoUpdate' im generierten SW
+		// übernimmt skipWaiting/clientsClaim, daher genügt ein direkter register('/sw.js').
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js').catch(() => {});
+		}
+
 		const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');

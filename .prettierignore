@@ -13,3 +13,11 @@ bun.lockb
 
 # Supabase-CLI-Artefakte (git-ignoriert)
 /supabase/.temp/
+
+# Technische Doku mit Unterstrich-Bezeichnern (pg_net, sb_secret_, SUPABASE_*) —
+# Prettier würde die als Markdown-Emphasis zerschießen.
+/CLAUDE.md
+
+# Hand gebaute Standalone-Anleitung (nicht repo-formatiert)
+/docs/anleitung-mitglieder.md
+/docs/anleitung-mitglieder.html
