@@ -28,6 +28,10 @@ select '00000000-0000-0000-0000-0000000a5001', m.id, 'zugesagt' from public.memb
 
 select public.enqueue_due_reminders(date '2026-09-15');
 
+-- Stand 2026-07-16 (Migration 20260716120100): der Tageslauf erzeugt Termin-Reminder
+-- und Geburtstage. NUR 'attendance_due' ist bewusst pausiert (Fixtures oben belegen,
+-- dass die Anwesenheits-Erinnerung trotz passender Lage NICHT feuert).
+
 -- (1) Termin-Reminder an aktive Nicht-Rückmelder: Anna + Sina (Bert hat geantwortet).
 select is(
   (select count(*)::int from public.notification where kind = 'event_reminder'),
@@ -42,28 +46,27 @@ select is(
   0, 'Wer geantwortet hat, wird nicht erinnert'
 );
 
--- (3) Geburtstag (Anna) -> eine Benachrichtigung je Mitglied (3).
+-- (3) Geburtstag (Anna) -> eine Benachrichtigung je freigeschaltetem Mitglied (3).
 select is(
   (select count(*)::int from public.notification where kind = 'birthday'),
-  3, 'Geburtstag geht an alle Mitglieder'
+  3, 'Geburtstag geht an alle freigeschalteten Mitglieder'
 );
 
--- (4) Anwesenheits-Erinnerung an Vorstand (Sina) für unerfassten spendenpflichtigen Termin.
+-- (4) Anwesenheits-Erinnerung ist pausiert -> auch der Vorstand (Sina) bekommt keine.
 select is(
   (select count(*)::int from public.notification n
    join public.member m on m.id = n.recipient_id
    where n.kind = 'attendance_due' and m.email = 'sek@r.example'),
-  1, 'Vorstand wird an Anwesenheitserfassung erinnert'
+  0, 'Anwesenheits-Erinnerung pausiert (2026-07-16)'
 );
 
--- (5) Mitglied ohne record_attendance bekommt keine Anwesenheits-Erinnerung.
+-- (5) Insgesamt keine Anwesenheits-Erinnerungen.
 select is(
   (select count(*)::int from public.notification where kind = 'attendance_due'),
-  1, 'Anwesenheits-Erinnerung nur an Berechtigte'
+  0, 'Anwesenheits-Erinnerung pausiert (2026-07-16)'
 );
 
--- (6) Empfänger-Gate: Olaf (notifications_enabled=false) ist aktiver Nicht-Rückmelder,
---     bekommt aber KEINEN Termin-Reminder.
+-- (6) Empfänger-Gate: Olaf (notifications_enabled=false) bekommt nichts.
 select is(
   (select count(*)::int from public.notification n
    join public.member m on m.id = n.recipient_id
@@ -77,11 +80,11 @@ select is(
   2, 'Gate filtert beim Erzeugen, nicht erst beim Versand'
 );
 
--- (8) Idempotent: erneuter Lauf erzeugt keine Duplikate.
+-- (8) Idempotent: erneuter Lauf erzeugt keine Duplikate (2 Termin + 3 Geburtstag).
 select public.enqueue_due_reminders(date '2026-09-15');
 select is(
   (select count(*)::int from public.notification),
-  6, 'Zweiter Lauf erzeugt keine Duplikate (2 + 3 + 1)'
+  5, 'Zweiter Lauf erzeugt keine Duplikate (2 + 3)'
 );
 
 select * from finish();
