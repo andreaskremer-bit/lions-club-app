@@ -49,8 +49,11 @@
 	let endTimeStr = $state('');
 	let endTouched = $state(false);
 	let reminderDays = $state('3');
+	// Achtung: `reminderDays` ist an ein <input type="number"> gebunden — Svelte
+	// wandelt den Wert beim Bearbeiten in eine Zahl (bzw. null bei leer). Daher vor
+	// `.trim()` immer auf String normalisieren, sonst "trim is not a function".
 	let reminderDaysNum = $derived(
-		reminderDays.trim() === ''
+		String(reminderDays ?? '').trim() === ''
 			? 3
 			: Math.max(0, Math.min(60, Math.floor(Number(reminderDays)) || 0))
 	);
@@ -147,40 +150,46 @@
 		}
 		busy = true;
 		err = '';
-		const { data: created, error } = await supabase
-			.from('event')
-			.insert({
-				title: title.trim(),
-				type,
-				speaker: orNull(speaker),
-				location: orNull(location),
-				description: orNull(description),
-				starts_at: s.toISOString(),
-				ends_at: end ? end.toISOString() : null,
-				reminder_days_before: reminderDaysNum
-			})
-			.select('id')
-			.single();
-		if (error) {
+		// try/finally: `busy` wird IMMER zurückgesetzt — auch wenn ein unerwarteter
+		// Fehler fliegt. Sonst bleibt der Button stumm im „Anlegen …"-Zustand hängen.
+		try {
+			const { data: created, error } = await supabase
+				.from('event')
+				.insert({
+					title: title.trim(),
+					type,
+					speaker: orNull(speaker),
+					location: orNull(location),
+					description: orNull(description),
+					starts_at: s.toISOString(),
+					ends_at: end ? end.toISOString() : null,
+					reminder_days_before: reminderDaysNum
+				})
+				.select('id')
+				.single();
+			if (error) {
+				err = 'Anlegen fehlgeschlagen: ' + error.message;
+				return;
+			}
+
+			// Optionalen Anhang hochladen (best-effort — der Termin ist bereits angelegt;
+			// bei Fehler kann das Dokument auf der Termin-Seite ergänzt werden).
+			if (docFile) {
+				await uploadDocument(supabase, {
+					file: docFile,
+					title: docFile.name.replace(/\.[^.]+$/, ''),
+					category: 'sonstige',
+					eventId: created.id,
+					memberId: data.memberId
+				});
+			}
+
+			await goto(resolve('/termine/[id]', { id: created.id }), { invalidateAll: true });
+		} catch (e) {
+			err = 'Unerwarteter Fehler beim Anlegen: ' + (e instanceof Error ? e.message : String(e));
+		} finally {
 			busy = false;
-			err = 'Anlegen fehlgeschlagen: ' + error.message;
-			return;
 		}
-
-		// Optionalen Anhang hochladen (best-effort — der Termin ist bereits angelegt;
-		// bei Fehler kann das Dokument auf der Termin-Seite ergänzt werden).
-		if (docFile) {
-			await uploadDocument(supabase, {
-				file: docFile,
-				title: docFile.name.replace(/\.[^.]+$/, ''),
-				category: 'sonstige',
-				eventId: created.id,
-				memberId: data.memberId
-			});
-		}
-
-		busy = false;
-		await goto(resolve('/termine/[id]', { id: created.id }), { invalidateAll: true });
 	}
 
 	async function saveSeries() {
@@ -188,21 +197,26 @@
 		if (!s || busy) return;
 		busy = true;
 		err = '';
-		const rows = seriesDates(s, rhythm, countNum).map((d) => ({
-			title: title.trim(),
-			type,
-			location: orNull(location),
-			starts_at: d.toISOString(),
-			ends_at: isTimedType(type) ? plus2h(d).toISOString() : null,
-			reminder_days_before: reminderDaysNum
-		}));
-		const { error } = await supabase.from('event').insert(rows);
-		busy = false;
-		if (error) {
-			err = 'Anlegen fehlgeschlagen: ' + error.message;
-			return;
+		try {
+			const rows = seriesDates(s, rhythm, countNum).map((d) => ({
+				title: title.trim(),
+				type,
+				location: orNull(location),
+				starts_at: d.toISOString(),
+				ends_at: isTimedType(type) ? plus2h(d).toISOString() : null,
+				reminder_days_before: reminderDaysNum
+			}));
+			const { error } = await supabase.from('event').insert(rows);
+			if (error) {
+				err = 'Anlegen fehlgeschlagen: ' + error.message;
+				return;
+			}
+			await goto(resolve('/termine'), { invalidateAll: true });
+		} catch (e) {
+			err = 'Unerwarteter Fehler beim Anlegen: ' + (e instanceof Error ? e.message : String(e));
+		} finally {
+			busy = false;
 		}
-		await goto(resolve('/termine'), { invalidateAll: true });
 	}
 </script>
 

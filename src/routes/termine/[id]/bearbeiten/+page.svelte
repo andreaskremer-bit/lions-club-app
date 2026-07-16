@@ -54,8 +54,11 @@
 	let endDate = $state(e0.date);
 	let endTime = $state(e0.time);
 	let reminderDays = $state(String(ev.reminder_days_before));
+	// `reminderDays` ist an ein <input type="number"> gebunden — Svelte macht daraus
+	// beim Bearbeiten eine Zahl (bzw. null). Vor `.trim()` auf String normalisieren,
+	// sonst "trim is not a function".
 	let reminderDaysNum = $derived(
-		reminderDays.trim() === ''
+		String(reminderDays ?? '').trim() === ''
 			? 3
 			: Math.max(0, Math.min(60, Math.floor(Number(reminderDays)) || 0))
 	);
@@ -83,25 +86,32 @@
 		}
 		busy = true;
 		err = '';
-		const { error } = await supabase
-			.from('event')
-			.update({
-				title: title.trim(),
-				type,
-				speaker: orNull(speaker),
-				location: orNull(location),
-				description: orNull(description),
-				starts_at: start.toISOString(),
-				ends_at: end ? end.toISOString() : null,
-				reminder_days_before: reminderDaysNum
-			})
-			.eq('id', ev.id);
-		busy = false;
-		if (error) {
-			err = 'Speichern fehlgeschlagen: ' + error.message;
-			return;
+		// try/finally: `busy` immer zurücksetzen, damit die Maske bei einem
+		// unerwarteten Fehler nicht stumm einfriert.
+		try {
+			const { error } = await supabase
+				.from('event')
+				.update({
+					title: title.trim(),
+					type,
+					speaker: orNull(speaker),
+					location: orNull(location),
+					description: orNull(description),
+					starts_at: start.toISOString(),
+					ends_at: end ? end.toISOString() : null,
+					reminder_days_before: reminderDaysNum
+				})
+				.eq('id', ev.id);
+			if (error) {
+				err = 'Speichern fehlgeschlagen: ' + error.message;
+				return;
+			}
+			await goto(resolve('/termine/[id]', { id: ev.id }), { invalidateAll: true });
+		} catch (e) {
+			err = 'Unerwarteter Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e));
+		} finally {
+			busy = false;
 		}
-		await goto(resolve('/termine/[id]', { id: ev.id }), { invalidateAll: true });
 	}
 
 	async function remove() {
