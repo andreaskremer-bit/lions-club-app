@@ -7,6 +7,43 @@
 
 ---
 
+## ENTSCHEIDUNG 2026-07-16: Drive bleibt Foto-Ablage, App-Galerie bleibt auf Hold
+
+Bewusst getroffen — Begründung und aktuelle Drive-Freigabe:
+
+- **App-native Galerie (Supabase Storage, Variante B unten) NICHT bauen.** Grund: Der Free-Tier
+  bietet nur **1 GB Storage**; Club-Fotos (Reisen/Veranstaltungen, viele MB pro Bild) würden das
+  in 1–2 Jahren sprengen → dann Zwang zu **Supabase Pro (~300 €/Jahr)**. Das widerspricht der
+  bewusst gewählten **Null-Euro-Linie** (Free-Tier + KeepAlive-Action, siehe
+  `notifications-go-live` / KeepAlive). Google Drive kostet für Fotos effektiv nichts und ist
+  ohnehin die Ablage, die der Club pflegt.
+- **Statt Zugriffsschutz über die App: Drive-Freigabe gelockert.** Der Ordner „Bilder"
+  (`1VO_eLP7kV-buk7HTcYb373ra0NFgqEOG`, in einer **Shared Drive**) steht jetzt auf
+  **„Jeder, der über den Link verfügt → Betrachter"** (`anyone: reader`). Damit entfällt das
+  bisherige Problem, dass Mitglieder am Google-Login/an der Gruppen-Zugehörigkeit scheiterten.
+  Bewusst akzeptiertes Restrisiko: Wer den (nicht erratbaren) Link weitergibt, öffnet ihn auch für
+  Nicht-Mitglieder. Für Club-Fotos akzeptabel; der Link taucht praktisch nur in der OTP-geschützten
+  App auf.
+- **Mitglieder sollen beitragen/hochladen können** → Google-Gruppe
+  `mitglieder@lions-bonn-rheinaue.de` bleibt **Mitwirkender (Contributor / API `writer`)**, NICHT
+  Betrachter. Es gibt keinen Rollentyp „hochladen aber nicht löschen" — Upload erfordert Schreibrecht.
+- **Sicherheitsnetz gegen versehentliches Löschen/Verschieben:** Weil der Ordner in einer
+  **Shared Drive** liegt, landen Löschungen im **Papierkorb der Team-Ablage (30 Tage,
+  wiederherstellbar durch Manager)** und Dateien gehören der Team-Ablage, nicht der Person. Ein
+  Fehlklick ist reparabel, kein endgültiger Datenverlust. Das große Umsortieren/Löschen ist
+  ohnehin den höheren Rollen (Inhaltsmanager/Manager) vorbehalten; die Mitglieder-Gruppe hat mit
+  Contributor bereits die schonendste Upload-Rolle.
+- **Rollen-Stand (aus der Drive-Freigabe):** du + Webmaster = Manager (Organisator), Thomas =
+  Inhaltsmanager (fileOrganizer), Mitglieder-Gruppe = Mitwirkender (writer), zusätzlich
+  `anyone: reader`. Kein Konflikt zwischen „Jeder mit Link = Betrachter" und Gruppe = Bearbeiter:
+  Google nimmt immer die **höchste** zutreffende Rolle; niemand wird durch die Link-Freigabe
+  herabgestuft.
+
+Der ausführliche Storage-Umbau (Variante B) unten bleibt als **archiviertes Konzept** für den Fall,
+dass der Club später doch eine app-native Galerie will (z. B. bei Wechsel auf Pro/Self-Host).
+
+---
+
 ## Problem mit der aktuellen Lösung (Drive-Link)
 
 - **Nicht fail-safe:** Funktioniert nur, wenn das Mitglied im richtigen Google-Konto
