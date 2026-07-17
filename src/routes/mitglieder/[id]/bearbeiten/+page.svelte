@@ -33,6 +33,7 @@
 	let zip = $state(init.zip ?? '');
 	let city = $state(init.city ?? '');
 	let birthday = $state(init.birthday ?? '');
+	let partner_title = $state(init.partner_title ?? '');
 	let partner_first_name = $state(init.partner_first_name ?? '');
 	let partner_last_name = $state(init.partner_last_name ?? '');
 	let partner_birthday = $state(init.partner_birthday ?? '');
@@ -123,6 +124,7 @@
 			zip: orNull(zip),
 			city: orNull(city),
 			birthday: orNull(birthday),
+			partner_title: orNull(partner_title),
 			partner_first_name: orNull(partner_first_name),
 			partner_last_name: orNull(partner_last_name),
 			partner_birthday: orNull(partner_birthday),
@@ -243,6 +245,7 @@
 
 			<Card>
 				<h2 class="sec">Partner/in</h2>
+				<Input label="Titel" bind:value={partner_title} placeholder="z. B. Dr." />
 				<Input label="Vorname" bind:value={partner_first_name} />
 				<Input label="Nachname" bind:value={partner_last_name} />
 				<Input label="Geburtstag" type="date" bind:value={partner_birthday} />

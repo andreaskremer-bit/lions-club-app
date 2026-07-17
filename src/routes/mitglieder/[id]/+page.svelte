@@ -167,7 +167,11 @@
 				<dl class="facts">
 					<div>
 						<dt>Name</dt>
-						<dd>{[m.partner_first_name, m.partner_last_name].filter(Boolean).join(' ')}</dd>
+						<dd>
+							{[m.partner_title, m.partner_first_name, m.partner_last_name]
+								.filter(Boolean)
+								.join(' ')}
+						</dd>
 					</div>
 					{#if m.partner_birthday}
 						<div>
