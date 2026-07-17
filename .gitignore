@@ -31,3 +31,7 @@ vite.config.ts.timestamp-*
 
 # Ad-hoc-Exporte mit Mitgliederdaten (PII) – nie committen
 berechtigungen*.csv
+
+# Sitzungs-Protokolle (interne PDFs mit Mitgliederdaten) – nur in die App-Ablage,
+# NIE ins öffentliche Repo committen
+Protokolle/
