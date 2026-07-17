@@ -123,8 +123,9 @@
 					<button class="doc__main" onclick={() => download(d)} disabled={!d.file_path}>
 						<span class="doc__title">{d.title}</span>
 						<span class="doc__meta">
-							{categoryLabel[d.category]}{#if d.doc_date}
-								· {dateFmt.format(new Date(d.doc_date))}{/if}
+							{categoryLabel[d.category]}{d.doc_date
+								? ` · ${dateFmt.format(new Date(d.doc_date))}`
+								: ''}
 						</span>
 						{#if d.description}<span class="doc__desc">{d.description}</span>{/if}
 					</button>
