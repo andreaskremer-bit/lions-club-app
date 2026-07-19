@@ -8,6 +8,7 @@
 	import EventDocuments from '$lib/components/EventDocuments.svelte';
 	import {
 		ChevronLeft,
+		ChevronDown,
 		Check,
 		X,
 		UserPlus,
@@ -72,6 +73,11 @@
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));
 	let zuGuests = $derived(zugesagt.reduce((n, r) => n + r.companion.length, 0));
 	let zuPersonen = $derived(zugesagt.length + zuGuests);
+	// „Offen" = aktive Mitglieder, die noch nicht reagiert haben (deckt sich mit dem Karten-Zaehler).
+	let offen = $derived.by(() => {
+		const responded = new Set(e.event_response.map((r) => r.member_id));
+		return data.activeMembers.filter((m) => !responded.has(m.id));
+	});
 	const name = (r: { member: { first_name: string; last_name: string } | null }) =>
 		r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
 
@@ -371,29 +377,53 @@
 		<!-- Meldungen -->
 		<Card>
 			<h2 class="sec">Meldungen</h2>
-			<p class="grp">
-				Zugesagt ({zuPersonen})
-				{#if zuGuests}<span class="grp__split"
-						>· {zugesagt.length}
-						{zugesagt.length === 1 ? 'Mitglied' : 'Mitglieder'}, {zuGuests}
-						{zuGuests === 1 ? 'Gast' : 'Gäste'}</span
-					>{/if}
-			</p>
-			<ul class="names">
-				{#each zugesagt as r (r.id)}
-					<li>{name(r)}{r.companion.length ? ` (+${r.companion.length})` : ''}</li>
-				{:else}
-					<li class="muted">—</li>
-				{/each}
-			</ul>
-			<p class="grp">Abgesagt ({abgesagt.length})</p>
-			<ul class="names">
-				{#each abgesagt as r (r.id)}
-					<li>{name(r)}</li>
-				{:else}
-					<li class="muted">—</li>
-				{/each}
-			</ul>
+
+			<details class="mgrp" open>
+				<summary class="grp">
+					<ChevronDown size={18} />
+					<span class="grp__label">Zugesagt ({zuPersonen})</span>
+					{#if zuGuests}<span class="grp__split"
+							>· {zugesagt.length}
+							{zugesagt.length === 1 ? 'Mitglied' : 'Mitglieder'}, {zuGuests}
+							{zuGuests === 1 ? 'Gast' : 'Gäste'}</span
+						>{/if}
+				</summary>
+				<ul class="names">
+					{#each zugesagt as r (r.id)}
+						<li>{name(r)}{r.companion.length ? ` (+${r.companion.length})` : ''}</li>
+					{:else}
+						<li class="muted">—</li>
+					{/each}
+				</ul>
+			</details>
+
+			<details class="mgrp">
+				<summary class="grp">
+					<ChevronDown size={18} />
+					<span class="grp__label">Abgesagt ({abgesagt.length})</span>
+				</summary>
+				<ul class="names">
+					{#each abgesagt as r (r.id)}
+						<li>{name(r)}</li>
+					{:else}
+						<li class="muted">—</li>
+					{/each}
+				</ul>
+			</details>
+
+			<details class="mgrp">
+				<summary class="grp">
+					<ChevronDown size={18} />
+					<span class="grp__label">Offen ({offen.length})</span>
+				</summary>
+				<ul class="names">
+					{#each offen as m (m.id)}
+						<li>{m.first_name} {m.last_name}</li>
+					{:else}
+						<li class="muted">—</li>
+					{/each}
+				</ul>
+			</details>
 		</Card>
 	</main>
 </div>
@@ -461,19 +491,44 @@
 	.comp-add :global(.lc-field) {
 		flex: 1;
 	}
+	.mgrp {
+		border-top: 1px solid var(--border-hairline);
+	}
+	.mgrp:first-of-type {
+		border-top: none;
+	}
 	.grp {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 		font-size: var(--text-base);
 		font-weight: 600;
 		color: var(--text-strong);
-		margin: var(--space-2) 0 var(--space-1);
+		min-height: 44px;
+		cursor: pointer;
+		list-style: none;
+	}
+	.grp::-webkit-details-marker {
+		display: none;
+	}
+	.grp :global(svg) {
+		flex: none;
+		color: var(--text-secondary);
+		transition: transform 0.15s ease;
+	}
+	.mgrp[open] > .grp :global(svg) {
+		transform: rotate(180deg);
+	}
+	.grp__label {
+		flex: none;
 	}
 	.grp__split {
 		font-weight: 400;
 		color: var(--text-secondary);
 	}
 	.names {
-		margin: 0 0 var(--space-2);
-		padding-left: var(--space-4);
+		margin: 0 0 var(--space-3);
+		padding-left: calc(18px + var(--space-2));
 	}
 	.names li {
 		font-size: var(--text-base);

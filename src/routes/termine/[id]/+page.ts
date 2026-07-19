@@ -25,6 +25,8 @@ export type EventDetail = {
 	event_response: ResponseRow[];
 };
 
+export type ActiveMember = { id: string; first_name: string; last_name: string };
+
 export type QuestionType = 'single' | 'multi' | 'text' | 'boolean' | 'number';
 export type Question = {
 	id: string;
@@ -44,7 +46,7 @@ export type MyAnswer = {
 export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase, user } = await parent();
 
-	const [eventRes, meRes, qRes, aRes] = await Promise.all([
+	const [eventRes, meRes, membersRes, qRes, aRes] = await Promise.all([
 		supabase
 			.from('event')
 			.select(
@@ -57,6 +59,11 @@ export const load: PageLoad = async ({ parent, params }) => {
 			.select('id, partner_first_name, partner_last_name')
 			.eq('user_id', user?.id ?? '')
 			.maybeSingle(),
+		supabase
+			.from('member')
+			.select('id, first_name, last_name')
+			.eq('status', 'aktiv')
+			.order('last_name'),
 		supabase
 			.from('question')
 			.select('id, label, qtype, options, required, sort_order')
@@ -86,6 +93,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 		event,
 		myMemberId: (me?.id ?? null) as string | null,
 		partnerName,
+		activeMembers: (membersRes.data ?? []) as ActiveMember[],
 		isPast: new Date(event.starts_at).getTime() < Date.now(),
 		questions: (qRes.data ?? []) as Question[],
 		myAnswers: (aRes.data ?? []) as unknown as MyAnswer[]
