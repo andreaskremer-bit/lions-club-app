@@ -13,8 +13,8 @@
 		{ value: 'ab', label: 'Abwesend' }
 	];
 
-	// Markierungen je Mitglied. Vorrang: bereits erfasste Anwesenheit; sonst aus
-	// der Rückmeldung vorbelegt (zugesagt→anwesend, abgesagt→abwesend); offen bleibt leer.
+	// Vorbelegung je Mitglied. Vorrang: bereits erfasste Anwesenheit; sonst aus der
+	// Rückmeldung (zugesagt→anwesend); abgesagt UND ohne Reaktion → abwesend.
 	const snap = untrack(() => ({
 		members: data.members,
 		attendance: data.attendance,
@@ -24,19 +24,39 @@
 	for (const m of snap.members) {
 		if (m.id in snap.attendance) initial[m.id] = snap.attendance[m.id] ? 'an' : 'ab';
 		else if (snap.rsvp[m.id] === 'zugesagt') initial[m.id] = 'an';
-		else if (snap.rsvp[m.id] === 'abgesagt') initial[m.id] = 'ab';
+		else initial[m.id] = 'ab';
 	}
 	let marks = $state<Record<string, 'an' | 'ab'>>(initial);
 
-	// Hinweis nur, wenn überhaupt aus Rückmeldungen vorbelegt wurde (und noch nichts erfasst war).
-	const prefilledFromRsvp =
-		Object.keys(snap.attendance).length === 0 && Object.keys(snap.rsvp).length > 0;
+	// Abschnitte nach RSVP (stabil – der Anwesenheits-Schalter sortiert NICHT um,
+	// die Zeile bleibt in ihrem Abschnitt). data.members ist nach Nachnamen sortiert.
+	let groups = $derived([
+		{
+			key: 'zugesagt',
+			label: 'Angemeldet',
+			members: data.members.filter((m) => data.rsvp[m.id] === 'zugesagt')
+		},
+		{
+			key: 'abgesagt',
+			label: 'Abgemeldet',
+			members: data.members.filter((m) => data.rsvp[m.id] === 'abgesagt')
+		},
+		{
+			key: 'offen',
+			label: 'Ohne Reaktion',
+			members: data.members.filter((m) => !data.rsvp[m.id])
+		}
+	]);
+
+	// Noch nichts erfasst → auf die Vorbelegung hinweisen.
+	const freshPrefill = Object.keys(snap.attendance).length === 0;
 
 	let saving = $state(false);
 	let err = $state('');
 	let saved = $state(false);
 
-	let markedCount = $derived(data.members.filter((m) => marks[m.id]).length);
+	let anwesendCount = $derived(data.members.filter((m) => marks[m.id] === 'an').length);
+	let abwesendCount = $derived(data.members.filter((m) => marks[m.id] === 'ab').length);
 
 	function setAll(v: 'an' | 'ab') {
 		for (const m of data.members) marks[m.id] = v;
@@ -81,37 +101,46 @@
 
 	<main class="shell__body">
 		<div class="bulk">
-			<span class="bulk__label">{markedCount} von {data.members.length} markiert</span>
+			<span class="bulk__label">{anwesendCount} anwesend · {abwesendCount} abwesend</span>
 			<Button variant="ghost" onclick={() => setAll('an')}>Alle anwesend</Button>
 		</div>
-		{#if prefilledFromRsvp}
-			<p class="hint">Aus den Rückmeldungen vorbelegt – bitte prüfen und speichern.</p>
+		{#if freshPrefill}
+			<p class="hint">
+				Vorbelegt aus den Rückmeldungen (ohne Reaktion = abwesend) – bitte prüfen und speichern.
+			</p>
 		{/if}
 
-		<div class="rows">
-			{#each data.members as m (m.id)}
-				<div class="att">
-					<Avatar name={`${m.first_name} ${m.last_name}`} size="sm" />
-					<span class="att__name">
-						{m.first_name}
-						{m.last_name}
-						{#if m.status !== 'aktiv'}<em class="att__tag">{m.status}</em>{/if}
-					</span>
-					<div class="att__seg">
-						<SegmentedControl
-							options={statusOptions}
-							value={marks[m.id]}
-							onchange={(v) => (marks[m.id] = v as 'an' | 'ab')}
-						/>
-					</div>
+		{#each groups as g (g.key)}
+			<section>
+				<h2 class="grp__head">{g.label} <span class="grp__count">({g.members.length})</span></h2>
+				<div class="rows">
+					{#each g.members as m (m.id)}
+						<div class="att">
+							<Avatar name={`${m.first_name} ${m.last_name}`} size="sm" />
+							<span class="att__name">
+								{m.first_name}
+								{m.last_name}
+								{#if m.status !== 'aktiv'}<em class="att__tag">{m.status}</em>{/if}
+							</span>
+							<div class="att__seg">
+								<SegmentedControl
+									options={statusOptions}
+									value={marks[m.id]}
+									onchange={(v) => (marks[m.id] = v as 'an' | 'ab')}
+								/>
+							</div>
+						</div>
+					{:else}
+						<p class="empty">—</p>
+					{/each}
 				</div>
-			{/each}
-		</div>
+			</section>
+		{/each}
 
 		{#if err}<p class="err">Speichern fehlgeschlagen: {err}</p>{/if}
 		{#if saved}<p class="ok">Anwesenheit gespeichert.</p>{/if}
 
-		<Button fullWidth disabled={saving || markedCount === 0} onclick={save}>
+		<Button fullWidth disabled={saving} onclick={save}>
 			{saving ? 'Speichern …' : 'Anwesenheit speichern'}
 		</Button>
 	</main>
@@ -135,6 +164,17 @@
 		font-size: var(--text-sm);
 		color: var(--text-secondary);
 		margin: 0;
+	}
+	.grp__head {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--text-secondary);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin: var(--space-2) 0 var(--space-1);
+	}
+	.grp__count {
+		font-weight: 400;
 	}
 	.rows {
 		display: flex;
@@ -161,6 +201,11 @@
 	}
 	.att__seg {
 		flex: none;
+	}
+	.empty {
+		color: var(--text-secondary);
+		font-size: var(--text-sm);
+		margin: var(--space-1) 0 var(--space-2);
 	}
 	.err {
 		color: var(--clay, #b4502f);
