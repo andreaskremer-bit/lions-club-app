@@ -8,7 +8,11 @@ export type StartEvent = {
 	type: EventType;
 	location: string | null;
 	starts_at: string;
-	event_response: { member_id: string; status: 'zugesagt' | 'abgesagt' }[];
+	event_response: {
+		member_id: string;
+		status: 'zugesagt' | 'abgesagt';
+		companion: { id: string }[];
+	}[];
 };
 
 export type StartNews = {
@@ -42,7 +46,9 @@ export const load: PageLoad = async ({ parent }) => {
 	const [eventRes, newsRes, activeRes] = await Promise.all([
 		supabase
 			.from('event')
-			.select('id, title, type, location, starts_at, event_response(member_id, status)')
+			.select(
+				'id, title, type, location, starts_at, event_response(member_id, status, companion(id))'
+			)
 			.gte('starts_at', nowIso)
 			.order('starts_at', { ascending: true })
 			.limit(1)

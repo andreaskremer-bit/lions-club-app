@@ -19,9 +19,12 @@
 
 	let counts = $derived.by(() => {
 		if (!nextEvent) return { zu: 0, ab: 0, offen: 0 };
-		const zu = nextEvent.event_response.filter((r) => r.status === 'zugesagt').length;
+		const zuResp = nextEvent.event_response.filter((r) => r.status === 'zugesagt');
+		const zuMembers = zuResp.length;
+		const guests = zuResp.reduce((n, r) => n + r.companion.length, 0);
 		const ab = nextEvent.event_response.filter((r) => r.status === 'abgesagt').length;
-		return { zu, ab, offen: Math.max(0, data.activeCount - zu - ab) };
+		// „zu" = angemeldete Personen gesamt (Mitglieder + Gäste); „offen" bleibt mitgliederbezogen.
+		return { zu: zuMembers + guests, ab, offen: Math.max(0, data.activeCount - zuMembers - ab) };
 	});
 </script>
 

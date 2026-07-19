@@ -76,10 +76,13 @@
 	}
 
 	function counts(e: EventListItem) {
-		const zu = e.event_response.filter((r) => r.status === 'zugesagt').length;
+		const zuResp = e.event_response.filter((r) => r.status === 'zugesagt');
+		const zuMembers = zuResp.length;
+		const guests = zuResp.reduce((n, r) => n + r.companion.length, 0);
 		const ab = e.event_response.filter((r) => r.status === 'abgesagt').length;
-		const offen = Math.max(0, activeCount - zu - ab);
-		return { zu, ab, offen };
+		const offen = Math.max(0, activeCount - zuMembers - ab);
+		// „zu" = angemeldete Personen gesamt (Mitglieder + Gäste); „offen" bleibt mitgliederbezogen.
+		return { zu: zuMembers + guests, ab, offen };
 	}
 
 	let now = Date.now();
@@ -135,7 +138,12 @@
 		}
 		return sheetEvent.event_response
 			.filter((r) => r.status === sheetTab)
-			.map((r) => nameById.get(r.member_id) ?? 'Unbekannt')
+			.map((r) => {
+				const nm = nameById.get(r.member_id) ?? 'Unbekannt';
+				return sheetTab === 'zugesagt' && r.companion.length
+					? `${nm} (+${r.companion.length})`
+					: nm;
+			})
 			.sort((a, b) => a.localeCompare(b, 'de'));
 	});
 

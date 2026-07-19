@@ -70,6 +70,8 @@
 
 	let zugesagt = $derived(e.event_response.filter((r) => r.status === 'zugesagt'));
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));
+	let zuGuests = $derived(zugesagt.reduce((n, r) => n + r.companion.length, 0));
+	let zuPersonen = $derived(zugesagt.length + zuGuests);
 	const name = (r: { member: { first_name: string; last_name: string } | null }) =>
 		r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
 
@@ -369,7 +371,14 @@
 		<!-- Meldungen -->
 		<Card>
 			<h2 class="sec">Meldungen</h2>
-			<p class="grp">Zugesagt ({zugesagt.length})</p>
+			<p class="grp">
+				Zugesagt ({zuPersonen})
+				{#if zuGuests}<span class="grp__split"
+						>· {zugesagt.length}
+						{zugesagt.length === 1 ? 'Mitglied' : 'Mitglieder'}, {zuGuests}
+						{zuGuests === 1 ? 'Gast' : 'Gäste'}</span
+					>{/if}
+			</p>
 			<ul class="names">
 				{#each zugesagt as r (r.id)}
 					<li>{name(r)}{r.companion.length ? ` (+${r.companion.length})` : ''}</li>
@@ -457,6 +466,10 @@
 		font-weight: 600;
 		color: var(--text-strong);
 		margin: var(--space-2) 0 var(--space-1);
+	}
+	.grp__split {
+		font-weight: 400;
+		color: var(--text-secondary);
 	}
 	.names {
 		margin: 0 0 var(--space-2);
