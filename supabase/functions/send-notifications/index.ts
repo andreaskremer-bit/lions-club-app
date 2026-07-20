@@ -15,6 +15,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3';
 import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts';
+import { type Kind, pathFor, renderEmail } from './email.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -36,6 +37,7 @@ type Channel = 'push' | 'email' | 'both';
 
 type Notification = {
 	id: string;
+	kind: Kind;
 	recipient_id: string;
 	event_id: string | null;
 	document_id: string | null;
@@ -55,18 +57,18 @@ function buildPayload(n: Notification) {
 	return JSON.stringify({
 		title: n.title,
 		body: n.body ?? '',
-		url: n.event_id
-			? `/termine/${n.event_id}`
-			: n.document_id
-				? '/dokumente'
-				: n.news_post_id
-					? '/news'
-					: '/benachrichtigungen',
+		// Ziel-Pfad kommt aus `email.ts`, damit Push und E-Mail dieselbe Stelle öffnen.
+		url: pathFor(n),
 		tag: n.id
 	});
 }
 
-async function sendEmail(to: string, subject: string, text: string): Promise<boolean> {
+async function sendEmail(
+	to: string,
+	subject: string,
+	text: string,
+	html: string
+): Promise<boolean> {
 	const host = Deno.env.get('SMTP_HOST');
 	const user = Deno.env.get('SMTP_USER');
 	const pass = Deno.env.get('SMTP_PASS');
@@ -84,7 +86,8 @@ async function sendEmail(to: string, subject: string, text: string): Promise<boo
 		}
 	});
 	try {
-		await client.send({ from, to, subject, content: text });
+		// content + html -> multipart/alternative; Clients ohne HTML sehen den Text.
+		await client.send({ from, to, subject, content: text, html });
 		return true;
 	} finally {
 		await client.close();
@@ -103,7 +106,7 @@ Deno.serve(async (req) => {
 	const { data: notes, error } = await supabase
 		.from('notification')
 		.select(
-			'id, recipient_id, event_id, document_id, news_post_id, title, body, member:recipient_id(email, notification_channel)'
+			'id, kind, recipient_id, event_id, document_id, news_post_id, title, body, member:recipient_id(email, notification_channel)'
 		)
 		.is('sent_at', null)
 		.order('created_at', { ascending: true })
@@ -188,7 +191,8 @@ Deno.serve(async (req) => {
 		const emailNow = wantsEmail && email && (channel === 'email' || !delivered);
 		if (emailNow) {
 			try {
-				const ok = await sendEmail(email, n.title, n.body ?? n.title);
+				const mail = renderEmail(n);
+				const ok = await sendEmail(email, mail.subject, mail.text, mail.html);
 				if (ok) {
 					delivered = true;
 					result.email++;
