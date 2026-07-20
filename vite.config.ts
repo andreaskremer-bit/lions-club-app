@@ -57,7 +57,9 @@ export default defineConfig({
 	],
 	test: {
 		// Reine Unit-Tests (Pure-Funktionen ohne SvelteKit-/DOM-Abhängigkeiten).
-		include: ['src/**/*.{test,spec}.{js,ts}'],
+		// Edge-Function-Tests laufen mit: `email.ts` greift nur noch guarded auf
+		// `Deno` zu, damit der Import unter Node nicht scheitert.
+		include: ['src/**/*.{test,spec}.{js,ts}', 'supabase/functions/**/*.{test,spec}.{js,ts}'],
 		environment: 'node'
 	}
 });

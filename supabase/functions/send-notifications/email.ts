@@ -12,10 +12,12 @@
 //     data:-URI: Gmail zeigt base64-Bilder in <img> nicht an. Blockiert ein
 //     Client Bilder, trägt das Text-Lockup daneben die Marke.
 
-const APP_URL = (Deno.env.get('APP_BASE_URL') ?? 'https://app.lions-bonn-rheinaue.de').replace(
-	/\/$/,
-	''
-);
+// Lazy + guarded: `Deno` gibt es unter Vitest (Node) nicht. Ohne den Guard
+// würde schon der Import in `email.test.ts` mit einem ReferenceError sterben.
+function appUrl(): string {
+	const fromEnv = typeof Deno !== 'undefined' ? Deno.env.get('APP_BASE_URL') : undefined;
+	return (fromEnv ?? 'https://app.lions-bonn-rheinaue.de').replace(/\/$/, '');
+}
 
 const C = {
 	cream: '#F6F1E7',
@@ -162,7 +164,8 @@ export function renderEmail(n: MailNotification): {
 	text: string;
 } {
 	const preset = PRESET[n.kind] ?? PRESET.news;
-	const link = `${APP_URL}${pathFor(n)}`;
+	const base = appUrl();
+	const link = `${base}${pathFor(n)}`;
 	const bodyText = n.body?.trim() ? n.body.trim() : preset.fallback;
 
 	const title = esc(n.title);
@@ -195,7 +198,7 @@ export function renderEmail(n: MailNotification): {
     <tr><td align="center" style="padding:8px 8px 20px 8px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
         <td style="padding-right:10px; vertical-align:middle;">
-          <img src="${APP_URL}/icons/lions-emblem.png" width="36" height="36" alt=""
+          <img src="${base}/icons/lions-emblem.png" width="36" height="36" alt=""
                style="display:block; width:36px; height:36px; border:0;">
         </td>
         <td style="vertical-align:middle; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; font-weight:600; letter-spacing:0.02em; color:${C.blue};">
@@ -232,7 +235,7 @@ export function renderEmail(n: MailNotification): {
     <tr><td style="padding:20px 24px 0 24px;">
       <p style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:1.6; color:${C.muted};">
         Du bekommst diese E-Mail, weil du in der Club-App Benachrichtigungen per E-Mail eingestellt hast.
-        Unter <a href="${APP_URL}/mehr" style="color:${C.blue}; text-decoration:underline;">Mehr &rarr; Benachrichtigungen</a> kannst du den Kanal jederzeit ändern.
+        Unter <a href="${base}/mehr" style="color:${C.blue}; text-decoration:underline;">Mehr &rarr; Benachrichtigungen</a> kannst du den Kanal jederzeit ändern.
       </p>
     </td></tr>
 
@@ -255,7 +258,7 @@ export function renderEmail(n: MailNotification): {
 		'--',
 		'Lions Club Bonn-Rheinaue',
 		'Du bekommst diese E-Mail, weil du in der Club-App Benachrichtigungen per',
-		`E-Mail eingestellt hast. Kanal ändern: ${APP_URL}/mehr`
+		`E-Mail eingestellt hast. Kanal ändern: ${base}/mehr`
 	].join('\n');
 
 	// Betreff wire-ready MIME-codiert (siehe encodeSubject) — nicht der Rohtitel.
