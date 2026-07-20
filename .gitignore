@@ -35,3 +35,8 @@ berechtigungen*.csv
 # Sitzungs-Protokolle (interne PDFs mit Mitgliederdaten) – nur in die App-Ablage,
 # NIE ins öffentliche Repo committen
 Protokolle/
+
+# Club-internes Material (Anleitungen, Konzepte, Praesentationen).
+# Bleibt lokal — das Repo ist oeffentlich. Die vier zuvor getrackten Dateien
+# wurden per `git rm --cached` entfernt (Inhalt geprueft: keine PII).
+docs/
