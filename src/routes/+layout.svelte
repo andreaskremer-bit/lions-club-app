@@ -78,5 +78,9 @@
 		max-width: var(--content-max);
 		margin-inline: auto;
 		z-index: 50;
+		/* WebKit-Bug in installierten iOS-PWAs: fixe Elemente wandern beim Scrollen
+		   zeitweise mit dem Inhalt mit. Eigene Compositing-Ebene erzwingen, damit
+		   die Leiste unabhängig vom Seiteninhalt gezeichnet wird. */
+		transform: translateZ(0);
 	}
 </style>
