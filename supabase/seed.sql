@@ -55,7 +55,7 @@ join (values
   ('sekretaer@example.com',       'sekretaer'),
   ('schatzmeister@example.com',   'schatzmeister'),
   ('clubmaster@example.com',      'clubmaster'),
-  ('maria.mitglied@example.com',  'presse') -- Beauftragte (nur Anzeige)
+  ('maria.mitglied@example.com',  'presse') -- Presse: publish_content (News/Dokumente)
 ) as map(email, amt_key) on map.email = m.email
 join public.amt a on a.key = map.amt_key;
 
