@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { encodeSubject, pathFor, renderEmail, type MailNotification } from './email.ts';
+import { encodeSubject, type Kind, pathFor, renderEmail, type MailNotification } from './email.ts';
 
 /**
  * Regressionstest zum denomailer-Bug vom 2026-07-20: Betreffs mit Umlauten
@@ -135,14 +138,48 @@ describe('pathFor', () => {
 		expect(pathFor({ ...base, kind: 'attendance_due', event_id: 'e1' })).toBe(
 			'/termine/e1/anwesenheit'
 		);
-		expect(pathFor({ ...base, kind: 'document', document_id: 'd1' })).toBe('/dokumente/d1');
-		expect(pathFor({ ...base, kind: 'news', news_post_id: 'n1' })).toBe('/news/n1');
 		expect(pathFor({ ...base, kind: 'birthday' })).toBe('/geburtstage');
 	});
 
 	it('fällt ohne ID auf die Übersichtsseite zurück', () => {
 		expect(pathFor({ ...base, kind: 'event_reminder' })).toBe('/termine');
 		expect(pathFor({ ...base, kind: 'document' })).toBe('/dokumente');
+	});
+
+	// News und Dokumente haben keine Detailseite — ein tiefer Link lief in eine 404.
+	it('bleibt bei News und Dokumenten auf der Übersicht, auch mit ID', () => {
+		expect(pathFor({ ...base, kind: 'document', document_id: 'd1' })).toBe('/dokumente');
+		expect(pathFor({ ...base, kind: 'news', news_post_id: 'n1' })).toBe('/news');
+	});
+
+	// Drift-Bremse: jeder erzeugbare Pfad muss eine echte SvelteKit-Seite treffen.
+	it('zeigt nur auf Routen, die es wirklich gibt', () => {
+		const withIds: MailNotification = {
+			...base,
+			event_id: 'ID',
+			document_id: 'ID',
+			news_post_id: 'ID'
+		};
+		const kinds: Kind[] = ['event_reminder', 'attendance_due', 'birthday', 'document', 'news'];
+		const paths = new Set<string>();
+		for (const kind of kinds) {
+			paths.add(pathFor({ ...withIds, kind }));
+			paths.add(pathFor({ ...base, kind }));
+		}
+		paths.add(pathFor({ ...base, kind: 'unbekannt' as Kind }));
+
+		const routesDir = fileURLToPath(new URL('../../../src/routes/', import.meta.url));
+		for (const path of paths) {
+			// Sentinel-Segmente zurück auf den Parameter-Ordner abbilden.
+			const dir = path
+				.split('/')
+				.filter(Boolean)
+				.map((seg) => (seg === 'ID' ? '[id]' : seg))
+				.join('/');
+			expect(existsSync(join(routesDir, dir, '+page.svelte')), `${path} hat keine Seite`).toBe(
+				true
+			);
+		}
 	});
 });
 
@@ -175,8 +212,10 @@ describe('renderEmail', () => {
 	});
 
 	it('enthält denselben Link in HTML und Klartext', () => {
-		const { html, text } = renderEmail({ ...n, kind: 'news', news_post_id: 'n1' });
-		const link = 'https://app.lions-bonn-rheinaue.de/news/n1';
+		const news: MailNotification = { ...n, kind: 'news', news_post_id: 'n1' };
+		const { html, text } = renderEmail(news);
+		// Ziel aus pathFor ableiten, damit der Test bei einer Pfadänderung nicht driftet.
+		const link = `https://app.lions-bonn-rheinaue.de${pathFor(news)}`;
 		expect(html).toContain(link);
 		expect(text).toContain(link);
 	});

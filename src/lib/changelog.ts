@@ -32,6 +32,10 @@ export const CHANGELOG: ChangelogEntry[] = [
 		date: '2026-08-04',
 		changes: [
 			{
+				kind: 'behoben',
+				text: 'Der Link in einer Benachrichtigung zu einem neuen Beitrag oder Dokument führte auf eine Fehlerseite. Er öffnet jetzt die passende Übersicht.'
+			},
+			{
 				kind: 'verbessert',
 				text: 'Die App startet jetzt auch ohne Internet und zeigt die zuletzt geöffnete Seite. Ist gar keine Verbindung da, erscheint ein Hinweis statt der Fehlerseite des Browsers.'
 			},

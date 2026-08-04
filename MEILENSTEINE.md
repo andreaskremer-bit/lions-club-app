@@ -365,3 +365,17 @@ Stufe 3 wurde auf Wunsch VOR Stufe 2 gezogen. Ziel: Wer die PWA im Funkloch öff
 Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) — davor gab es keine Mitglieder, die eine Änderung hätten bemerken können.
 
 **Verifiziert:** `npm run check` · `lint` · 60 Unit-Tests grün · Produktions-Build enthält Nummer und Hash im Client-Bundle · beide Screens am lokalen Stack per Playwright (Login über Mailpit-OTP) im iPhone-Format bestätigt.
+
+## Behoben: Push-/Mail-Link zu News und Dokumenten lief in eine 404 (2026-08-04)
+
+**Symptom.** Klick auf die Push-Mitteilung „neue News" öffnete die PWA auf einer leeren Seite mit 404 — unterwegs gemeldet, also genau in der Situation, für die der Deep-Link gedacht ist.
+
+**Ursache.** `pathFor()` in `supabase/functions/send-notifications/email.ts` (geteilt von Push-Payload **und** dem Button in der Benachrichtigungs-Mail) baute `/news/<id>` bzw. `/dokumente/<id>`. Diese Routen gibt es nicht: unter `src/routes/news/[id]/` und `src/routes/dokumente/[id]/` liegt jeweils **nur** `bearbeiten/`, keine `+page.svelte`. Eine Detailseite für einen einzelnen Beitrag/ein einzelnes Dokument war nie vorgesehen — der Feed `/news` zeigt die Beiträge vollständig, `/dokumente` ist die Ablage. Betroffen waren beide Kanäle (Push **und** Mail) und beide Anlässe; `/termine/<id>`, `/termine/<id>/anwesenheit` und `/geburtstage` existieren und funktionierten.
+
+**Warum es durchrutschte.** Die In-App-Liste macht es seit jeher richtig (`benachrichtigungen/+page.svelte` springt auf `/news` bzw. `/dokumente`) — die Abweichung stand nur in der Edge Function. Der Go-live-Test am 16.07. lief über einen Termin-Reminder, also über die eine Kind-Variante, deren Route es gibt. Und der Unit-Test `email.test.ts` zementierte den Fehler sogar: er prüfte, dass die ID im Pfad landet, nie dass der Pfad eine Seite trifft.
+
+**Fix.** `pathFor()` gibt für `document`/`news` die Übersicht zurück, identisch zur In-App-Liste. Zusätzlich zwei Tests: ein Regressionstest (News/Dokument bleiben auf der Übersicht, auch mit ID) und eine **Drift-Bremse**, die jeden von `pathFor()` erzeugbaren Pfad gegen `src/routes/**/+page.svelte` prüft (Sentinel-ID → `[id]`-Ordner) — eine neue Kind-Variante mit erfundenem Pfad fällt damit sofort auf. Der Link-Test in `renderEmail` leitet sein Ziel jetzt aus `pathFor()` ab, statt es zu wiederholen.
+
+**Lehre: ein Test über einen String-Pfad beweist nur die Zeichenkette, nicht das Ziel.** Wo Code einen Pfad in eine andere Codebasis hinein baut (Edge Function → SvelteKit-Routen), muss der Test die andere Seite tatsächlich anfassen — hier das Dateisystem. Verwandt mit der Betreff-Lehre vom 20.07.: beide Male war der grüne Test schlicht die falsche Frage.
+
+**Ausgerollt.** `npm run check` · `lint` · 62 Unit-Tests grün · `npx supabase functions deploy send-notifications` (Projekt `qfxtyqippdrcrhwbkhwx`). Kein DB-Push nötig. Bereits zugestellte Push-Mitteilungen und Mails behalten ihren alten Link — der Pfad wird beim Versand eingebacken; alles ab jetzt Versendete ist korrekt.

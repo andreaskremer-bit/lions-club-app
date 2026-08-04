@@ -42,7 +42,15 @@ export type MailNotification = {
 	news_post_id: string | null;
 };
 
-/** Ziel-Pfad in der App — geteilt mit dem Push-Payload, damit beide Kanäle gleich landen. */
+/**
+ * Ziel-Pfad in der App — geteilt mit dem Push-Payload, damit beide Kanäle gleich landen.
+ *
+ * WICHTIG: Nur Pfade, für die es in `src/routes/` wirklich eine Seite gibt.
+ * News und Dokumente haben KEINE Detailseite (`news/[id]`/`dokumente/[id]` enthalten
+ * nur `bearbeiten/`) — eine tiefe Verlinkung landete dort auf einer 404-Seite.
+ * Beide Anlässe zeigen deshalb auf die Übersicht, genau wie die In-App-Liste
+ * unter `/benachrichtigungen`.
+ */
 export function pathFor(n: MailNotification): string {
 	switch (n.kind) {
 		case 'event_reminder':
@@ -52,9 +60,9 @@ export function pathFor(n: MailNotification): string {
 		case 'birthday':
 			return '/geburtstage';
 		case 'document':
-			return n.document_id ? `/dokumente/${n.document_id}` : '/dokumente';
+			return '/dokumente';
 		case 'news':
-			return n.news_post_id ? `/news/${n.news_post_id}` : '/news';
+			return '/news';
 		default:
 			return '/benachrichtigungen';
 	}
