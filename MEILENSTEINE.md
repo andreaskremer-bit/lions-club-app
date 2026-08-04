@@ -287,3 +287,26 @@ Anlass: der Plugin-gestützte Scan (claude-security 0.10.0) lief dreimal ins Tok
 
 **LEHRE:** Client-Parameter sind keine Zugriffskontrolle — `shouldCreateUser: false` sah wie eine Sperre aus, war aber nur eine Bitte. Und: Produktionseinstellungen, die außerhalb des Repos leben (Dashboard-Schalter), tauchen in keinem Code-Review auf. Der Signup-Schalter gehört ab jetzt auf jede Audit-Checkliste; Prüfbefehl ohne jeden Seiteneffekt:
 `curl -s "$PUBLIC_SUPABASE_URL/auth/v1/settings" -H "apikey: $PUBLIC_SUPABASE_ANON_KEY"` → erwartet `"disable_signup": true`.
+
+## PWA-Caching Stufe 1 — Mitgliederfotos + Logout-Wipe (2026-08-04)
+
+Erste Stufe des am 2026-07-12 beschlossenen Caching-Stufenplans (Reihenfolge: **1. Fotos + Logout-Wipe** · 2. SWR für Supabase-GETs · 3. Offline-Start · 4. IndexedDB). Bis hierhin war NUR die App-Shell im Precache; Inhaltsdaten und Fotos bewusst nicht.
+
+**Umgesetzt:**
+
+- `vite.config.ts`: `runtimeCaching`-Route (CacheFirst) für den privaten Bucket `member-photos`, Cache `lions-member-photos`, 60 Einträge / 30 Tage, `cacheableResponse: [200]`. CacheFirst ist hier gefahrlos, weil jedes hochgeladene Foto unter einem NEUEN Pfad landet (`avatar_<timestamp>.<ext>`) — ein Bildwechsel ist ein Cache-Miss, kein altes Bild.
+- `cacheKeyWillBeUsed` normalisiert den Cache-Key auf `origin + pathname`. Signierte Storage-URLs tragen bei JEDEM Aufruf ein frisches Token im Query-String; ohne Normalisierung wäre jede Sitzung ein Miss und der Cache liefe voll.
+- `src/lib/offlineCache.ts` (+ 7 Vitest-Tests, Suite jetzt 49): `clearPrivateCaches()` löscht beim Ausloggen den Fotocache und die `workbox-expiration`-IndexedDB, lässt den App-Shell-Precache stehen. `deleteDatabaseWithTimeout()`, weil `deleteDatabase` bei offener SW-Verbindung `blocked` statt `success` feuert — der Logout darf darauf nicht warten. Verdrahtet in `signOut()` (`src/routes/mehr/+page.svelte`). Pflicht, sobald personenbezogene Daten im Browser-Storage liegen.
+- `Avatar.svelte`: `crossorigin="anonymous"` am Foto-`<img>`.
+
+**Drei Fallen, alle erst durch echtes Messen gefunden** (lokaler Stack + Produktions-Build via `vite preview` + Playwright; die Konfiguration sah jedes Mal korrekt aus und cachte trotzdem nichts):
+
+1. **`urlPattern` als RegExp greift bei Cross-Origin nicht**, wenn das Muster nicht den URL-ANFANG matcht (Workbox-Regel). Die Fotos liegen auf einem fremden Origin (`…supabase.co`, lokal `127.0.0.1:54321`), ein Muster ab `/storage/…` konnte dort nie greifen. → Callback `({url}) => url.pathname.startsWith(…)` statt RegExp; bleibt zugleich origin-unabhängig für lokal/Prod.
+2. **`<img>` ohne `crossorigin` erzeugt einen `no-cors`-Request → opaque Response (Status 0).** Der SW kann Erfolg dann nicht von Fehler unterscheiden und würde im Zweifel eine kaputte Antwort dauerhaft cachen. Supabase-Storage sendet `access-control-allow-origin: *`, deshalb echter CORS-Request und prüfbarer Status.
+3. **Der eigentliche Blocker — ein Altlast-Bug seit M5:** vite-pwa registrierte per Default einen Navigations-Fallback `createHandlerBoundToURL('/')`, aber `/` liegt nicht im Precache (die App wird nicht prerendert, SSR läuft auf Netlify). Beim SW-Start warf das `non-precached-url` — und **brach die Registrierung ALLER nachfolgenden Routen ab**. Im bisherigen Build blieb das unsichtbar, weil der generierte SW die Workbox-Runtime über einen AMD-`define()`-Wrapper lud, dessen Factory erst in einem Microtask läuft: der Fehler verschwand als stille Promise-Rejection. Zwei Konsequenzen, beide gefixt: `inlineWorkboxRuntime: true` (Runtime direkt in die `sw.js`, alles wird synchron während der initialen Skript-Auswertung registriert — sonst zählt der Browser den SW als „ohne Fetch-Handler") und `navigateFallback: null` (ein echter Offline-Start kommt in Stufe 3 mit eigener, precachter Fallback-Seite).
+
+**LEHRE:** Eine plausibel aussehende SW-Konfiguration beweist nichts — der generierte `sw.js` muss gelesen und das Laufzeitverhalten gemessen werden. Diagnose-Reihenfolge, die funktioniert hat: (a) Route im gebauten `sw.js` per grep bestätigen, (b) `response.fromServiceWorker()` in Playwright prüfen, (c) eine temporäre `fetch`-Sonde in `static/sw-push.js` schreiben lassen, welche Requests den SW überhaupt erreichen, (d) SW-Evaluierungsfehler per CDP `ServiceWorker.workerErrorReported` auslesen — die entscheidende Fehlermeldung steht in KEINER Browser- oder Seiten-Konsole.
+
+**Verifiziert (lokaler Stack, 3 Seed-Fotos, Produktions-Build):** Cache wird angelegt (2 Einträge), Keys ohne Token, zweiter Besuch mit frisch signierten URLs lässt den Cache NICHT wachsen und liefert die Fotos mit `fromServiceWorker: true` aus dem Cache, Logout löscht `lions-member-photos` und lässt den Precache stehen. `npm run check` · `lint` · 49 Unit-Tests · 2 E2E grün.
+
+**Offen:** Stufen 2–4 des Plans. Beim nächsten Deploy im Blick behalten, dass Bestandsnutzer den alten SW ersetzt bekommen (`registerType: 'autoUpdate'` + `skipWaiting`).

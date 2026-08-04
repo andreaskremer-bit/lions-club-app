@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, Button } from '$lib/components/ui';
+	import { clearPrivateCaches } from '$lib/offlineCache';
 	import {
 		User,
 		Cake,
@@ -24,6 +25,8 @@
 	async function signOut() {
 		loading = true;
 		await supabase.auth.signOut();
+		// Gecachte Mitgliederfotos sind personenbezogen — beim Abmelden weg (DSGVO).
+		await clearPrivateCaches();
 		await goto(resolve('/login'), { invalidateAll: true });
 	}
 </script>

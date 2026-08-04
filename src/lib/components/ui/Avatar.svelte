@@ -36,7 +36,12 @@
 
 <span class={cls} aria-label={name || undefined} {...rest}>
 	{#if src}
-		<img {src} alt={name} />
+		<!-- crossorigin: Mitgliederfotos kommen vom Supabase-Storage (anderer Origin,
+		     liefert `access-control-allow-origin: *`). Ohne dieses Attribut wäre der
+		     Request `no-cors` und die Antwort *opaque* (Status 0) — der Service Worker
+		     könnte Erfolg nicht von Fehler unterscheiden und würde im Zweifel eine
+		     kaputte Antwort dauerhaft cachen. Mit CORS ist der Status echt prüfbar. -->
+		<img {src} alt={name} crossorigin="anonymous" />
 	{:else}
 		{initials}
 	{/if}
