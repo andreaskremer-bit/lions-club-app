@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { Button, Input, OtpInput } from '$lib/components/ui';
+	import { clearPrivateCaches } from '$lib/offlineCache';
 	import { Mail, ArrowRight, ChevronLeft } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -51,6 +52,10 @@
 			code = '';
 			return;
 		}
+		// Gecachte Seiten/Fotos einer vorherigen Anmeldung wegräumen — auf einem
+		// geteilten Gerät (oder nach abgelaufener Session ohne Logout) darf davon
+		// nichts stehen bleiben.
+		await clearPrivateCaches();
 		await goto(resolve('/'), { invalidateAll: true });
 	}
 

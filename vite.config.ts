@@ -2,7 +2,7 @@ import adapter from '@sveltejs/adapter-netlify';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
-import { PHOTO_CACHE_NAME } from './src/lib/offlineCache';
+import { PAGE_CACHE_NAME, PHOTO_CACHE_NAME } from './src/lib/offlineCache';
 
 export default defineConfig({
 	plugins: [
@@ -32,22 +32,79 @@ export default defineConfig({
 				// Ohne dieses Flag greift `runtimeCaching` schlicht nicht.
 				inlineWorkboxRuntime: true,
 				// Build-Assets inkl. self-hosted Fonts vorab cachen (Offline-Shell).
-				globPatterns: ['client/**/*.{js,css,html,ico,png,svg,webp,woff,woff2,webmanifest}'],
-				importScripts: ['sw-push.js'],
+				// BEWUSST OHNE `html`: @vite-pwa/sveltekit schneidet in seiner
+				// manifestTransform jeder `.html`-Datei die Endung ab (gedacht für
+				// prerenderte Seiten) — `static/offline.html` läge dann unter der URL
+				// `/offline` im Precache, und ein Fehlschlag beim Holen würde die
+				// GESAMTE Installation kippen. Die Offline-Seite cacht deshalb
+				// `static/sw-offline.js` selbst. Der Client-Output enthält sonst keine
+				// HTML-Dateien (prerenderte Seiten kämen aus `prerendered/**`).
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2,webmanifest}'],
+				importScripts: ['sw-push.js', 'sw-offline.js'],
 				cleanupOutdatedCaches: true,
-				// KEIN Navigations-Fallback: vite-pwa würde `createHandlerBoundToURL('/')`
-				// registrieren, aber `/` liegt nicht im Precache (die App wird nicht
-				// prerendert, SSR läuft auf Netlify). Das warf beim SW-Start
-				// `non-precached-url` und brach die Registrierung der NACHFOLGENDEN
-				// Routen ab — im alten AMD-Build unsichtbar, weil der Fehler in einer
-				// Promise verschwand. Ein echter Offline-Start kommt in Stufe 3 des
-				// Caching-Plans (NetworkFirst + eigene Fallback-Seite im Precache).
+				// KEIN `navigateFallback`: vite-pwa würde daraus `createHandlerBoundToURL('/')`
+				// bauen, aber `/` liegt nicht im Precache (die App wird nicht prerendert,
+				// SSR läuft auf Netlify). Das warf beim SW-Start `non-precached-url` und
+				// brach die Registrierung der NACHFOLGENDEN Routen ab — im alten AMD-Build
+				// unsichtbar, weil der Fehler in einer Promise verschwand.
+				// Der Offline-Start läuft stattdessen über die Navigations-Route unten:
+				// erst Netz, dann zuletzt besuchte Seite, dann `/offline.html`.
 				navigateFallback: null,
-				// Stufe 1 des Caching-Stufenplans: Mitgliederfotos aus dem privaten
-				// Storage-Bucket `member-photos`. CacheFirst ist hier unkritisch, weil
-				// jedes neue Foto unter einem NEUEN Pfad landet (`avatar_<timestamp>.<ext>`)
-				// — ein Bildwechsel erzeugt also einen Cache-Miss statt eines alten Bilds.
+				// ACHTUNG bei allen Callbacks hier drin: workbox-build schreibt sie per
+				// `Function.prototype.toString()` in die sw.js. Sie dürfen deshalb NICHTS
+				// aus diesem Modul-Scope benutzen — importierte Konstanten stehen im
+				// Service Worker nicht zur Verfügung. Nur `cacheName` & Co. sind normale
+				// Werte, die beim Build ausgewertet werden.
 				runtimeCaching: [
+					// Stufe 3 des Caching-Stufenplans: Seitenaufrufe (Navigationen).
+					// NetworkFirst BEWUSST ohne `networkTimeoutSeconds` — solange das Netz
+					// antwortet, sieht man immer den frischen SSR-Stand. Erst wenn der
+					// Request scheitert, kommt die zuletzt besuchte Fassung, und wenn auch
+					// die fehlt, die statische Offline-Seite.
+					{
+						urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+						handler: 'NetworkFirst',
+						options: {
+							cacheName: PAGE_CACHE_NAME,
+							// Kurzlebig: das HTML verweist auf gehashte Assets, die nach einem
+							// Deploy nicht mehr existieren. Nur als Notnagel fürs Funkloch.
+							expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
+							plugins: [
+								{
+									cacheWillUpdate: async ({
+										request,
+										response
+									}: {
+										request: Request;
+										response: Response;
+									}) => {
+										// `redirected` NICHT cachen: ohne Session antwortet der Server
+										// mit 303 auf /login, fetch folgt und liefert die Login-Seite
+										// unter der ursprünglichen URL. Aus dem Cache zurückgegeben
+										// bricht so eine Antwort die Navigation ab ("a redirected
+										// response was used for a request whose redirect mode is not
+										// follow") — und sie gehört ohnehin nicht zu dieser URL.
+										if (!response || response.status !== 200 || response.redirected) return null;
+										// Die Login-Seite ist offline nutzlos (der Code kommt per Mail)
+										// und soll den Platz nicht belegen.
+										if (new URL(request.url).pathname.startsWith('/login')) return null;
+										return response;
+									},
+									// Netz weg UND kein Cache-Treffer: statt der Browser-Fehlerseite
+									// die Offline-Seite, die `static/sw-offline.js` beim Installieren
+									// abgelegt hat. Namen müssen zu OFFLINE_SHELL_CACHE /
+									// OFFLINE_FALLBACK_URL in src/lib/offlineCache.ts passen.
+									handlerDidError: async () =>
+										(await (await caches.open('lions-offline-shell')).match('/offline.html')) ??
+										undefined
+								}
+							]
+						}
+					},
+					// Stufe 1 des Caching-Stufenplans: Mitgliederfotos aus dem privaten
+					// Storage-Bucket `member-photos`. CacheFirst ist hier unkritisch, weil
+					// jedes neue Foto unter einem NEUEN Pfad landet (`avatar_<timestamp>.<ext>`)
+					// — ein Bildwechsel erzeugt also einen Cache-Miss statt eines alten Bilds.
 					{
 						// ACHTUNG: KEIN RegExp verwenden — Workbox wendet RegExp-Muster auf
 						// Cross-Origin-Requests nur an, wenn sie den URL-ANFANG matchen. Die

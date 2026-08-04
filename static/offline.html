@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1E4FA3" />
+		<meta name="robots" content="noindex" />
+		<title>Offline — Lions Club Bonn-Rheinaue</title>
+		<!--
+			Fallback-Seite, wenn eine Seitennavigation ohne Netz scheitert (Stufe 3 des
+			Caching-Stufenplans). Liegt bewusst als statische Datei in `static/` und NICHT
+			als SvelteKit-Route:
+			  * sie muss im Workbox-Precache liegen (dorthin kommt nur, was der
+			    `globPatterns`-Scan im Build-Output findet),
+			  * sie darf den Auth-Guard aus hooks.server.ts nicht durchlaufen und
+			  * sie darf beim Rendern keine Daten brauchen — ohne Netz gibt es keine.
+
+			Alles ist inline: ohne Netz kann nur geladen werden, was ebenfalls im
+			Precache liegt. Das Emblem (/icons/lions-emblem.png) ist dort, Schriften
+			nicht (die tragen im Build einen Hash im Dateinamen) — deshalb Systemschrift.
+		-->
+		<style>
+			:root {
+				--cream-100: #f6f1e7;
+				--cream-card: #fcfaf4;
+				--cream-300: #e4dccb;
+				--ink-900: #211e18;
+				--ink-500: #6e675a;
+				--blue-600: #1e4fa3;
+				--blue-700: #16407f;
+				--gold-700: #856010;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				min-height: 100dvh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 24px;
+				padding: 32px 24px calc(32px + env(safe-area-inset-bottom, 0px));
+				background: var(--cream-100);
+				color: var(--ink-900);
+				font-family:
+					-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+				font-size: 17px;
+				line-height: 1.5;
+				text-align: center;
+				-webkit-font-smoothing: antialiased;
+			}
+			.emblem {
+				width: 88px;
+				height: 88px;
+				object-fit: contain;
+			}
+			.card {
+				width: 100%;
+				max-width: 420px;
+				background: var(--cream-card);
+				border: 1px solid var(--cream-300);
+				border-radius: 16px;
+				padding: 28px 22px;
+			}
+			h1 {
+				margin: 0 0 10px;
+				font-size: 27px;
+				line-height: 1.15;
+				letter-spacing: -0.01em;
+			}
+			p {
+				margin: 0 0 8px;
+				color: var(--ink-500);
+			}
+			p.last {
+				margin-bottom: 0;
+			}
+			button {
+				display: block;
+				width: 100%;
+				min-height: 48px;
+				margin-top: 22px;
+				padding: 12px 20px;
+				border: none;
+				border-radius: 12px;
+				background: var(--blue-600);
+				color: #fbf8f1;
+				font: inherit;
+				font-weight: 600;
+				cursor: pointer;
+			}
+			button:active {
+				background: var(--blue-700);
+			}
+			button:focus-visible {
+				outline: 3px solid var(--blue-600);
+				outline-offset: 2px;
+			}
+			.status {
+				min-height: 22px;
+				font-size: 14px;
+				color: var(--gold-700);
+				font-weight: 600;
+			}
+		</style>
+	</head>
+	<body>
+		<img class="emblem" src="/icons/lions-emblem.png" alt="Lions Club Bonn-Rheinaue" />
+
+		<div class="card">
+			<h1>Keine Verbindung</h1>
+			<p>
+				Diese Seite lässt sich gerade nicht laden — dein Gerät ist offline oder das Netz ist zu
+				schwach.
+			</p>
+			<p class="last">
+				Sobald du wieder Empfang hast, geht es weiter. Bereits geladene Mitgliederfotos bleiben
+				auf dem Gerät.
+			</p>
+			<button type="button" id="retry">Erneut versuchen</button>
+			<p class="status" id="status" role="status" aria-live="polite"></p>
+		</div>
+
+		<script>
+			(function () {
+				var status = document.getElementById('status');
+
+				document.getElementById('retry').addEventListener('click', function () {
+					status.textContent = navigator.onLine ? '' : 'Immer noch offline.';
+					location.reload();
+				});
+
+				// Kommt das Netz von selbst zurück, laden wir die ursprünglich
+				// angeforderte Seite ohne Zutun neu — location.href zeigt weiterhin
+				// auf sie, der Service Worker hat hier nur die Antwort ersetzt.
+				window.addEventListener('online', function () {
+					status.textContent = 'Verbindung ist wieder da — Seite wird geladen.';
+					location.reload();
+				});
+			})();
+		</script>
+	</body>
+</html>
