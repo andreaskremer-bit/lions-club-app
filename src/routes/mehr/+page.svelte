@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, Button } from '$lib/components/ui';
 	import { clearPrivateCaches } from '$lib/offlineCache';
-	import { APP_VERSION } from '$lib/version';
+	import { APP_BUILD } from '$lib/version';
 	import {
 		User,
 		Cake,
@@ -104,9 +104,11 @@
 		</div>
 
 		<!-- Leise Fußzeile: für Mitglieder Beiwerk, im Supportfall die erste Frage
-		     ("hast du den aktuellen Stand?"). Tippbar -> Was ist neu. -->
+		     ("hast du den aktuellen Stand?"). Tippbar -> Was ist neu.
+		     Commit-Hash bewusst mit dabei: er macht die Zeile neugierig genug zum
+		     Antippen und ordnet einen Screenshot exakt einem Code-Stand zu. -->
 		<a class="version" href={resolve('/mehr/version')}>
-			Version {APP_VERSION}
+			Version {APP_BUILD}
 		</a>
 	</main>
 </div>
