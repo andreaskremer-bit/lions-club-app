@@ -1,8 +1,25 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import adapter from '@sveltejs/adapter-netlify';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { PAGE_CACHE_NAME, PHOTO_CACHE_NAME } from './src/lib/offlineCache';
+
+// Inhalts-Hash der Offline-Seite und ihres Install-Skripts.
+//
+// WARUM: `static/offline.html` liegt bewusst NICHT im Workbox-Precache (s. u.),
+// taucht also im Precache-Manifest der `sw.js` nicht auf. Ohne diesen Hash wäre
+// die generierte `sw.js` nach einer reinen Textänderung an der Offline-Seite
+// BYTEGLEICH — der Browser sähe kein Update, der `install`-Handler liefe nie
+// wieder, und die alte Fassung bliebe für immer im Cache. Der Hash hängt am
+// `importScripts`-Eintrag und landet damit wörtlich in der `sw.js`: neue Seite
+// → neue `sw.js` → SW-Update → `install` holt die Seite frisch.
+const offlineRevision = createHash('sha256')
+	.update(readFileSync('static/offline.html'))
+	.update(readFileSync('static/sw-offline.js'))
+	.digest('hex')
+	.slice(0, 8);
 
 export default defineConfig({
 	plugins: [
@@ -40,7 +57,7 @@ export default defineConfig({
 				// `static/sw-offline.js` selbst. Der Client-Output enthält sonst keine
 				// HTML-Dateien (prerenderte Seiten kämen aus `prerendered/**`).
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2,webmanifest}'],
-				importScripts: ['sw-push.js', 'sw-offline.js'],
+				importScripts: ['sw-push.js', `sw-offline.js?v=${offlineRevision}`],
 				cleanupOutdatedCaches: true,
 				// KEIN `navigateFallback`: vite-pwa würde daraus `createHandlerBoundToURL('/')`
 				// bauen, aber `/` liegt nicht im Precache (die App wird nicht prerendert,
