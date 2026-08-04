@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import adapter from '@sveltejs/adapter-netlify';
@@ -21,7 +22,59 @@ const offlineRevision = createHash('sha256')
 	.digest('hex')
 	.slice(0, 8);
 
+// ---------------------------------------------------------------------------
+// Versionskennung der ausgelieferten App (Anzeige unter /mehr → Version).
+//
+// CalVer statt SemVer: „Breaking Change für API-Konsumenten?" fragt hier
+// niemand — die einzige real gestellte Frage ist „habe ich den aktuellen
+// Stand?". Genau die ist bei einer PWA mit Service Worker nicht rhetorisch,
+// weil ein Gerät durchaus tagelang eine ältere Shell fahren kann.
+//
+// Beide Werte entstehen zur BUILD-Zeit aus Git. Bewusst nichts von Hand
+// gepflegtes (auch nicht `package.json.version`): eine Nummer, die jemand
+// bumpen muss, ist nach drei Wochen falsch — und eine falsche Nummer ist
+// schlechter als gar keine.
+function gitOutput(cmd: string): string | null {
+	try {
+		return (
+			execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] })
+				.toString()
+				.trim() || null
+		);
+	} catch {
+		return null;
+	}
+}
+
+/** `2026.08.04` — Datum in Europe/Berlin, damit ein Nacht-Deploy (Netlify baut
+ *  in UTC) nicht auf den Vortag datiert wird. */
+function berlinDate(d: Date): string {
+	const parts = new Intl.DateTimeFormat('de-DE', {
+		timeZone: 'Europe/Berlin',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	}).formatToParts(d);
+	const at = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+	return `${at('year')}.${at('month')}.${at('day')}`;
+}
+
+// Commit-Datum statt Build-Datum: reproduzierbar (ein Re-Deploy desselben
+// Commits ergibt dieselbe Nummer) und beschreibt den Stand des Codes, nicht
+// den Zeitpunkt der Auslieferung. Fallback = Build-Zeit, falls kein Git da ist.
+const commitIso = gitOutput('git log -1 --format=%cI');
+const appVersion = berlinDate(commitIso ? new Date(commitIso) : new Date());
+// Netlifys COMMIT_REF als Rückfalloption, falls der Build ohne .git läuft.
+const appCommit =
+	gitOutput('git rev-parse --short=7 HEAD') ?? process.env.COMMIT_REF?.slice(0, 7) ?? 'dev';
+
 export default defineConfig({
+	// Typen für beide Globals stehen in src/app.d.ts, gelesen werden sie nur in
+	// src/lib/version.ts.
+	define: {
+		__APP_VERSION__: JSON.stringify(appVersion),
+		__APP_COMMIT__: JSON.stringify(appCommit)
+	},
 	plugins: [
 		sveltekit({
 			compilerOptions: {

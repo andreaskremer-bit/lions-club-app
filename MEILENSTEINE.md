@@ -340,3 +340,28 @@ Stufe 3 wurde auf Wunsch VOR Stufe 2 gezogen. Ziel: Wer die PWA im Funkloch öff
 **ENTSCHIEDEN 2026-08-04 (User): Stufe 2 wird zurückgestellt.** Stufe 3 deckt den Alltag ab (Start im Funkloch, letzte Seite, saubere Offline-Meldung beim Weiterklicken). Ob im Cluballtag überhaupt Bedarf entsteht, Inhalte anderer Seiten offline zu lesen, wird zuerst beobachtet. Wenn ja, ist die Vorentscheidung **NetworkFirst ohne `networkTimeoutSeconds`** auf ausgewählte Tabellen (Verzeichnis, Termine, News, Geburtstage) — gleiche Logik wie Stufe 3, damit kein Konflikt mit dem `invalidateAll()`-Muster an 31 Stellen entstehen kann. Ausgenommen blieben Live-Zähler (Meldungen, ungelesene Benachrichtigungen) und die Dokumentensuche (RPC per POST, über die URL nicht cachebar). Der Datencache müsste in denselben Wipe wie `lions-pages`, weil die Antworten RLS-abhängig sind, der Cache-Schlüssel aber nur die URL ist. Verworfen wurden StaleWhileRevalidate + `broadcastUpdate` (nach eigener Änderung kurzzeitig alter Stand — Vertrauensproblem) und die enge Whitelist (zu wenig Nutzen).
 
 **Offen:** Stufe 4 (IndexedDB-Snapshots), weiterhin nur bei echtem Bedarf.
+
+---
+
+## Versionsanzeige + „Was ist neu" (2026-08-04)
+
+**Warum überhaupt.** Der Nutzen liegt nicht darin, dass Mitglieder eine Nummer wissen wollen, sondern in zwei praktischen Dingen: (1) **Support-Diagnose** — bei „bei mir sieht das anders aus" ist die erste Frage, ob das Gerät den aktuellen Stand hat, und genau die ist seit den Caching-Stufen 1/3 nicht mehr rhetorisch: eine installierte PWA kann durch den Service-Worker-Cache länger auf einer älteren Shell laufen. (2) **Sichtbare Pflege** — „zuletzt geändert am 4. August" zeigt, dass die App lebt.
+
+**Schema: CalVer, aus Git, nichts von Hand.** `2026.08.04 · f7e9b1f` — Datum für Menschen („bin ich aktuell?"), Commit-Hash für die Zuordnung eines Screenshots zu einem Code-Stand. SemVer wurde verworfen: „Breaking Change für API-Konsumenten?" fragt hier niemand, und eine Nummer, die jemand bewusst bumpen muss, steht nach drei Wochen falsch da — eine falsche Nummer ist schlechter als gar keine. `package.json.version` bleibt deshalb unangetastet bei `0.0.1`.
+
+**Umgesetzt:**
+
+- `vite.config.ts`: `define` setzt `__APP_VERSION__` + `__APP_COMMIT__` zur Build-Zeit. Version = **Commit-Datum** (`git log -1 --format=%cI`), nicht Build-Datum — reproduzierbar (Re-Deploy desselben Commits ergibt dieselbe Nummer) und beschreibt den Stand des Codes. Formatiert über `Intl.DateTimeFormat` mit `timeZone: 'Europe/Berlin'`, damit ein Nacht-Deploy (Netlify baut in UTC) nicht auf den Vortag datiert. Fallbacks: Build-Zeit ohne Git, `process.env.COMMIT_REF` (Netlify) für den Hash, sonst `dev`.
+- `src/lib/version.ts` kapselt die beiden Globals (Typen in `src/app.d.ts`), `src/lib/changelog.ts` hält die Einträge.
+- `/mehr` bekommt unter dem Ausloggen-Button eine leise Fußzeile (Mono, `--text-secondary`, Touch-Ziel 44 px) — Link auf `/mehr/version` (Zurück → Mehr wie die übrigen Unterseiten).
+- `/mehr/version`: Karte „Installierte Version" (Nummer + `Stand <hash>` + Hinweis „App einmal ganz schließen") und darunter „Was ist neu" je Datum, Änderungsart als `Tag` (neu/verbessert/behoben, Wort **und** Farbe — Status nie nur über Farbe).
+- 8 neue Vitest-Tests (Suite jetzt 60): Datumsformatierung, Sortierung neueste-zuerst, ISO-Form aller Einträge, kein leerer Text — plus ein Wächter, der Sicherheits-Vokabular im Changelog verbietet.
+
+**Zwei bewusste Festlegungen:**
+
+1. **Changelog wird von Hand gepflegt, nicht aus Commits erzeugt.** Commits sind Entwicklerprosa („fix(pwa): Offline-Seite bekommt eine eigene Versionsspur"); im Changelog steht, was ein Mitglied davon merkt („Die App startet jetzt auch ohne Internet"). Das ist Übersetzungsarbeit, die kein Generator leistet. Bringt ein Deploy nichts Sichtbares, ändert sich nur die Nummer und es kommt **kein** Eintrag dazu — ein Changelog mit vier Monate altem letzten Eintrag wirkt schlechter als gar keiner.
+2. **Sicherheitsfixes nur neutral** („Sicherheit und Stabilität verbessert"). Ein Eintrag wie „Anmeldung für Fremde geschlossen" (Audit vom 03.08.) verrät jedem, der einen Screenshot sieht, was vorher offen war, und Mitglieder können nichts tun — der Fix ist beim Lesen längst ausgeliefert. Details bleiben hier in `MEILENSTEINE.md`. Der Unit-Test hält diese Regel fest, damit sie einen späteren Eintrag nicht versehentlich überlebt.
+
+Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) — davor gab es keine Mitglieder, die eine Änderung hätten bemerken können.
+
+**Verifiziert:** `npm run check` · `lint` · 60 Unit-Tests grün · Produktions-Build enthält Nummer und Hash im Client-Bundle · beide Screens am lokalen Stack per Playwright (Login über Mailpit-OTP) im iPhone-Format bestätigt.

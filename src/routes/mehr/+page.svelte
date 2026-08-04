@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, Button } from '$lib/components/ui';
 	import { clearPrivateCaches } from '$lib/offlineCache';
+	import { APP_VERSION } from '$lib/version';
 	import {
 		User,
 		Cake,
@@ -101,6 +102,12 @@
 				{loading ? 'Ausloggen …' : 'Ausloggen'}
 			</Button>
 		</div>
+
+		<!-- Leise Fußzeile: für Mitglieder Beiwerk, im Supportfall die erste Frage
+		     ("hast du den aktuellen Stand?"). Tippbar -> Was ist neu. -->
+		<a class="version" href={resolve('/mehr/version')}>
+			Version {APP_VERSION}
+		</a>
 	</main>
 </div>
 
@@ -110,5 +117,20 @@
 	}
 	.logout {
 		margin-top: var(--space-3);
+	}
+	.version {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px; /* Touch-Ziel */
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--text-secondary);
+		text-decoration: none;
+	}
+	.version:hover,
+	.version:focus-visible {
+		color: var(--text-body);
+		text-decoration: underline;
 	}
 </style>
