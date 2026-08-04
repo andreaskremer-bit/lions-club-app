@@ -337,4 +337,6 @@ Stufe 3 wurde auf Wunsch VOR Stufe 2 gezogen. Ziel: Wer die PWA im Funkloch öff
 
 **Auf echtem iPhone bestätigt (2026-08-04, User):** PWA aktualisiert, online zwei Seiten aufgerufen, App weggewischt, Flugmodus an, neu gestartet → die zuletzt angesehene Seite erscheint sofort; beim Weiterklicken kommt sofort die Offline-Seite; Flugmodus aus → die Seite lädt von selbst neu. WebKit-Gegenprobe damit erledigt.
 
-**Offen:** Stufen 2 und 4.
+**ENTSCHIEDEN 2026-08-04 (User): Stufe 2 wird zurückgestellt.** Stufe 3 deckt den Alltag ab (Start im Funkloch, letzte Seite, saubere Offline-Meldung beim Weiterklicken). Ob im Cluballtag überhaupt Bedarf entsteht, Inhalte anderer Seiten offline zu lesen, wird zuerst beobachtet. Wenn ja, ist die Vorentscheidung **NetworkFirst ohne `networkTimeoutSeconds`** auf ausgewählte Tabellen (Verzeichnis, Termine, News, Geburtstage) — gleiche Logik wie Stufe 3, damit kein Konflikt mit dem `invalidateAll()`-Muster an 31 Stellen entstehen kann. Ausgenommen blieben Live-Zähler (Meldungen, ungelesene Benachrichtigungen) und die Dokumentensuche (RPC per POST, über die URL nicht cachebar). Der Datencache müsste in denselben Wipe wie `lions-pages`, weil die Antworten RLS-abhängig sind, der Cache-Schlüssel aber nur die URL ist. Verworfen wurden StaleWhileRevalidate + `broadcastUpdate` (nach eigener Änderung kurzzeitig alter Stand — Vertrauensproblem) und die enge Whitelist (zu wenig Nutzen).
+
+**Offen:** Stufe 4 (IndexedDB-Snapshots), weiterhin nur bei echtem Bedarf.
