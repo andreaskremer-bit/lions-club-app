@@ -394,4 +394,8 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 
 **Grün.** 9 neue pgTAP-Tests (jetzt 125) · 8 neue Unit-Tests (jetzt 70) · `check` · `lint` · `build`.
 
-**Offen.** Noch nicht ausgerollt (kein `supabase db push`, kein `git push`). **Reihenfolge beachten:** Migration zuerst, dann Deploy — der Client ruft die RPC sonst ins Leere. Auswertung vorerst per `npm run db:remote`; eine UI dafür gibt es bewusst nicht. Belastbare Zahlen frühestens nach ein paar Wochen, weil jedes Mitglied die App einmal geöffnet haben muss.
+**Ausgerollt (2026-08-13).** Reihenfolge: `supabase db push` zuerst (sonst ruft der Client die RPC ins Leere), danach `git push` → Netlify. In Produktion verifiziert: drei Spalten + `track_display_mode(standalone boolean)` vorhanden, Ausgangslage 35× ohne Meldung.
+
+**Changelog-Eintrag trotz Unsichtbarkeit.** Nach der Regel in `changelog.ts` gehört ein rein internes Feature nicht ins „Was ist neu" — hier steht trotzdem einer, weil ab jetzt etwas ÜBER Mitglieder erfasst wird (Modus + Startzeitpunkt). Das offen zu nennen kostet eine Zeile und passt zur DSGVO-Linie des Projekts.
+
+**Offen.** Auswertung per `npm run db:remote`; eine UI gibt es bewusst nicht. Belastbare Zahlen frühestens nach ein paar Wochen, weil jedes Mitglied die App einmal geöffnet haben muss. Wer sich nie meldet, ist in `first_login_at`-Logik schon erfasst (6 Mitglieder ohne jeden Login, Stand 2026-08-13).
