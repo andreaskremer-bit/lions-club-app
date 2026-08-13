@@ -30,15 +30,7 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
 	{
 		date: '2026-08-13',
-		changes: [
-			{
-				// Nach der Regel oben eigentlich kein Eintrag — man merkt nichts davon.
-				// Trotzdem hier, weil ab jetzt etwas ÜBER Mitglieder erfasst wird: das
-				// gehört offen gesagt und nicht nur nach MEILENSTEINE.md.
-				kind: 'neu',
-				text: 'Die App vermerkt beim Start, ob du sie vom Startbildschirm aus öffnest oder im Browser, zusammen mit dem Zeitpunkt. Welche Seiten du dann ansiehst, wird nicht erfasst. Wir sehen damit nur, für wie viele die Installation auf dem Startbildschirm ein Thema ist.'
-			}
-		]
+		changes: [{ kind: 'verbessert', text: 'Verbesserungen bei Funktionalität und Stabilität.' }]
 	},
 	{
 		date: '2026-08-04',
