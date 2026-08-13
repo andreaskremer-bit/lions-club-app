@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { TabBar, type TabItem } from '$lib/components/ui';
+	import { trackDisplayMode } from '$lib/displayMode';
 	import { House, CalendarDays, Users, Newspaper, Ellipsis } from '@lucide/svelte';
 
 	let { data, children } = $props();
@@ -50,7 +51,16 @@
 			navigator.serviceWorker.register('/sw.js').catch(() => {});
 		}
 
-		const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+		// Einmal pro App-Start vermerken, ob die installierte PWA oder der Browser
+		// genutzt wird (Homescreen-Quote). Fire-and-forget, siehe displayMode.ts.
+		if (data.user) trackDisplayMode(supabase);
+
+		const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+			// Beim Anmelden bleibt das Root-Layout montiert (Client-Navigation), der
+			// onMount-Aufruf oben lief da noch ohne Session — hier nachholen.
+			// 'INITIAL_SESSION' ist der Ladefall und deshalb bewusst nicht dabei.
+			if (event === 'SIGNED_IN') trackDisplayMode(supabase);
+
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}

@@ -379,3 +379,19 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 **Lehre: ein Test über einen String-Pfad beweist nur die Zeichenkette, nicht das Ziel.** Wo Code einen Pfad in eine andere Codebasis hinein baut (Edge Function → SvelteKit-Routen), muss der Test die andere Seite tatsächlich anfassen — hier das Dateisystem. Verwandt mit der Betreff-Lehre vom 20.07.: beide Male war der grüne Test schlicht die falsche Frage.
 
 **Ausgerollt.** `npm run check` · `lint` · 62 Unit-Tests grün · `npx supabase functions deploy send-notifications` (Projekt `qfxtyqippdrcrhwbkhwx`). Kein DB-Push nötig. Bereits zugestellte Push-Mitteilungen und Mails behalten ihren alten Link — der Pfad wird beim Versand eingebacken; alles ab jetzt Versendete ist korrekt.
+
+## Anzeige-Modus-Telemetrie: wer nutzt die App vom Homescreen? (2026-08-13)
+
+**Anlass.** Frage aus dem Betrieb: welche der 29 angemeldeten Mitglieder haben die PWA installiert? Bis dahin war `push_subscription` der einzige Anhaltspunkt — 9 Apple-, 2 Google-, 2 Mozilla-Endpunkte. Der Apple-Endpunkt ist auf iOS ein echter Beweis (Web-Push gibt es dort nur in der installierten PWA), taugt aber nur als Untergrenze: er übersieht jede Installation ohne aktivierten Push und lässt sich nicht von macOS-Safari unterscheiden, wo Push auch ohne Installation läuft. Google/Mozilla sagen gar nichts, weil Push dort im normalen Tab funktioniert.
+
+**Umsetzung.** Migration `20260813120100_member_display_mode.sql`: drei Spalten auf `member` (`first_standalone_at`, `last_standalone_at`, `last_browser_at`) plus RPC `public.track_display_mode(standalone boolean)`. `src/lib/displayMode.ts` erkennt den Modus und meldet ihn einmal pro App-Start aus `+layout.svelte` (`onMount` bei bestehender Session, zusätzlich bei `SIGNED_IN` — beim Anmelden bleibt das Root-Layout montiert, der `onMount`-Aufruf lief da noch ohne Session). Fire-and-forget, Fehler werden geschluckt.
+
+**Drei Spalten statt einer** — damit „hat sich noch nie gemeldet" von „meldet sich, aber aus dem Browser" unterscheidbar bleibt. Unmittelbar nach dem Rollout ist alles NULL; das ist fehlende Datenlage, kein Nutzungsbefund. Belastbar „nutzt den Browser" heißt erst `last_browser_at is not null and last_standalone_at is null`. Ohne `last_browser_at` wäre genau diese Unterscheidung dauerhaft verloren.
+
+**security definer statt UPDATE-Policy.** Ein Mitglied darf seine `member`-Zeile nicht schreiben, und das sollte so bleiben — eine Policy nur für Telemetriespalten hätte diese Linie aufgeweicht. Die Funktion schreibt ausschließlich die drei Spalten und ausschließlich für die aufrufende Person: die member-ID kommt aus `current_member_id()` (also aus dem JWT), nie aus einem Aufrufparameter. Fremde Zeilen sind damit prinzipiell unerreichbar, nicht nur per Policy verboten. Grant nur an `authenticated`; `service_role` hat bewusst **kein** Execute-Recht (Least Privilege — geprüft: PostgREST antwortet dort `42501`).
+
+**Erkennung.** `isStandaloneMode()` prüft `display-mode: standalone|fullscreen|minimal-ui` **und** `navigator.standalone`. Die drei Modi, weil das Manifest zwar `standalone` fordert, Browser aber auf `minimal-ui` zurückfallen dürfen und manche Android-Launcher `fullscreen` starten; `navigator.standalone` zusätzlich, weil es auf iOS der historisch zuverlässigste Marker ist. Der Kern nimmt den Media-Matcher als Parameter — damit ist er unter Vitest (`environment: 'node'`, kein DOM) direkt testbar.
+
+**Grün.** 9 neue pgTAP-Tests (jetzt 125) · 8 neue Unit-Tests (jetzt 70) · `check` · `lint` · `build`.
+
+**Offen.** Noch nicht ausgerollt (kein `supabase db push`, kein `git push`). **Reihenfolge beachten:** Migration zuerst, dann Deploy — der Client ruft die RPC sonst ins Leere. Auswertung vorerst per `npm run db:remote`; eine UI dafür gibt es bewusst nicht. Belastbare Zahlen frühestens nach ein paar Wochen, weil jedes Mitglied die App einmal geöffnet haben muss.
