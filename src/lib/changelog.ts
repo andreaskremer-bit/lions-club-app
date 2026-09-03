@@ -32,6 +32,10 @@ export const CHANGELOG: ChangelogEntry[] = [
 		date: '2026-09-03',
 		changes: [
 			{
+				kind: 'verbessert',
+				text: 'Bleibt die App lange geöffnet, erkennt sie jetzt selbst, wenn eine neue Version bereitsteht, und bietet das Neuladen an. Spätestens beim nächsten Seitenwechsel ist der aktuelle Stand da.'
+			},
+			{
 				kind: 'neu',
 				text: 'Die Teilnehmerliste eines Termins (mit CSV-Export) steht jetzt auch dem Sekretär zur Verfügung, zum Beispiel für das Protokoll.'
 			},

@@ -958,6 +958,9 @@ textarea.lc-input {
 	color: var(--text-secondary);
 	margin: 0;
 }
+.lc-hint__action {
+	margin-top: var(--space-3);
+}
 .lc-hint--info {
 	--tone-accent: var(--blue-600);
 	background: var(--surface-blue);

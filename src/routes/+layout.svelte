@@ -1,13 +1,13 @@
 <script lang="ts">
 	import '$lib/styles/fonts'; // self-hosted Schriften (DSGVO: kein Google-Fonts-CDN)
 	import '$lib/styles/app.css'; // Design-Tokens "Lions 2.0"
-	import { invalidate } from '$app/navigation';
+	import { beforeNavigate, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
+	import { page, updated } from '$app/state';
 	import { onMount } from 'svelte';
-	import { TabBar, type TabItem } from '$lib/components/ui';
+	import { Button, HintCard, TabBar, type TabItem } from '$lib/components/ui';
 	import { trackDisplayMode } from '$lib/displayMode';
-	import { House, CalendarDays, Users, Newspaper, Ellipsis } from '@lucide/svelte';
+	import { House, CalendarDays, Users, Newspaper, Ellipsis, RefreshCw } from '@lucide/svelte';
 
 	let { data, children } = $props();
 	let supabase = $derived(data.supabase);
@@ -25,6 +25,19 @@
 		return 'mehr';
 	}
 	let activeTab = $derived(tabForPath(page.url.pathname));
+
+	// Neue Version ausgeliefert (SvelteKit-Versionspoll, s. `version` in
+	// vite.config.ts): Die nächste Navigation wird zu einem vollen Seitenaufruf,
+	// damit frisches HTML und die neuen Build-Dateien geladen werden. Bewusst
+	// nicht sofort neu laden — das würde jemanden mitten im Formular unterbrechen.
+	beforeNavigate(({ willUnload, to }) => {
+		if (updated.current && !willUnload && to?.url) {
+			location.href = to.url.href;
+		}
+	});
+	// „Später" blendet nur den Hinweis aus; der volle Seitenaufruf bei der
+	// nächsten Navigation bleibt, damit niemand dauerhaft alten Code fährt.
+	let updateHintDismissed = $state(false);
 
 	let tabs = $derived<TabItem[]>([
 		{ id: 'start', label: 'Start', icon: House, href: resolve('/') },
@@ -51,6 +64,22 @@
 			navigator.serviceWorker.register('/sw.js').catch(() => {});
 		}
 
+		// Kommt ein Tab nach Tagen wieder in den Vordergrund, sofort nachsehen statt
+		// auf den nächsten Poll-Tick zu warten: Versionsdatei UND Service Worker.
+		// Der Browser prüft die sw.js von sich aus nur bei vollen Seitenaufrufen
+		// und Push-Ereignissen — beides fehlt in einem dauerhaft offenen Tab.
+		const checkForUpdate = () => {
+			if (document.visibilityState !== 'visible') return;
+			updated.check().catch(() => {});
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker
+					.getRegistration()
+					.then((reg) => reg?.update())
+					.catch(() => {});
+			}
+		};
+		document.addEventListener('visibilitychange', checkForUpdate);
+
 		// Einmal pro App-Start vermerken, ob die installierte PWA oder der Browser
 		// genutzt wird (Homescreen-Quote). Fire-and-forget, siehe displayMode.ts.
 		if (data.user) trackDisplayMode(supabase);
@@ -65,13 +94,33 @@
 				invalidate('supabase:auth');
 			}
 		});
-		return () => sub.subscription.unsubscribe();
+		return () => {
+			sub.subscription.unsubscribe();
+			document.removeEventListener('visibilitychange', checkForUpdate);
+		};
 	});
 </script>
 
 <div class:has-tabbar={showTabBar}>
 	{@render children()}
 </div>
+
+{#if updated.current && !updateHintDismissed}
+	<div class="app-update" class:app-update--above-tabbar={showTabBar}>
+		<HintCard title="Neue Version verfügbar" tone="info">
+			{#snippet icon()}<RefreshCw aria-hidden="true" />{/snippet}
+			Die App wurde aktualisiert. Lade sie neu, um den aktuellen Stand zu nutzen.
+			{#snippet action()}
+				<div class="app-update__actions">
+					<Button size="sm" onclick={() => location.reload()}>Jetzt neu laden</Button>
+					<Button size="sm" variant="ghost" onclick={() => (updateHintDismissed = true)}>
+						Später
+					</Button>
+				</div>
+			{/snippet}
+		</HintCard>
+	</div>
+{/if}
 
 {#if showTabBar}
 	<div class="app-tabbar">
@@ -80,6 +129,27 @@
 {/if}
 
 <style>
+	/* Update-Hinweis: fest über dem Seiteninhalt, bei sichtbarer TabBar darüber. */
+	.app-update {
+		position: fixed;
+		bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+		left: 0;
+		right: 0;
+		max-width: var(--content-max);
+		margin-inline: auto;
+		padding-inline: var(--screen-pad);
+		z-index: 51;
+		transform: translateZ(0);
+	}
+	.app-update__actions {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+	.app-update--above-tabbar {
+		bottom: calc(var(--tabbar-h) + var(--space-3) + env(safe-area-inset-bottom, 0px));
+	}
+
 	.app-tabbar {
 		position: fixed;
 		bottom: 0;

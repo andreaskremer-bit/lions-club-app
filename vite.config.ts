@@ -84,7 +84,23 @@ export default defineConfig({
 			},
 
 			// Netlify deployment (DPF-zertifiziert); personenbezogene Daten möglichst client -> Supabase.
-			adapter: adapter()
+			adapter: adapter(),
+
+			// Versions-Erkennung im laufenden Client. Ein Tab, der wochenlang offen
+			// bleibt und nur per Client-Navigation zwischen bereits geladenen Seiten
+			// wechselt, löst weder eine Service-Worker-Prüfung noch einen Import-
+			// Fehler aus und führe sonst beliebig lange alten Code aus. SvelteKit
+			// fragt deshalb regelmäßig `_app/version.json` ab und setzt
+			// `updated.current`; das Root-Layout zeigt dann einen Hinweis und macht
+			// die nächste Navigation zu einem vollen Seitenaufruf.
+			//
+			// `name` = Commit-Hash statt Build-Zeitstempel (Default): ein Re-Deploy
+			// desselben Commits (z. B. „Clear cache and deploy" auf Netlify) darf
+			// keinen Update-Hinweis auslösen. Ohne Git (`dev`) greift der Default.
+			version: {
+				name: appCommit === 'dev' ? undefined : appCommit,
+				pollInterval: 10 * 60 * 1000
+			}
 		}),
 		// PWA mit Web-Push + Offline-Asset-Caching (M5).
 		// generateSW (Default): vite-pwa erzeugt den Service Worker selbst — KEINE
