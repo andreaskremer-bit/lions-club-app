@@ -29,6 +29,19 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-09-03',
+		changes: [
+			{
+				kind: 'neu',
+				text: 'Die Teilnehmerliste eines Termins (mit CSV-Export) steht jetzt auch dem Sekretär zur Verfügung, zum Beispiel für das Protokoll.'
+			},
+			{
+				kind: 'neu',
+				text: 'Unter den Meldungen eines Termins gibt es eine neue Gruppe „Gäste", die alle angemeldeten Begleitpersonen mit Namen aufführt.'
+			}
+		]
+	},
+	{
 		date: '2026-08-13',
 		changes: [{ kind: 'verbessert', text: 'Verbesserungen bei Funktionalität und Stabilität.' }]
 	},

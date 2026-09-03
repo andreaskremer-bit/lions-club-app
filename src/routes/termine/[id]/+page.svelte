@@ -25,6 +25,8 @@
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
 	let e = $derived(data.event);
+	let canManageEvents = $derived(data.permissions.includes('manage_events'));
+	let canViewParticipants = $derived(data.permissions.includes('view_participants'));
 
 	function exportIcs() {
 		const ics = buildIcs({
@@ -73,6 +75,11 @@
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));
 	let zuGuests = $derived(zugesagt.reduce((n, r) => n + r.companion.length, 0));
 	let zuPersonen = $derived(zugesagt.length + zuGuests);
+	// Gäste namentlich (meist Partner — wer zu wem gehört, weiß der Club; bei fremden
+	// Gästen ist das einladende Mitglied nicht die interessante Information).
+	let gaeste = $derived(
+		zugesagt.flatMap((r) => r.companion).sort((a, b) => a.name.localeCompare(b.name, 'de'))
+	);
 	// „Offen" = aktive Mitglieder, die noch nicht reagiert haben (deckt sich mit dem Karten-Zaehler).
 	let offen = $derived.by(() => {
 		const responded = new Set(e.event_response.map((r) => r.member_id));
@@ -234,29 +241,34 @@
 			</Button>
 		{/if}
 
-		{#if data.permissions.includes('manage_events')}
+		{#if canManageEvents || canViewParticipants}
 			<div class="admin-actions">
-				<Button
-					variant="secondary"
-					onclick={() => goto(resolve('/termine/[id]/bearbeiten', { id: e.id }))}
-				>
-					{#snippet iconLeft()}<Pencil size={18} />{/snippet}
-					Termin bearbeiten
-				</Button>
-				<Button
-					variant="secondary"
-					onclick={() => goto(resolve('/termine/[id]/fragen', { id: e.id }))}
-				>
-					{#snippet iconLeft()}<ListChecks size={18} />{/snippet}
-					Fragen verwalten
-				</Button>
-				<Button
-					variant="secondary"
-					onclick={() => goto(resolve('/termine/[id]/teilnehmer', { id: e.id }))}
-				>
-					{#snippet iconLeft()}<Users size={18} />{/snippet}
-					Teilnehmerliste
-				</Button>
+				{#if canManageEvents}
+					<Button
+						variant="secondary"
+						onclick={() => goto(resolve('/termine/[id]/bearbeiten', { id: e.id }))}
+					>
+						{#snippet iconLeft()}<Pencil size={18} />{/snippet}
+						Termin bearbeiten
+					</Button>
+					<Button
+						variant="secondary"
+						onclick={() => goto(resolve('/termine/[id]/fragen', { id: e.id }))}
+					>
+						{#snippet iconLeft()}<ListChecks size={18} />{/snippet}
+						Fragen verwalten
+					</Button>
+				{/if}
+				{#if canViewParticipants}
+					<!-- Eigenes Recht (Spec §3): auch der Sekretär, z. B. fürs Protokoll. -->
+					<Button
+						variant="secondary"
+						onclick={() => goto(resolve('/termine/[id]/teilnehmer', { id: e.id }))}
+					>
+						{#snippet iconLeft()}<Users size={18} />{/snippet}
+						Teilnehmerliste
+					</Button>
+				{/if}
 			</div>
 		{/if}
 
@@ -424,6 +436,22 @@
 					{/each}
 				</ul>
 			</details>
+
+			{#if e.companion_allowed}
+				<details class="mgrp">
+					<summary class="grp">
+						<ChevronDown size={18} />
+						<span class="grp__label">Gäste ({gaeste.length})</span>
+					</summary>
+					<ul class="names">
+						{#each gaeste as c (c.id)}
+							<li>{c.name}</li>
+						{:else}
+							<li class="muted">—</li>
+						{/each}
+					</ul>
+				</details>
+			{/if}
 		</Card>
 	</main>
 </div>

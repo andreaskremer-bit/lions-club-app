@@ -17,7 +17,7 @@ export type TAnswer = {
 
 export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase, permissions } = await parent();
-	if (!permissions.includes('manage_events')) throw redirect(303, `/termine/${params.id}`);
+	if (!permissions.includes('view_participants')) throw redirect(303, `/termine/${params.id}`);
 
 	const [evRes, qRes, rRes, aRes] = await Promise.all([
 		supabase.from('event').select('id, title').eq('id', params.id).maybeSingle(),
