@@ -412,7 +412,7 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 
 **Nebenbefund Werkzeug.** Die Supabase-CLI-Binary (`node_modules/@supabase/cli-darwin-arm64/bin/supabase`) starb mit SIGKILL (Exit 137), schon bei `--version`: `codesign --verify` meldete „invalid signature (code or signature have been modified)". Fix ohne Neuinstallation: `codesign -s - -f <binary>` (Ad-hoc neu signieren). Kein Zusammenhang mit dem Keychain-Hänger (`SUPABASE_ACCESS_TOKEN=local-dev`), das ist ein zweites, unabhängiges Problem.
 
-**Rollout.** Reihenfolge wie immer: `supabase db push` ZUERST (Root-Layout liest `amt_permission` auf jeder Seite; der Client würde das Recht sonst nie sehen — und umgekehrt bricht nichts, wenn die DB das Recht kennt, bevor der Client es abfragt), danach `git push` → Netlify.
+**Ausgerollt (2026-09-03, Commit `d97c0ad`, zusammen mit der Gäste-Gruppe).** `supabase db push` (beide Migrationen, Matrix + Policy in Produktion per `db:remote` verifiziert), danach `git push` → Netlify-Build um 10:16 Uhr live. Reihenfolge wie immer: `supabase db push` ZUERST (Root-Layout liest `amt_permission` auf jeder Seite; der Client würde das Recht sonst nie sehen — und umgekehrt bricht nichts, wenn die DB das Recht kennt, bevor der Client es abfragt), danach `git push` → Netlify.
 
 ## Termin-Detail: Gruppe „Gäste" unter den Meldungen (2026-09-03)
 
