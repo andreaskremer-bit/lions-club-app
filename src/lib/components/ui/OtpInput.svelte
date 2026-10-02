@@ -1,14 +1,30 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	type Props = {
 		length?: number;
 		value?: string;
 		/** Wird ausgelöst, sobald alle Ziffern gesetzt sind. */
 		oncomplete?: (code: string) => void;
+		/** Beim Erscheinen das erste Feld fokussieren (Code direkt einfügen). */
+		autofocus?: boolean;
 	};
 
-	let { length = 6, value = $bindable(''), oncomplete }: Props = $props();
+	let { length = 6, value = $bindable(''), oncomplete, autofocus = false }: Props = $props();
 
 	let refs: HTMLInputElement[] = $state([]);
+
+	onMount(() => {
+		if (autofocus) refs[0]?.focus();
+	});
+
+	// Mehrere Ziffern auf einmal (Einfügen oder Code-Vorschlag des Systems, der
+	// den ganzen Code ins erste Feld schreibt) auf alle Felder verteilen.
+	function fillFrom(digits: string) {
+		value = digits.slice(0, length);
+		refs[Math.min(value.length, length - 1)]?.focus();
+		if (value.length === length) oncomplete?.(value);
+	}
 
 	let chars = $derived(value.padEnd(length, ' ').slice(0, length).split(''));
 
@@ -31,6 +47,10 @@
 			setChar(i, '');
 			return;
 		}
+		if (raw.length >= length) {
+			fillFrom(raw);
+			return;
+		}
 		const digit = raw[raw.length - 1];
 		setChar(i, digit);
 		if (i < length - 1) refs[i + 1]?.focus();
@@ -40,9 +60,7 @@
 		const digits = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, length);
 		if (digits) {
 			e.preventDefault();
-			value = digits;
-			refs[Math.min(digits.length, length - 1)]?.focus();
-			if (digits.length === length) oncomplete?.(digits);
+			fillFrom(digits);
 		}
 	}
 </script>
@@ -55,7 +73,8 @@
 				.filter(Boolean)
 				.join(' ')}
 			inputmode="numeric"
-			maxlength="1"
+			autocomplete={i === 0 ? 'one-time-code' : 'off'}
+			maxlength={i === 0 ? length : 1}
 			value={chars[i].trim()}
 			aria-label={`Ziffer ${i + 1}`}
 			oninput={(e) => handleInput(i, e)}

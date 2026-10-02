@@ -15,6 +15,17 @@
 	let error = $state('');
 	let info = $state('');
 
+	// Supabase nimmt pro Adresse nur etwa einen Code pro Minute an. Jede neue
+	// Anforderung macht den vorigen Code ungültig; wer zu früh nachfordert, hat
+	// also nichts gewonnen. Deshalb „Code erneut senden“ erst nach Ablauf.
+	const RESEND_SECONDS = 60;
+	let cooldown = $state(0);
+	$effect(() => {
+		if (cooldown <= 0) return;
+		const timer = setTimeout(() => (cooldown -= 1), 1000);
+		return () => clearTimeout(timer);
+	});
+
 	async function requestCode() {
 		error = '';
 		info = '';
@@ -29,12 +40,18 @@
 			options: { shouldCreateUser: false }
 		});
 		loading = false;
-		if (err) {
+		if (err && err.status !== 429) {
 			error = 'Code konnte nicht gesendet werden. Bitte prüfe deine E-Mail-Adresse.';
 			return;
 		}
 		step = 'code';
 		code = '';
+		cooldown = RESEND_SECONDS;
+		// 429 = zu schnell nachgefordert. Der vorige Code ist dann meist schon
+		// unterwegs – also zur Code-Eingabe statt einer Meldung, die nach falscher
+		// Adresse klingt.
+		if (err)
+			info = 'Du hast gerade erst einen Code angefordert. Die Mail ist vermutlich schon unterwegs.';
 	}
 
 	async function verify() {
@@ -48,7 +65,7 @@
 		});
 		loading = false;
 		if (err) {
-			error = 'Der Code ist ungültig oder abgelaufen.';
+			error = 'Der Code ist ungültig oder abgelaufen. Es gilt nur der zuletzt gesendete Code.';
 			code = '';
 			return;
 		}
@@ -61,7 +78,7 @@
 
 	async function resend() {
 		await requestCode();
-		if (!error) info = 'Wir haben dir einen neuen Code gesendet.';
+		if (!error && !info) info = 'Wir haben dir einen neuen Code gesendet.';
 	}
 </script>
 
@@ -112,7 +129,7 @@
 			<p class="login__p">
 				Wir haben einen Code an<br /><strong>{email}</strong> gesendet.
 			</p>
-			<OtpInput bind:value={code} oncomplete={verify} />
+			<OtpInput bind:value={code} oncomplete={verify} autofocus />
 			{#if error}<p class="login__err">{error}</p>{/if}
 			{#if info}<p class="login__info">{info}</p>{/if}
 			<Button
@@ -125,7 +142,13 @@
 			>
 				{loading ? 'Anmeldung …' : 'Anmelden'}
 			</Button>
-			<button class="login__resend" onclick={resend} disabled={loading}>Code erneut senden</button>
+			<p class="login__info">
+				Die Mail kann ein paar Minuten brauchen. Schau auch im Spam-Ordner nach. Forderst du einen
+				neuen Code an, gilt nur noch der neueste.
+			</p>
+			<button class="login__resend" onclick={resend} disabled={loading || cooldown > 0}>
+				{cooldown > 0 ? `Code erneut senden (in ${cooldown} s)` : 'Code erneut senden'}
+			</button>
 		</div>
 	{/if}
 </div>
@@ -214,6 +237,10 @@
 		cursor: pointer;
 		padding: 14px;
 		align-self: center;
+	}
+	.login__resend:disabled {
+		color: var(--text-secondary);
+		cursor: default;
 	}
 	.login__err {
 		font-size: 14px;

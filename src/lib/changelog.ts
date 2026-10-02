@@ -34,6 +34,10 @@ export const CHANGELOG: ChangelogEntry[] = [
 			{
 				kind: 'verbessert',
 				text: 'Ein Termin, der gerade läuft, bleibt bis zu seinem Ende unter „Anstehend“ und ist mit „Läuft gerade“ markiert. Außerdem zeigt die App nach einem Update einmal kurz, was neu ist.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Anmelden: Der Code lässt sich direkt einfügen, ohne erst ins Feld zu tippen. „Code erneut senden“ ist eine Minute lang gesperrt, weil ein neuer Code den vorigen ungültig macht.'
 			}
 		]
 	},
