@@ -203,7 +203,7 @@
 			{:else if pushState === 'unsupported'}
 				<p class="push__hint">
 					Dieses Gerät unterstützt keine Push-Benachrichtigungen. Auf dem iPhone funktioniert Push
-					nur, wenn die App über „Zum Home-Bildschirm" installiert ist (ab iOS 16.4).
+					nur, wenn die App über „Zum Home-Bildschirm“ installiert ist (ab iOS 16.4).
 				</p>
 			{:else if pushState === 'unconfigured'}
 				<p class="push__hint">

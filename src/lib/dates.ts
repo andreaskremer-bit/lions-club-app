@@ -61,7 +61,7 @@ export type BirthdayInfo = { date: Date; days: number; turning: number; today: b
 
 /**
  * Nächster Geburtstag ab `from` (tagesgenau) + Alter, das dann erreicht wird.
- * Parst „YYYY-MM-DD" zeitzonensicher aus den Bestandteilen.
+ * Parst „YYYY-MM-DD“ zeitzonensicher aus den Bestandteilen.
  */
 export function nextBirthdayInfo(birthdayISO: string, from: Date = new Date()): BirthdayInfo {
 	const [by, bm, bd] = birthdayISO.slice(0, 10).split('-').map(Number);

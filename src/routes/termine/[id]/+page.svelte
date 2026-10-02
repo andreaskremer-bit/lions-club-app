@@ -80,7 +80,7 @@
 	let gaeste = $derived(
 		zugesagt.flatMap((r) => r.companion).sort((a, b) => a.name.localeCompare(b.name, 'de'))
 	);
-	// „Offen" = aktive Mitglieder, die noch nicht reagiert haben (deckt sich mit dem Karten-Zaehler).
+	// „Offen“ = aktive Mitglieder, die noch nicht reagiert haben (deckt sich mit dem Karten-Zaehler).
 	let offen = $derived.by(() => {
 		const responded = new Set(e.event_response.map((r) => r.member_id));
 		return data.activeMembers.filter((m) => !responded.has(m.id));

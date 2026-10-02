@@ -3,7 +3,7 @@
 // (RPC `track_display_mode`, Migration 20260813120100).
 //
 // Hintergrund: `push_subscription` war bisher der einzige Anhaltspunkt für
-// „installiert" — er übersieht aber jede Installation ohne aktivierten Push.
+// „installiert“ — er übersieht aber jede Installation ohne aktivierten Push.
 // Der Anzeige-Modus beantwortet die Frage direkt.
 //
 // Die Erkennung steckt in einer reinen Funktion (`isStandaloneMode`), damit sie
@@ -13,7 +13,7 @@
  * Anzeige-Modi, die eine Installation bedeuten. Das Manifest fordert
  * `display: 'standalone'`; Browser dürfen daraus aber auf `minimal-ui`
  * zurückfallen, und manche Android-Launcher starten `fullscreen`. Alle drei
- * heißen „läuft nicht im Browser-Tab".
+ * heißen „läuft nicht im Browser-Tab“.
  */
 const STANDALONE_MODES = ['standalone', 'fullscreen', 'minimal-ui'] as const;
 
@@ -23,7 +23,7 @@ const STANDALONE_MODES = ['standalone', 'fullscreen', 'minimal-ui'] as const;
  * @param matchesMedia Prüft eine Media-Query (im Browser `window.matchMedia`).
  * @param iosStandalone `navigator.standalone` — von iOS-Safari gesetzt.
  *   Bewusst zusätzlich abgefragt: es ist der historisch zuverlässigste Marker
- *   für „zum Homescreen hinzugefügt" auf iOS und kostet nichts.
+ *   für „zum Homescreen hinzugefügt“ auf iOS und kostet nichts.
  */
 export function isStandaloneMode(
 	matchesMedia: (query: string) => boolean,

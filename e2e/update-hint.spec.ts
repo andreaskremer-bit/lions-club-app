@@ -10,7 +10,7 @@ import { expect, test } from '@playwright/test';
 // Produktions-Build und überspringt sich sonst selbst:
 //   npm run build && npx vite preview --port 5173 --strictPort
 //   npx playwright test e2e/update-hint.spec.ts
-test('neue Version -> Hinweis „Neue Version verfügbar"', async ({ page }) => {
+test('neue Version -> Hinweis „Neue Version verfügbar“', async ({ page }) => {
 	const versionFile = await page.request.get('/_app/version.json');
 	test.skip(
 		!versionFile.ok() || !versionFile.headers()['content-type']?.includes('json'),
@@ -35,7 +35,7 @@ test('neue Version -> Hinweis „Neue Version verfügbar"', async ({ page }) => 
 	await expect(page.getByText('Neue Version verfügbar')).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Jetzt neu laden' })).toBeVisible();
 
-	// „Später" blendet den Hinweis aus, ohne die Seite neu zu laden.
+	// „Später“ blendet den Hinweis aus, ohne die Seite neu zu laden.
 	await page.getByRole('button', { name: 'Später' }).click();
 	await expect(page.getByText('Neue Version verfügbar')).toHaveCount(0);
 	await expect(page.getByLabel('E-Mail')).toBeVisible();

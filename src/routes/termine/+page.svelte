@@ -82,7 +82,7 @@
 		const guests = zuResp.reduce((n, r) => n + r.companion.length, 0);
 		const ab = e.event_response.filter((r) => r.status === 'abgesagt').length;
 		const offen = Math.max(0, activeCount - zuMembers - ab);
-		// „zu" = angemeldete Personen gesamt (Mitglieder + Gäste); „offen" bleibt mitgliederbezogen.
+		// „zu“ = angemeldete Personen gesamt (Mitglieder + Gäste); „offen“ bleibt mitgliederbezogen.
 		return { zu: zuMembers + guests, ab, offen };
 	}
 
@@ -90,7 +90,7 @@
 	let list = $derived(
 		data.events
 			.filter((e) =>
-				// Laufende Termine bleiben unter „Anstehend", bis sie enden.
+				// Laufende Termine bleiben unter „Anstehend“, bis sie enden.
 				view === 'anstehend' ? !isEventOver(e, now) : isEventOver(e, now)
 			)
 			.sort((a, b) => {

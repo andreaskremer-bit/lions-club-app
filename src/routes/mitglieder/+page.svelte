@@ -13,7 +13,7 @@
 
 	let aktivCount = $derived(data.members.filter((m) => m.status === 'aktiv').length);
 
-	// Liste: „Nachname, Vorname" (Telefonbuch-Ordnung, deckt sich mit der DB-Sortierung).
+	// Liste: „Nachname, Vorname“ (Telefonbuch-Ordnung, deckt sich mit der DB-Sortierung).
 	// Akademischer Titel (Dr./Prof.) bewusst NUR auf der Profilseite, nicht in der Liste.
 	const listName = (m: MemberListItem) => `${m.last_name}, ${m.first_name}`;
 	// Für aria-Labels: schlichter Vor-/Nachname ohne Titel.
@@ -31,12 +31,12 @@
 		amtList(m)
 			.map((a) => a.label)
 			.join(', ');
-	/** Für die Suche: Name + alle vollen Amtsnamen (oder „Mitglied"). */
+	/** Für die Suche: Name + alle vollen Amtsnamen (oder „Mitglied“). */
 	const amtFull = (m: MemberListItem) => amtTitle(m) || 'Mitglied';
 
 	/**
 	 * Untertitel: inaktive/Ehrenmitglieder haben keine Ämter → reines Status-Label.
-	 * Aktive zeigen ALLE Amts-Kürzel (mehrere mit „ · "; kein Amt ⇒ leer, kein „Mitglied").
+	 * Aktive zeigen ALLE Amts-Kürzel (mehrere mit „ · “; kein Amt ⇒ leer, kein „Mitglied“).
 	 */
 	function roleLine(m: MemberListItem): string {
 		if (m.status === 'ehrenmitglied') return 'Ehrenmitglied';

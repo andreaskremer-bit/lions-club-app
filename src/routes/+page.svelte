@@ -24,7 +24,7 @@
 		const zuMembers = zuResp.length;
 		const guests = zuResp.reduce((n, r) => n + r.companion.length, 0);
 		const ab = nextEvent.event_response.filter((r) => r.status === 'abgesagt').length;
-		// „zu" = angemeldete Personen gesamt (Mitglieder + Gäste); „offen" bleibt mitgliederbezogen.
+		// „zu“ = angemeldete Personen gesamt (Mitglieder + Gäste); „offen“ bleibt mitgliederbezogen.
 		return { zu: zuMembers + guests, ab, offen: Math.max(0, data.activeCount - zuMembers - ab) };
 	});
 </script>

@@ -57,7 +57,7 @@
 		}).format(new Date(d));
 	}
 
-	// Partner-Wunsch „Geburtstag ja, Alter nein": nur Tag + Monat, ohne Jahr.
+	// Partner-Wunsch „Geburtstag ja, Alter nein“: nur Tag + Monat, ohne Jahr.
 	function formatDayMonth(d: string | null): string | null {
 		if (!d) return null;
 		return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long' }).format(new Date(d));

@@ -12,7 +12,7 @@
 		type: EventType;
 		location: string | null;
 		starts_at: string;
-		/** Termin hat begonnen, ist aber noch nicht zu Ende → Label „Läuft gerade". */
+		/** Termin hat begonnen, ist aber noch nicht zu Ende → Label „Läuft gerade“. */
 		running?: boolean;
 		/** Eigener RSVP-Status als Badge (optional). */
 		status?: Status;

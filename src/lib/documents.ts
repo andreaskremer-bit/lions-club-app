@@ -17,7 +17,7 @@ export const categoryOptions = (Object.keys(categoryLabel) as DocumentCategory[]
 	label: categoryLabel[value]
 }));
 
-/** Kategorien, bei denen „Mitglieder benachrichtigen" sinnvoll vorbelegt ist. */
+/** Kategorien, bei denen „Mitglieder benachrichtigen“ sinnvoll vorbelegt ist. */
 export const notifyByDefault: DocumentCategory[] = ['protokoll_clubabend', 'protokoll_mv'];
 
 export const MAX_FILE_BYTES = 20 * 1024 * 1024; // 20 MB

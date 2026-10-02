@@ -16,8 +16,8 @@
 		{ value: 'partner', label: 'Partner/innen' }
 	];
 
-	// Einheitliche Zeile für beide Ansichten; `showAge` steuert „wird X"
-	// (Partner-Wunsch „Geburtstag ja, Alter nein" via partner_birthday_show_age).
+	// Einheitliche Zeile für beide Ansichten; `showAge` steuert „wird X“
+	// (Partner-Wunsch „Geburtstag ja, Alter nein“ via partner_birthday_show_age).
 	type Row = {
 		memberId: string;
 		name: string;

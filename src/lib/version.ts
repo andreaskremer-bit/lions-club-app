@@ -6,7 +6,7 @@
  *
  * Wozu das Ganze: eine installierte PWA kann durch den Service-Worker-Cache
  * länger auf einem älteren Stand laufen. Bei einer Rückmeldung aus dem Club
- * („bei mir sieht das anders aus") ist die sichtbare Nummer der schnellste
+ * („bei mir sieht das anders aus“) ist die sichtbare Nummer der schnellste
  * Weg, den Stand des Geräts zu klären; der Commit-Hash ordnet einen Screenshot
  * exakt einem Code-Stand zu.
  */

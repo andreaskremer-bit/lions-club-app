@@ -151,7 +151,7 @@
 		busy = true;
 		err = '';
 		// try/finally: `busy` wird IMMER zurückgesetzt — auch wenn ein unerwarteter
-		// Fehler fliegt. Sonst bleibt der Button stumm im „Anlegen …"-Zustand hängen.
+		// Fehler fliegt. Sonst bleibt der Button stumm im „Anlegen …“-Zustand hängen.
 		try {
 			const { data: created, error } = await supabase
 				.from('event')

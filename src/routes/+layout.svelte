@@ -35,7 +35,7 @@
 			location.href = to.url.href;
 		}
 	});
-	// „Später" blendet nur den Hinweis aus; der volle Seitenaufruf bei der
+	// „Später“ blendet nur den Hinweis aus; der volle Seitenaufruf bei der
 	// nächsten Navigation bleibt, damit niemand dauerhaft alten Code fährt.
 	let updateHintDismissed = $state(false);
 

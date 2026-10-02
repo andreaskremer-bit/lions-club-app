@@ -3,12 +3,12 @@
  *
  * Bewusst von Hand gepflegt und NICHT aus Commit-Messages erzeugt: Commits
  * sind Entwicklerprosa („fix(pwa): Offline-Seite bekommt eine eigene
- * Versionsspur"), hier steht, was ein Mitglied davon merkt. Nur Einträge
+ * Versionsspur“), hier steht, was ein Mitglied davon merkt. Nur Einträge
  * aufnehmen, die jemand ohne Vorwissen bemerken oder nutzen kann — interne
  * Umbauten, Migrationen und Testabdeckung gehören nach `MEILENSTEINE.md`.
  *
  * Sicherheitsfixes werden hier NUR neutral zusammengefasst („Sicherheit und
- * Stabilität verbessert"). Details würden jedem, der einen Screenshot sieht,
+ * Stabilität verbessert“). Details würden jedem, der einen Screenshot sieht,
  * verraten, was vorher offen war, und Mitglieder können ohnehin nichts tun —
  * der Fix ist beim Lesen längst ausgeliefert. Nachvollziehbar dokumentiert
  * sind sie in `MEILENSTEINE.md`.
@@ -33,7 +33,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 		changes: [
 			{
 				kind: 'verbessert',
-				text: 'Ein Termin, der gerade läuft, bleibt bis zu seinem Ende auf der Startseite und unter „Anstehend" und ist mit „Läuft gerade" markiert. Bisher wanderte er schon bei Beginn zu „Vergangen".'
+				text: 'Ein Termin, der gerade läuft, bleibt bis zu seinem Ende auf der Startseite und unter „Anstehend“ und ist mit „Läuft gerade“ markiert. Bisher wanderte er schon bei Beginn zu „Vergangen“.'
 			}
 		]
 	},
@@ -50,7 +50,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 			},
 			{
 				kind: 'neu',
-				text: 'Unter den Meldungen eines Termins gibt es eine neue Gruppe „Gäste", die alle angemeldeten Begleitpersonen mit Namen aufführt.'
+				text: 'Unter den Meldungen eines Termins gibt es eine neue Gruppe „Gäste“, die alle angemeldeten Begleitpersonen mit Namen aufführt.'
 			}
 		]
 	},
@@ -75,7 +75,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 			},
 			{
 				kind: 'neu',
-				text: 'Unter Mehr steht jetzt die Versionsnummer der App — ein Tipp darauf öffnet diese Übersicht.'
+				text: 'Unter Mehr steht jetzt die Versionsnummer der App – ein Tipp darauf öffnet diese Übersicht.'
 			}
 		]
 	},
@@ -132,7 +132,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 			},
 			{
 				kind: 'neu',
-				text: 'Benachrichtigungen zu Terminen, Geburtstagen, neuen Dokumenten und Beiträgen — in der App, per E-Mail und auf Wunsch als Push-Mitteilung. Den Kanal wählst du unter Mehr → Benachrichtigungen.'
+				text: 'Benachrichtigungen zu Terminen, Geburtstagen, neuen Dokumenten und Beiträgen – in der App, per E-Mail und auf Wunsch als Push-Mitteilung. Den Kanal wählst du unter Mehr → Benachrichtigungen.'
 			}
 		]
 	}
