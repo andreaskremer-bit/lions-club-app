@@ -33,7 +33,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 		changes: [
 			{
 				kind: 'verbessert',
-				text: 'Ein Termin, der gerade läuft, bleibt bis zu seinem Ende auf der Startseite und unter „Anstehend“ und ist mit „Läuft gerade“ markiert. Bisher wanderte er schon bei Beginn zu „Vergangen“.'
+				text: 'Ein Termin, der gerade läuft, bleibt bis zu seinem Ende unter „Anstehend“ und ist mit „Läuft gerade“ markiert. Außerdem zeigt die App nach einem Update einmal kurz, was neu ist.'
 			}
 		]
 	},

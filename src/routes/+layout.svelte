@@ -1,13 +1,23 @@
 <script lang="ts">
 	import '$lib/styles/fonts'; // self-hosted Schriften (DSGVO: kein Google-Fonts-CDN)
 	import '$lib/styles/app.css'; // Design-Tokens "Lions 2.0"
-	import { beforeNavigate, invalidate } from '$app/navigation';
+	import { beforeNavigate, goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page, updated } from '$app/state';
 	import { onMount } from 'svelte';
 	import { Button, HintCard, TabBar, type TabItem } from '$lib/components/ui';
 	import { trackDisplayMode } from '$lib/displayMode';
-	import { House, CalendarDays, Users, Newspaper, Ellipsis, RefreshCw } from '@lucide/svelte';
+	import type { ChangelogEntry } from '$lib/changelog';
+	import { markChangelogSeen, readSeen, storageAvailable, unseenEntries } from '$lib/whatsNew';
+	import {
+		House,
+		CalendarDays,
+		Users,
+		Newspaper,
+		Ellipsis,
+		RefreshCw,
+		Sparkles
+	} from '@lucide/svelte';
 
 	let { data, children } = $props();
 	let supabase = $derived(data.supabase);
@@ -38,6 +48,19 @@
 	// „Später“ blendet nur den Hinweis aus; der volle Seitenaufruf bei der
 	// nächsten Navigation bleibt, damit niemand dauerhaft alten Code fährt.
 	let updateHintDismissed = $state(false);
+
+	// „Neu in der App“: nach einem Update einmal pro Gerät zeigen, was sich laut
+	// Changelog geändert hat (Logik in $lib/whatsNew). Wer „Was ist neu“ selbst
+	// öffnet, hat es gesehen.
+	let whatsNew = $state<ChangelogEntry[]>([]);
+	let whatsNewChanges = $derived(whatsNew.flatMap((entry) => entry.changes));
+	function dismissWhatsNew() {
+		markChangelogSeen();
+		whatsNew = [];
+	}
+	$effect(() => {
+		if (page.url.pathname === '/mehr/version' && whatsNew.length) dismissWhatsNew();
+	});
 
 	let tabs = $derived<TabItem[]>([
 		{ id: 'start', label: 'Start', icon: House, href: resolve('/') },
@@ -80,6 +103,8 @@
 		};
 		document.addEventListener('visibilitychange', checkForUpdate);
 
+		if (storageAvailable()) whatsNew = unseenEntries(readSeen());
+
 		// Einmal pro App-Start vermerken, ob die installierte PWA oder der Browser
 		// genutzt wird (Homescreen-Quote). Fire-and-forget, siehe displayMode.ts.
 		if (data.user) trackDisplayMode(supabase);
@@ -116,6 +141,25 @@
 					<Button size="sm" variant="ghost" onclick={() => (updateHintDismissed = true)}>
 						Später
 					</Button>
+				</div>
+			{/snippet}
+		</HintCard>
+	</div>
+{/if}
+
+{#if showTabBar && whatsNewChanges.length && !updated.current}
+	<div class="app-update app-update--above-tabbar">
+		<HintCard title="Neu in der App" tone="info">
+			{#snippet icon()}<Sparkles aria-hidden="true" />{/snippet}
+			{#if whatsNewChanges.length === 1}
+				{whatsNewChanges[0].text}
+			{:else}
+				Seit deinem letzten Besuch gibt es {whatsNewChanges.length} Neuerungen.
+			{/if}
+			{#snippet action()}
+				<div class="app-update__actions">
+					<Button size="sm" onclick={() => goto(resolve('/mehr/version'))}>Was ist neu?</Button>
+					<Button size="sm" variant="ghost" onclick={dismissWhatsNew}>Schließen</Button>
 				</div>
 			{/snippet}
 		</HintCard>
