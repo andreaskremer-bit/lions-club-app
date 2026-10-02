@@ -1,5 +1,7 @@
 // iCalendar (.ics) Erzeugung für den Termin-Export in den eigenen Kalender.
 
+import { eventEnd } from './dates';
+
 export type IcsEvent = {
 	id: string;
 	title: string;
@@ -34,7 +36,7 @@ function esc(s: string): string {
  */
 export function buildIcs(ev: IcsEvent, now: Date = new Date()): string {
 	const start = new Date(ev.starts_at);
-	const end = ev.ends_at ? new Date(ev.ends_at) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+	const end = eventEnd(ev);
 
 	const lines = [
 		'BEGIN:VCALENDAR',

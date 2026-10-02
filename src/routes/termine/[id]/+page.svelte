@@ -276,7 +276,11 @@
 		<Card>
 			<h2 class="sec">Deine Rückmeldung</h2>
 			{#if data.isPast}
-				<p class="muted">Vergangener Termin – keine Änderung möglich.</p>
+				<p class="muted">
+					{data.isRunning
+						? 'Der Termin hat begonnen – keine Änderung mehr möglich.'
+						: 'Vergangener Termin – keine Änderung möglich.'}
+				</p>
 			{:else}
 				<div class="rsvp">
 					<Button
@@ -363,7 +367,11 @@
 			<Card>
 				<h2 class="sec">Fragen</h2>
 				{#if data.isPast}
-					<p class="muted">Vergangener Termin – Antworten sind schreibgeschützt.</p>
+					<p class="muted">
+						{data.isRunning
+							? 'Der Termin hat begonnen – Antworten sind schreibgeschützt.'
+							: 'Vergangener Termin – Antworten sind schreibgeschützt.'}
+					</p>
 				{/if}
 				{#each data.questions as q (q.id)}
 					<div class="q-block">

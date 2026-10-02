@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+	eventEnd,
+	isEventOver,
+	isEventRunning,
 	companionAllowed,
 	donationRequired,
 	lionsStartYear,
@@ -69,5 +72,37 @@ describe('seriesDates', () => {
 		const ds = seriesDates(new Date(2026, 8, 1, 19, 30), 'weekly', 2);
 		expect(ds[1].getHours()).toBe(19);
 		expect(ds[1].getMinutes()).toBe(30);
+	});
+});
+
+describe('Termin-Ende / laufend', () => {
+	const start = '2026-10-02T17:00:00Z';
+	const t = (iso: string) => new Date(iso).getTime();
+
+	it('nimmt ends_at, sonst Beginn + 2 h', () => {
+		expect(eventEnd({ starts_at: start, ends_at: '2026-10-02T22:00:00Z' }).toISOString()).toBe(
+			'2026-10-02T22:00:00.000Z'
+		);
+		expect(eventEnd({ starts_at: start, ends_at: null }).toISOString()).toBe(
+			'2026-10-02T19:00:00.000Z'
+		);
+	});
+
+	it('vor Beginn: weder laufend noch vorbei', () => {
+		const ev = { starts_at: start, ends_at: null };
+		expect(isEventRunning(ev, t('2026-10-02T16:59:00Z'))).toBe(false);
+		expect(isEventOver(ev, t('2026-10-02T16:59:00Z'))).toBe(false);
+	});
+
+	it('zwischen Beginn und Ende: laufend, nicht vorbei', () => {
+		const ev = { starts_at: start, ends_at: '2026-10-02T22:00:00Z' };
+		expect(isEventRunning(ev, t('2026-10-02T20:30:00Z'))).toBe(true);
+		expect(isEventOver(ev, t('2026-10-02T20:30:00Z'))).toBe(false);
+	});
+
+	it('ab Ende: vorbei', () => {
+		const ev = { starts_at: start, ends_at: null };
+		expect(isEventOver(ev, t('2026-10-02T19:00:00Z'))).toBe(true);
+		expect(isEventRunning(ev, t('2026-10-02T19:00:00Z'))).toBe(false);
 	});
 });

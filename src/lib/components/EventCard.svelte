@@ -12,6 +12,8 @@
 		type: EventType;
 		location: string | null;
 		starts_at: string;
+		/** Termin hat begonnen, ist aber noch nicht zu Ende → Label „Läuft gerade". */
+		running?: boolean;
 		/** Eigener RSVP-Status als Badge (optional). */
 		status?: Status;
 		/** Rückmeldezahlen als Fußzeile (optional). */
@@ -20,7 +22,17 @@
 		oncounts?: () => void;
 	};
 
-	let { id, title, type, location, starts_at, status, counts, oncounts }: Props = $props();
+	let {
+		id,
+		title,
+		type,
+		location,
+		starts_at,
+		running = false,
+		status,
+		counts,
+		oncounts
+	}: Props = $props();
 
 	const typeLabel: Record<EventType, string> = {
 		clubabend: 'Club-Abend',
@@ -56,6 +68,7 @@
 				{/if}{chip.time}
 			</span>
 			<span class="ev__badges">
+				{#if running}<Tag tone="gold" dot>Läuft gerade</Tag>{/if}
 				<Tag tone="blue">{typeLabel[type]}</Tag>
 				{#if status}<StatusBadge {status} />{/if}
 			</span>

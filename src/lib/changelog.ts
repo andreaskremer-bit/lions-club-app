@@ -29,6 +29,15 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-10-02',
+		changes: [
+			{
+				kind: 'verbessert',
+				text: 'Ein Termin, der gerade läuft, bleibt bis zu seinem Ende auf der Startseite und unter „Anstehend" und ist mit „Läuft gerade" markiert. Bisher wanderte er schon bei Beginn zu „Vergangen".'
+			}
+		]
+	},
+	{
 		date: '2026-09-03',
 		changes: [
 			{

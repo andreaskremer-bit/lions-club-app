@@ -6,6 +6,7 @@
 	import EventCard from '$lib/components/EventCard.svelte';
 	import NewsCard from '$lib/components/NewsCard.svelte';
 	import { Bell } from '@lucide/svelte';
+	import { isEventRunning } from '$lib/dates';
 
 	let { data } = $props();
 	let nextEvent = $derived(data.nextEvent);
@@ -55,6 +56,7 @@
 					type={nextEvent.type}
 					location={nextEvent.location}
 					starts_at={nextEvent.starts_at}
+					running={isEventRunning(nextEvent)}
 					status={ownStatus}
 					{counts}
 				/>

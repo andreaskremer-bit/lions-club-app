@@ -433,3 +433,13 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 **Grün.** `check` · `lint` · 70 Unit-Tests · 3 E2E gegen Preview (2 Smoke + Update-Hinweis). Screenshot der Login-Seite mit dem Hinweis geprüft. Changelog-Eintrag unter 2026-09-03.
 
 **Ausgerollt (2026-09-03, Commit `0c85c16`).** Keine Migration, nur `git push` → Netlify-Build nach ~40 s live; `https://app.lions-bonn-rheinaue.de/_app/version.json` liefert `{"version":"0c85c16"}`. Der Poll greift für jedes Gerät erst ab dem nächsten vollen Seitenaufruf (der neue Build enthält ihn); heute schon offene alte Tabs heilen sich wie bisher beim nächsten Neuladen.
+
+## Laufende Termine bleiben bis zu ihrem Ende „anstehend" (2026-10-02)
+
+**Anlass.** Beobachtung des Webmasters: Ein Clubabend verschwand bei Beginn von der Startseite und wanderte im Termine-Tab zu „Vergangen". Ursache: Startseite (`.gte('starts_at', now)`) und Listenfilter trennten nach `starts_at`; `ends_at` spielte nirgends eine Rolle. Die Spezifikation (§ „Anstehend vs. Vergangen") regelt laufende Termine nicht. Es war also eine Lücke, keine Entscheidung.
+
+**Entscheidung.** Anstehend bis zum Ende: `ends_at`, sonst Beginn + 2 h (derselbe Default wie Planung und .ics). Während des Termins Wort-Label „Läuft gerade" (Gold-Tag) auf der `EventCard`. **Die RSVP-Sperre bleibt ab Beginn** (RLS `starts_at > now()`, `isPast` im Detail), damit Nachmeldungen während des Abends die Anwesenheitserfassung nicht stören. Das Detail sagt bei laufenden Terminen „Der Termin hat begonnen – keine Änderung mehr möglich." statt „Vergangener Termin".
+
+**Umsetzung.** Helfer `eventEnd`/`isEventOver`/`isEventRunning` in `src/lib/dates.ts` (auch von `ics.ts` genutzt). Startseite filtert per `or(ends_at.gt.<jetzt>, and(ends_at.is.null, starts_at.gt.<jetzt − 2 h>))`. Keine Migration.
+
+**Grün.** `check` · `lint` · 74 Unit-Tests (4 neu). Im lokalen Stack per Playwright als Präsident verifiziert, mit drei Testterminen: läuft mit `ends_at` bzw. ohne `ends_at` → Startseite + „Anstehend" mit „Läuft gerade"; Beginn vor 150 min ohne `ends_at` → „Vergangen". Die PostgREST-Filtersyntax wurde zusätzlich gegen Produktion geprüft (401 statt 400 = Filter geparst). Changelog-Eintrag unter 2026-10-02.

@@ -1,6 +1,6 @@
 import type { PageLoad } from './$types';
 import type { EventType } from './termine/+page';
-import { lionsStartYear } from '$lib/dates';
+import { DEFAULT_EVENT_MS, lionsStartYear } from '$lib/dates';
 
 export type StartEvent = {
 	id: string;
@@ -8,6 +8,7 @@ export type StartEvent = {
 	type: EventType;
 	location: string | null;
 	starts_at: string;
+	ends_at: string | null;
 	event_response: {
 		member_id: string;
 		status: 'zugesagt' | 'abgesagt';
@@ -40,16 +41,20 @@ type RawNews = {
 
 export const load: PageLoad = async ({ parent }) => {
 	const { supabase, memberId } = await parent();
-	const nowIso = new Date().toISOString();
+	const now = Date.now();
+	const nowIso = new Date(now).toISOString();
+	// Ohne `ends_at` gilt Beginn + 2 h als Ende (siehe `eventEnd`).
+	const startCutoffIso = new Date(now - DEFAULT_EVENT_MS).toISOString();
 	const year = lionsStartYear(new Date());
 
 	const [eventRes, newsRes, activeRes] = await Promise.all([
 		supabase
 			.from('event')
 			.select(
-				'id, title, type, location, starts_at, event_response(member_id, status, companion(id))'
+				'id, title, type, location, starts_at, ends_at, event_response(member_id, status, companion(id))'
 			)
-			.gte('starts_at', nowIso)
+			// Noch nicht zu Ende — ein laufender Termin bleibt „nächster Termin", bis er endet.
+			.or(`ends_at.gt.${nowIso},and(ends_at.is.null,starts_at.gt.${startCutoffIso})`)
 			.order('starts_at', { ascending: true })
 			.limit(1)
 			.maybeSingle(),

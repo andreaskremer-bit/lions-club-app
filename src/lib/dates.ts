@@ -14,6 +14,28 @@ export function lionsStartYear(d: Date): number {
 	return d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1;
 }
 
+/** Standarddauer, wenn ein Termin kein `ends_at` hat (gleicher Default wie Planung und .ics). */
+export const DEFAULT_EVENT_MS = 2 * 60 * 60 * 1000;
+
+type Timed = { starts_at: string; ends_at?: string | null };
+
+/** Ende eines Termins: `ends_at`, sonst Beginn + 2 Stunden. */
+export function eventEnd(ev: Timed): Date {
+	return ev.ends_at
+		? new Date(ev.ends_at)
+		: new Date(new Date(ev.starts_at).getTime() + DEFAULT_EVENT_MS);
+}
+
+/** Vorbei = Ende erreicht. Bis dahin gilt ein Termin als anstehend (auch während er läuft). */
+export function isEventOver(ev: Timed, now: number = Date.now()): boolean {
+	return eventEnd(ev).getTime() <= now;
+}
+
+/** Läuft gerade = begonnen, aber noch nicht zu Ende. */
+export function isEventRunning(ev: Timed, now: number = Date.now()): boolean {
+	return new Date(ev.starts_at).getTime() <= now && !isEventOver(ev, now);
+}
+
 export type Rhythm = 'weekly' | 'biweekly' | 'monthly';
 
 /** Serientermine ab `start`: wöchentlich/14-täglich/monatlich (gleiches Datum), `count` Termine. */

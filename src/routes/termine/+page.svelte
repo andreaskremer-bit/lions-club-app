@@ -13,6 +13,7 @@
 		List as ListIcon
 	} from '@lucide/svelte';
 	import type { EventListItem } from './+page';
+	import { isEventOver, isEventRunning } from '$lib/dates';
 
 	let { data } = $props();
 
@@ -89,9 +90,8 @@
 	let list = $derived(
 		data.events
 			.filter((e) =>
-				view === 'anstehend'
-					? new Date(e.starts_at).getTime() >= now
-					: new Date(e.starts_at).getTime() < now
+				// Laufende Termine bleiben unter „Anstehend", bis sie enden.
+				view === 'anstehend' ? !isEventOver(e, now) : isEventOver(e, now)
 			)
 			.sort((a, b) => {
 				const ta = new Date(a.starts_at).getTime();
@@ -193,6 +193,7 @@
 							type={e.type}
 							location={e.location}
 							starts_at={e.starts_at}
+							running={isEventRunning(e, now)}
 							status={ownStatus(e)}
 							counts={counts(e)}
 							oncounts={() => openSheet(e)}

@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { EventType, RsvpStatus } from '../+page';
+import { isEventRunning } from '$lib/dates';
 
 export type ResponseRow = {
 	id: string;
@@ -94,7 +95,9 @@ export const load: PageLoad = async ({ parent, params }) => {
 		myMemberId: (me?.id ?? null) as string | null,
 		partnerName,
 		activeMembers: (membersRes.data ?? []) as ActiveMember[],
+		// Sperre ab Beginn (spiegelt RLS `starts_at > now()`), auch während der Termin noch läuft.
 		isPast: new Date(event.starts_at).getTime() < Date.now(),
+		isRunning: isEventRunning(event),
 		questions: (qRes.data ?? []) as Question[],
 		myAnswers: (aRes.data ?? []) as unknown as MyAnswer[]
 	};
