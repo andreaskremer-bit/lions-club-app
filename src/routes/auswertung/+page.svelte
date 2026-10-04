@@ -11,17 +11,25 @@
 
 	const yearLabel = (y: number) => `${y}/${y + 1}`;
 
+	// Vorauswahl: Juli–September das abgeschlossene Vorjahr (dann zieht der Schatzmeister die
+	// Abwesenheitsspenden ein), sonst das laufende Lions-Jahr.
+	function defaultYear(now = new Date()): number {
+		const current = lionsStartYear(now);
+		const month = now.getMonth(); // 6 = Juli
+		return month >= 6 && month <= 8 ? current - 1 : current;
+	}
+
 	// Select ist string-basiert: Auswahl als String halten, Lions-Jahr als Zahl ableiten.
-	let selectedYearValue = $state(String(lionsStartYear(new Date())));
+	let selectedYearValue = $state(String(defaultYear()));
 	let selectedYear = $derived(Number(selectedYearValue));
 
-	// Auswahl-Optionen aus dem Datenbestand (frühestes Termin-Jahr bis aktuelles Lions-Jahr).
+	// Auswahl: laufendes und abgeschlossenes Vorjahr. Ältere Anwesenheit wird automatisch
+	// gelöscht (Migration 20261004120400), dort stünden nur noch Nullen.
 	let yearOptions = $derived.by((): SelectOption[] => {
 		const current = lionsStartYear(new Date());
-		let min = current;
-		for (const e of data.events) min = Math.min(min, lionsStartYear(new Date(e.starts_at)));
 		const out: SelectOption[] = [];
-		for (let y = current; y >= min; y--) out.push({ value: String(y), label: yearLabel(y) });
+		for (let y = current; y >= current - 1; y--)
+			out.push({ value: String(y), label: yearLabel(y) });
 		return out;
 	});
 
@@ -36,13 +44,46 @@
 	);
 	let eventIds = $derived(new Set(eventsInPeriod.map((e) => e.id)));
 
+	// Anwesenheit nur für die Termine des gewählten Lions-Jahres laden (gut 400 Zeilen statt
+	// des ganzen Bestands, der an die 1000-Zeilen-Grenze von PostgREST stößt).
+	type AttRow = { event_id: string; member_id: string; present: boolean };
+	let attendance = $state<AttRow[]>([]);
+	let loadingAtt = $state(false);
+	let attError = $state('');
+	let attRequest = 0;
+
+	$effect(() => {
+		const ids = [...eventIds];
+		const request = ++attRequest;
+		if (ids.length === 0) {
+			attendance = [];
+			return;
+		}
+		loadingAtt = true;
+		attError = '';
+		data.supabase
+			.from('attendance')
+			.select('event_id, member_id, present')
+			.in('event_id', ids)
+			.then(({ data: rows, error }) => {
+				if (request !== attRequest) return; // Jahr inzwischen gewechselt
+				loadingAtt = false;
+				if (error) {
+					attError = 'Anwesenheit konnte nicht geladen werden.';
+					attendance = [];
+					return;
+				}
+				attendance = (rows ?? []) as AttRow[];
+			});
+	});
+
 	type Row = { id: string; name: string; abwesend: number; anwesend: number; erfasst: number };
 	let rows = $derived.by((): Row[] => {
 		return data.members.map((m) => {
 			let abwesend = 0;
 			let anwesend = 0;
-			for (const a of data.attendance) {
-				if (a.member_id !== m.id || !eventIds.has(a.event_id)) continue;
+			for (const a of attendance) {
+				if (a.member_id !== m.id) continue;
 				if (a.present) anwesend++;
 				else abwesend++;
 			}
@@ -86,7 +127,11 @@
 				bind:value={selectedYearValue}
 				class="year"
 			/>
-			<Button variant="secondary" disabled={eventsInPeriod.length === 0} onclick={exportCsv}>
+			<Button
+				variant="secondary"
+				disabled={eventsInPeriod.length === 0 || loadingAtt || !!attError}
+				onclick={exportCsv}
+			>
 				{#snippet iconLeft()}<Download size={18} />{/snippet}
 				CSV
 			</Button>
@@ -96,6 +141,8 @@
 			{eventsInPeriod.length} spendenpflichtige Termine · {totalAbsences} Abwesenheiten gesamt (aktive
 			Mitglieder)
 		</p>
+
+		{#if attError}<p class="summary">{attError}</p>{/if}
 
 		<Card>
 			<table class="tbl">
@@ -115,7 +162,9 @@
 		</Card>
 		<p class="hint">
 			Abwesenheiten = nicht anwesend bei spendenpflichtigen Terminen im gewählten Lions-Jahr. Der
-			Spendenbetrag wird außerhalb der App verrechnet.
+			Spendenbetrag wird außerhalb der App verrechnet. Anwesenheitsdaten werden nach zwei
+			Lions-Jahren automatisch gelöscht; das laufende und das abgeschlossene Vorjahr sind immer
+			vollständig.
 		</p>
 	</main>
 </div>

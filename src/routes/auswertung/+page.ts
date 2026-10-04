@@ -10,7 +10,9 @@ export const load: PageLoad = async ({ parent }) => {
 	// Geldsicht/Auswertung nur für Schatzmeister (view_donations).
 	if (!permissions.includes('view_donations')) throw redirect(303, '/');
 
-	const [membersRes, eventsRes, attRes] = await Promise.all([
+	// Anwesenheit lädt die Seite je Lions-Jahr nach (nur die Termine des gewählten Jahres):
+	// eine ungefilterte Abfrage liefe sonst in die PostgREST-Grenze von 1000 Zeilen.
+	const [membersRes, eventsRes] = await Promise.all([
 		supabase
 			.from('member')
 			.select('id, first_name, last_name')
@@ -21,13 +23,11 @@ export const load: PageLoad = async ({ parent }) => {
 			.from('event')
 			.select('id, title, starts_at')
 			.eq('donation_required', true)
-			.order('starts_at'),
-		supabase.from('attendance').select('event_id, member_id, present')
+			.order('starts_at')
 	]);
 
 	return {
 		members: (membersRes.data ?? []) as AuswMember[],
-		events: (eventsRes.data ?? []) as AuswEvent[],
-		attendance: (attRes.data ?? []) as { event_id: string; member_id: string; present: boolean }[]
+		events: (eventsRes.data ?? []) as AuswEvent[]
 	};
 };
