@@ -101,3 +101,22 @@ export async function uploadDocument(
 
 	return { id: created.id };
 }
+
+/**
+ * Öffnet ein Dokument über eine kurzlebige signierte URL in einem neuen Fenster.
+ * Das Fenster wird SOFORT (noch im Klick) geöffnet und erst danach auf die URL gelenkt:
+ * Ein `window.open` nach dem `await` blockiert iOS Safari (auch die installierte PWA) als
+ * Popup, weil es nicht mehr zur Nutzergeste zählt.
+ */
+export async function openDocument(supabase: SupabaseClient, path: string): Promise<boolean> {
+	const win = window.open('', '_blank');
+	if (win) win.opener = null;
+	const { data } = await supabase.storage.from('documents').createSignedUrl(path, 60);
+	if (!data?.signedUrl) {
+		win?.close();
+		return false;
+	}
+	if (win) win.location.href = data.signedUrl;
+	else window.location.href = data.signedUrl;
+	return true;
+}

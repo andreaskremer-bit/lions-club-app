@@ -16,7 +16,10 @@ declare global {
 			session: Session | null;
 			user: User | null;
 		}
-		// interface PageState {}
+		interface PageState {
+			/** Einmaliger Hinweis nach einer Navigation, z. B. „Anhang fehlt“. */
+			notice?: string;
+		}
 		// interface Platform {}
 	}
 

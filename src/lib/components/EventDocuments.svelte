@@ -3,7 +3,7 @@
 	import { Card, Button, IconButton, Input, FilePicker } from '$lib/components/ui';
 	import { Download, Trash2, Plus } from '@lucide/svelte';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import { uploadDocument, MAX_FILE_BYTES, type DocumentRow } from '$lib/documents';
+	import { uploadDocument, openDocument, MAX_FILE_BYTES, type DocumentRow } from '$lib/documents';
 	import { isOwnStoragePath } from '$lib/storagePath';
 
 	let {
@@ -45,10 +45,8 @@
 
 	async function download(d: DocumentRow) {
 		if (!d.file_path) return;
-		const { data: signed } = await supabase.storage
-			.from('documents')
-			.createSignedUrl(d.file_path, 60);
-		if (signed?.signedUrl) window.open(signed.signedUrl, '_blank');
+		if (!(await openDocument(supabase, d.file_path)))
+			err = 'Dokument konnte nicht geöffnet werden.';
 	}
 
 	function onFile(f: File | null) {

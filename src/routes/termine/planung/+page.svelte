@@ -102,10 +102,15 @@
 		}
 	});
 
-	// Ende vorschlagen (überschreibbar): bei Clubabend/MV Beginn + 2 Std.
+	// Ende vorschlagen (überschreibbar): bei Clubabend/MV Beginn + 2 Std. Bei anderen Typen
+	// einen nur vorgeschlagenen Wert wieder leeren – sonst bliebe nach Typ- und
+	// Datumswechsel ein veraltetes Ende stehen und das Speichern scheiterte.
 	$effect(() => {
 		const s = combine(dateStr, timeStr);
-		if (!endTouched && s && isTimedType(type)) {
+		if (!endTouched && !isTimedType(type)) {
+			endDateStr = '';
+			endTimeStr = '';
+		} else if (!endTouched && s && isTimedType(type)) {
 			const e = plus2h(s);
 			const pad = (n: number) => String(n).padStart(2, '0');
 			endDateStr = `${e.getFullYear()}-${pad(e.getMonth() + 1)}-${pad(e.getDate())}`;
@@ -172,19 +177,25 @@
 				return;
 			}
 
-			// Optionalen Anhang hochladen (best-effort – der Termin ist bereits angelegt;
-			// bei Fehler kann das Dokument auf der Termin-Seite ergänzt werden).
+			// Optionalen Anhang hochladen. Der Termin ist bereits angelegt; scheitert der Upload,
+			// zeigt die Termin-Seite den Fehler, dort lässt sich der Anhang ergänzen.
+			let uploadError: string | undefined;
 			if (docFile) {
-				await uploadDocument(supabase, {
+				const res = await uploadDocument(supabase, {
 					file: docFile,
 					title: docFile.name.replace(/\.[^.]+$/, ''),
 					category: 'sonstige',
 					eventId: created.id,
 					memberId: data.memberId
 				});
+				if ('error' in res)
+					uploadError = `Der Termin ist angelegt, aber der Anhang fehlt: ${res.error}`;
 			}
 
-			await goto(resolve('/termine/[id]', { id: created.id }), { invalidateAll: true });
+			await goto(resolve('/termine/[id]', { id: created.id }), {
+				invalidateAll: true,
+				state: uploadError ? { notice: uploadError } : {}
+			});
 		} catch (e) {
 			err = 'Unerwarteter Fehler beim Anlegen: ' + (e instanceof Error ? e.message : String(e));
 		} finally {

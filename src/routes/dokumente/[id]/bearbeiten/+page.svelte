@@ -88,11 +88,22 @@
 			patch.content_text = null; // wird neu extrahiert
 		}
 
+		const oldPath = doc.file_path;
+		const newPath = patch.file_path as string | undefined;
 		const { error: updErr } = await supabase.from('document').update(patch).eq('id', doc.id);
 		if (updErr) {
+			// Neu hochgeladene Datei wieder entfernen (außer sie hat die alte überschrieben).
+			if (newPath && newPath !== oldPath) {
+				await supabase.storage.from('documents').remove([newPath]);
+			}
 			busy = false;
 			err = 'Speichern fehlgeschlagen: ' + updErr.message;
 			return;
+		}
+
+		// Ersetzte Datei mit anderem Namen löschen, sonst bliebe sie ohne Verweis liegen.
+		if (newPath && newPath !== oldPath && isOwnStoragePath(doc.id, oldPath)) {
+			await supabase.storage.from('documents').remove([oldPath]);
 		}
 
 		if (newFile) {

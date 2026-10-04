@@ -146,10 +146,21 @@
 		await invalidateAll();
 	}
 
-	function open(n: (typeof data.notifications)[number]) {
-		if (n.event_id) goto(resolve('/termine/[id]', { id: n.event_id }));
-		else if (n.document_id) goto(resolve('/dokumente'));
-		else if (n.news_post_id) goto(resolve('/news'));
+	// Antippen markiert als gelesen (sonst bliebe der Zähler am „Mehr“-Tab stehen) und
+	// öffnet das Ziel. Geburtstage führen zur Geburtstagsliste.
+	async function open(n: (typeof data.notifications)[number]) {
+		if (!n.read_at) {
+			await supabase
+				.from('notification')
+				.update({ read_at: new Date().toISOString() })
+				.eq('id', n.id);
+		}
+		if (n.event_id)
+			await goto(resolve('/termine/[id]', { id: n.event_id }), { invalidateAll: true });
+		else if (n.document_id) await goto(resolve('/dokumente'), { invalidateAll: true });
+		else if (n.news_post_id) await goto(resolve('/news'), { invalidateAll: true });
+		else if (n.kind === 'birthday') await goto(resolve('/geburtstage'), { invalidateAll: true });
+		else await invalidateAll();
 	}
 
 	// --- Test-Trigger (nur manage_members) -------------------------------------
@@ -272,7 +283,6 @@
 						.filter(Boolean)
 						.join(' ')}
 					onclick={() => open(n)}
-					disabled={!n.event_id && !n.document_id && !n.news_post_id}
 				>
 					{#if !n.read_at}<span class="note__dot"></span>{/if}
 					<span class="note__main">

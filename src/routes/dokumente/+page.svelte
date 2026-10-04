@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Input, SegmentedControl } from '$lib/components/ui';
 	import { ChevronLeft, Plus, FileText, Download, Pencil } from '@lucide/svelte';
-	import { categoryLabel, categoryOptions, type DocumentRow } from '$lib/documents';
+	import { categoryLabel, categoryOptions, openDocument, type DocumentRow } from '$lib/documents';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -31,7 +31,14 @@
 		year: 'numeric'
 	});
 
+	let err = $state('');
+
+	// Nur die jüngste Abfrage darf die Liste setzen – sonst überschreibt eine langsame
+	// Suche, die zuletzt zurückkommt, den inzwischen gewählten Filter.
+	let queryRun = 0;
+
 	async function runQuery() {
+		const run = ++queryRun;
 		loading = true;
 		const term = searchTerm.trim();
 		// Mit Suchbegriff: search_documents (Teilwort/ILIKE + deutsche Volltextsuche
@@ -39,6 +46,8 @@
 		let q = term
 			? supabase.rpc('search_documents', { term }).select(COLS)
 			: supabase.from('document').select(COLS);
+		// Termin-Anhänge erscheinen nur am jeweiligen Termin, nicht in der Ablage (wie im Load).
+		q = q.is('event_id', null);
 		if (category) q = q.eq('category', category);
 		if (sort === 'titel') q = q.order('title');
 		else if (sort === 'kategorie')
@@ -48,6 +57,7 @@
 				.order('doc_date', { ascending: false, nullsFirst: false })
 				.order('created_at', { ascending: false });
 		const { data: rows, error } = await q;
+		if (run !== queryRun) return;
 		if (error) console.error('Dokumentsuche fehlgeschlagen:', error.message);
 		docs = (rows ?? []) as DocumentRow[];
 		loading = false;
@@ -71,10 +81,9 @@
 
 	async function download(d: DocumentRow) {
 		if (!d.file_path) return;
-		const { data: signed } = await supabase.storage
-			.from('documents')
-			.createSignedUrl(d.file_path, 60);
-		if (signed?.signedUrl) window.open(signed.signedUrl, '_blank');
+		err = '';
+		if (!(await openDocument(supabase, d.file_path)))
+			err = 'Dokument konnte nicht geöffnet werden.';
 	}
 </script>
 
@@ -115,6 +124,8 @@
 		</div>
 
 		<SegmentedControl options={sortOptions} bind:value={sort} />
+
+		{#if err}<p class="empty" role="alert">{err}</p>{/if}
 
 		<div class="list">
 			{#each docs as d (d.id)}
