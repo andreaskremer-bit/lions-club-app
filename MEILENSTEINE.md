@@ -529,6 +529,6 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 - **Tests:** `review_migrations_test.sql` (Spaltenschutz, Berliner Datum), Outbox-Test um Gate und Rückgabedaten erweitert, Aufbewahrungs-Test prüft auch `anon`.
 - **`scripts/import-protokolle.mjs`:** prüft den Fehler beim Setzen von `file_path` und räumt dann Datei und Zeile wieder ab.
 - **Bewusst NICHT umgesetzt:** Inlining von `lions_year_at`/`current_lions_year` (Befund: `set search_path` verhindert es). Bei 35 Mitgliedern ohne messbaren Effekt, und `set search_path` ist Supabase-Empfehlung für Funktionen.
-- **Offen (User-Frage):** Typografie in bereits angewendeten Migrationen (u. a. Spaltenkommentar `member.last_browser_at` mit „…" statt „…“) – Migrationen bleiben unverändert; der Spaltenkommentar ließe sich per neuer Migration korrigieren.
+- **Offen (User-Frage):** Typografie in bereits angewendeten Migrationen (u. a. Spaltenkommentar `member.last_browser_at` mit geradem statt typografischem Abführungszeichen) – Migrationen bleiben unverändert; der Spaltenkommentar ließe sich per neuer Migration korrigieren.
 
 **Grün.** 102 Unit-Tests · 161 pgTAP. Lokal end-to-end mit `functions serve` + Mailpit: zwei gleichzeitige Läufe → 3 Mails, keine doppelt; Mitglied ohne Freigabe bekommt nichts.
