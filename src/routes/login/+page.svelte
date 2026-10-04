@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { Button, Input, OtpInput } from '$lib/components/ui';
 	import { clearPrivateCaches } from '$lib/offlineCache';
+	import { releaseForeignPush } from '$lib/push';
 	import { Mail, ArrowRight, ChevronLeft } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -73,6 +74,8 @@
 		// geteilten Gerät (oder nach abgelaufener Session ohne Logout) darf davon
 		// nichts stehen bleiben.
 		await clearPrivateCaches();
+		// Ebenso ein Push-Abo, das noch einem anderen Konto gehört.
+		await releaseForeignPush(supabase);
 		await goto(resolve('/'), { invalidateAll: true });
 	}
 

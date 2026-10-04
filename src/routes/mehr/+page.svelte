@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, Button } from '$lib/components/ui';
 	import { clearPrivateCaches } from '$lib/offlineCache';
+	import { releasePushOnSignOut } from '$lib/push';
 	import { APP_BUILD } from '$lib/version';
 	import {
 		User,
@@ -25,6 +26,8 @@
 
 	async function signOut() {
 		loading = true;
+		// Push-Abo zuerst beenden: das Löschen der Zeile braucht noch die Sitzung.
+		await releasePushOnSignOut(supabase);
 		await supabase.auth.signOut();
 		// Gecachte Mitgliederfotos sind personenbezogen — beim Abmelden weg (DSGVO).
 		await clearPrivateCaches();

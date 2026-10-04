@@ -1,6 +1,8 @@
 // Web-Push-Helfer (clientseitig). Reine Funktionen ohne Browser-APIs sind hier
 // gekapselt, damit sie unit-testbar bleiben (siehe push.test.ts).
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 /**
  * Wandelt einen base64url-kodierten VAPID-Public-Key in das `Uint8Array`-Format um,
  * das `pushManager.subscribe({ applicationServerKey })` erwartet.
@@ -39,4 +41,51 @@ export function subscriptionToRow(sub: PushSubscription): {
 		p256dh: json.keys?.p256dh ?? '',
 		auth: json.keys?.auth ?? ''
 	};
+}
+
+/** Aktuelles Push-Abo dieses Geräts oder null (ohne auf einen aktiven SW zu warten). */
+async function currentSubscription(): Promise<PushSubscription | null> {
+	if (!pushSupported()) return null;
+	const reg = await navigator.serviceWorker.getRegistration();
+	return reg ? await reg.pushManager.getSubscription() : null;
+}
+
+/**
+ * Beim Abmelden: Push-Abo des Geräts beenden. Muss VOR `auth.signOut()` laufen, weil
+ * das Löschen der `push_subscription`-Zeile noch die Sitzung braucht (RLS: nur eigene).
+ * Sonst bekäme das Gerät nach dem Logout weiter die Benachrichtigungen des Mitglieds –
+ * auf einem geteilten Gerät sieht sie die nächste Person. Fehler blockieren den Logout nie.
+ */
+export async function releasePushOnSignOut(supabase: SupabaseClient): Promise<void> {
+	try {
+		const sub = await currentSubscription();
+		if (!sub) return;
+		await supabase.from('push_subscription').delete().eq('endpoint', sub.endpoint);
+		await sub.unsubscribe();
+	} catch (e) {
+		console.error('Push-Abmeldung beim Logout fehlgeschlagen:', e);
+	}
+}
+
+/**
+ * Nach der Anmeldung: Ein Push-Abo, das nicht zum angemeldeten Mitglied gehört (anderes
+ * Konto auf demselben Gerät, oder Sitzung ohne Logout abgelaufen), wird gekündigt. Die
+ * Zeile ist per RLS nur für das eigene Konto sichtbar – fehlt sie, ist das Abo fremd.
+ * Der Push-Dienst meldet den Endpoint danach als ungültig, `send-notifications` räumt
+ * die alte Zeile dann selbst ab (404/410).
+ */
+export async function releaseForeignPush(supabase: SupabaseClient): Promise<void> {
+	try {
+		const sub = await currentSubscription();
+		if (!sub) return;
+		const { data, error } = await supabase
+			.from('push_subscription')
+			.select('endpoint')
+			.eq('endpoint', sub.endpoint)
+			.maybeSingle();
+		if (error) return;
+		if (!data) await sub.unsubscribe();
+	} catch (e) {
+		console.error('Prüfung des Push-Abos nach dem Login fehlgeschlagen:', e);
+	}
 }
