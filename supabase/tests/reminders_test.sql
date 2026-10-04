@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(11);
 
 truncate auth.users, public.event cascade;
 
@@ -85,6 +85,22 @@ select public.enqueue_due_reminders(date '2026-09-15');
 select is(
   (select count(*)::int from public.notification),
   5, 'Zweiter Lauf erzeugt keine Duplikate (2 + 3)'
+);
+
+-- (9–11) Nur Cron (postgres) und die Admin-Route (service_role) dürfen den Tageslauf
+-- auslösen – sonst ließe sich per RPC mit beliebigem p_today eine Benachrichtigungsflut
+-- erzeugen (Security-Scan 2026-10-04, F1).
+select ok(
+  not has_function_privilege('anon', 'public.enqueue_due_reminders(date)', 'execute'),
+  'anon hat kein Execute-Recht auf enqueue_due_reminders'
+);
+select ok(
+  not has_function_privilege('authenticated', 'public.enqueue_due_reminders(date)', 'execute'),
+  'authenticated hat kein Execute-Recht auf enqueue_due_reminders'
+);
+select ok(
+  has_function_privilege('service_role', 'public.enqueue_due_reminders(date)', 'execute'),
+  'service_role (Admin-Route) darf enqueue_due_reminders aufrufen'
 );
 
 select * from finish();
