@@ -5,6 +5,7 @@
 	import type { SelectOption } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
 	import { lionsStartYear } from '$lib/dates';
+	import { csvRow, downloadCsv } from '$lib/csv';
 
 	let { data } = $props();
 
@@ -59,23 +60,12 @@
 
 	function exportCsv() {
 		const head = ['Nachname', 'Vorname', 'Abwesenheiten', 'Anwesend', 'Erfasste Termine'];
-		const lines = [head.join(',')];
+		const lines = [csvRow(head)];
 		for (const m of data.members) {
 			const r = rows.find((x) => x.id === m.id)!;
-			lines.push(
-				[m.last_name, m.first_name, r.abwesend, r.anwesend, r.erfasst]
-					.map((v) => `"${String(v).replace(/"/g, '""')}"`)
-					.join(',')
-			);
+			lines.push(csvRow([m.last_name, m.first_name, r.abwesend, r.anwesend, r.erfasst]));
 		}
-		// BOM für korrekte Umlaute in Excel
-		const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `abwesenheiten_${selectedYear}-${selectedYear + 1}.csv`;
-		a.click();
-		URL.revokeObjectURL(url);
+		downloadCsv(lines, `abwesenheiten_${selectedYear}-${selectedYear + 1}.csv`);
 	}
 </script>
 

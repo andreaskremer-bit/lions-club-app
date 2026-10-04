@@ -3,6 +3,8 @@
 // Allgemeines CSV (Excel-tauglich): später bei Bedarf aufs echte Lions-Template
 // mappen. Bewusst OHNE Partner-/Notizfelder (DSGVO-Datensparsamkeit).
 
+import { csvCell } from './csv';
+
 export type MemberStatus = 'aktiv' | 'inaktiv' | 'ehrenmitglied';
 
 export type ExportMember = {
@@ -50,11 +52,6 @@ export function formatDate(iso: string | null): string {
 	if (!iso) return '';
 	const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
 	return m ? `${m[3]}.${m[2]}.${m[1]}` : '';
-}
-
-/** Ein CSV-Feld quoten und interne Anführungszeichen verdoppeln. */
-function csvCell(v: string | null): string {
-	return `"${String(v ?? '').replace(/"/g, '""')}"`;
 }
 
 function row(m: ExportMember): string {

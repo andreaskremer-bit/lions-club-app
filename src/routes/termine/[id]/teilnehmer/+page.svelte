@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
+	import { csvRow, downloadCsv } from '$lib/csv';
 
 	let { data } = $props();
 
@@ -41,18 +42,11 @@
 
 	function exportCsv() {
 		const head = ['Name', 'Typ', ...data.questions.map((q) => q.label)];
-		const lines = [head.join(',')];
+		const lines = [csvRow(head)];
 		for (const p of persons) {
-			const row = [p.name, p.kind, ...data.questions.map((q) => cell(p, q.id))];
-			lines.push(row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+			lines.push(csvRow([p.name, p.kind, ...data.questions.map((q) => cell(p, q.id))]));
 		}
-		const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `teilnehmer_${data.event.title.replace(/[^\w-]+/g, '_')}.csv`;
-		a.click();
-		URL.revokeObjectURL(url);
+		downloadCsv(lines, `teilnehmer_${data.event.title.replace(/[^\w-]+/g, '_')}.csv`);
 	}
 </script>
 
