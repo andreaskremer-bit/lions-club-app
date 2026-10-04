@@ -3,12 +3,13 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(6);
+select plan(7);
 
 truncate auth.users, public.event cascade;
 
-insert into public.member (email, first_name, last_name, status) values
-  ('o@out.example', 'Otto', 'Outbox', 'aktiv');
+insert into public.member (email, first_name, last_name, status, notifications_enabled) values
+  ('o@out.example', 'Otto', 'Outbox', 'aktiv', true),
+  ('g@out.example', 'Gesa', 'Gesperrt', 'aktiv', false);
 
 insert into public.notification (kind, recipient_id, for_date, title, attempts, last_attempt_at, sent_at)
 select 'birthday', m.id, current_date - v.tag, v.title, v.attempts, v.last_attempt, v.sent_at
@@ -20,13 +21,18 @@ from public.member m,
     (2, 'aufgegeben',   5, now() - interval '2 days',     null),
     (3, 'wartet noch',  2, now() - interval '30 minutes', null),
     (4, 'wieder dran',  2, now() - interval '3 hours',    null)
-  ) as v(tag, title, attempts, last_attempt, sent_at);
+  ) as v(tag, title, attempts, last_attempt, sent_at)
+where m.email = 'o@out.example';
+
+-- Empfänger ohne Freigabe (notifications_enabled = false): wird nie reserviert.
+insert into public.notification (kind, recipient_id, for_date, title)
+select 'birthday', id, current_date, 'gesperrt' from public.member where email = 'g@out.example';
 
 -- (1) Erster Lauf reserviert nur, was fällig ist.
 select bag_eq(
-  $$ select n.title from public.claim_notifications() c join public.notification n on n.id = c $$,
+  $$ select title from public.claim_notifications() $$,
   $$ values ('neu'), ('wieder dran') $$,
-  'Reserviert offene, fällige Zeilen; übergeht versendete, aufgegebene und noch wartende'
+  'Reserviert offene, fällige Zeilen; übergeht versendete, aufgegebene, wartende und gesperrte'
 );
 
 -- (2) Ein zweiter Lauf direkt danach bekommt nichts doppelt.
@@ -35,10 +41,17 @@ select is(
   'Gleichzeitiger zweiter Lauf reserviert keine Zeile doppelt'
 );
 
+-- (2b) Reservierte Zeilen bringen die Empfängerdaten gleich mit.
+update public.notification set claimed_at = null where title = 'wieder dran';
+select is(
+  (select email from public.claim_notifications()), 'o@out.example',
+  'Reservierte Zeilen bringen E-Mail und Kanal des Empfängers mit'
+);
+
 -- (3) Eine verfallene Reservierung (> 10 min) wird neu vergeben.
 update public.notification set claimed_at = now() - interval '11 minutes' where title = 'neu';
 select bag_eq(
-  $$ select n.title from public.claim_notifications() c join public.notification n on n.id = c $$,
+  $$ select title from public.claim_notifications() $$,
   $$ values ('neu') $$,
   'Verfallene Reservierung wird neu vergeben'
 );

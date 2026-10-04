@@ -205,7 +205,18 @@ for (const e of entries) {
 		failed++;
 		continue;
 	}
-	await supabase.from('document').update({ file_path: path }).eq('id', row.id);
+	const { error: pathErr } = await supabase
+		.from('document')
+		.update({ file_path: path })
+		.eq('id', row.id);
+	if (pathErr) {
+		// z. B. Pfad-Regel document_file_path_own (Migration 20261004120200): aufräumen.
+		await supabase.storage.from(BUCKET).remove([path]);
+		await supabase.from('document').delete().eq('id', row.id);
+		console.log(`  FEHLER file_path ${e.title}: ${pathErr.message}`);
+		failed++;
+		continue;
+	}
 	created.push({ id: row.id, title: e.title });
 	console.log(`  OK  ${e.title}`);
 }

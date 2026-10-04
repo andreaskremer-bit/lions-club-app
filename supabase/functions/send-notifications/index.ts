@@ -128,29 +128,41 @@ Deno.serve(async (req) => {
 	}
 
 	const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
-	const SELECT =
-		'id, kind, recipient_id, event_id, document_id, news_post_id, title, body, attempts, member:recipient_id(email, notification_channel)';
-
-	// Scharf: Zeilen atomar reservieren (claim_notifications), damit zwei gleichzeitige
-	// Läufe nichts doppelt senden und unzustellbare Zeilen nach 5 Versuchen ruhen.
+	// Scharf: Zeilen atomar reservieren (claim_notifications) – die Funktion liefert sie
+	// samt E-Mail und Kanal des Empfängers zurück. So senden zwei gleichzeitige Läufe
+	// nichts doppelt, unzustellbare Zeilen ruhen nach 5 Versuchen, und das Empfänger-
+	// Gate (aktiv + notifications_enabled) gilt auch beim Versand.
 	// Dry-Run: nur lesen, nichts reservieren.
-	let ids: string[] | null = null;
+	type Row = Omit<Notification, 'member'> & {
+		email: string | null;
+		notification_channel: Channel | null;
+	};
+	let rows: Row[];
 	if (ARMED) {
-		const { data: claimed, error: claimErr } = await supabase.rpc('claim_notifications', {
-			p_limit: 200
-		});
-		if (claimErr) return new Response(`DB-Fehler: ${claimErr.message}`, { status: 500 });
-		ids = (claimed ?? []) as string[];
+		const { data, error } = await supabase.rpc('claim_notifications', { p_limit: 100 });
+		if (error) return new Response(`DB-Fehler: ${error.message}`, { status: 500 });
+		rows = (data ?? []) as Row[];
+	} else {
+		const { data, error } = await supabase
+			.from('notification')
+			.select(
+				'id, kind, recipient_id, event_id, document_id, news_post_id, title, body, attempts, member:recipient_id(email, notification_channel)'
+			)
+			.is('sent_at', null)
+			.order('created_at', { ascending: true })
+			.limit(100);
+		if (error) return new Response(`DB-Fehler: ${error.message}`, { status: 500 });
+		rows = ((data ?? []) as unknown as Notification[]).map(({ member, ...n }) => ({
+			...n,
+			email: member?.email ?? null,
+			notification_channel: member?.notification_channel ?? null
+		}));
 	}
-
-	let query = supabase.from('notification').select(SELECT).order('created_at', { ascending: true });
-	query = ids
-		? query.in('id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000'])
-		: query.is('sent_at', null).limit(200);
-	const { data: notes, error } = await query;
-	if (error) return new Response(`DB-Fehler: ${error.message}`, { status: 500 });
-
-	const pending = (notes ?? []) as unknown as Notification[];
+	const ids = ARMED ? rows.map((r) => r.id) : null;
+	const pending: Notification[] = rows.map(({ email, notification_channel, ...n }) => ({
+		...n,
+		member: email ? { email, notification_channel: notification_channel ?? 'both' } : null
+	}));
 
 	// Push-Abos je Mitglied vorab laden. Scheitert das, abbrechen statt alle Empfänger
 	// als „ohne Push-Abo“ zu behandeln (sonst ginge an alle eine E-Mail statt Push).

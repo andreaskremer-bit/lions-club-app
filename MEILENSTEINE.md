@@ -518,3 +518,17 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 - **`extract-document-text`:** schreibt `content_text` als Aufrufer (RLS entscheidet, kein Probe-Update mehr, das den Titel zurückschrieb), prüft den Schreibfehler; DOCX: Tab/Umbruch als Leerraum, Entities einmal und vollständig aufgelöst (`&amp;` zuletzt).
 
 **Grün.** 102 Unit-Tests · 152 pgTAP (6 neu in `notification_outbox_test.sql`). Lokal mit `supabase functions serve` + Mailpit end-to-end geprüft: zwei gleichzeitige Läufe → 3 Mails, keine doppelt; „Nur Push“ ohne Abo → E-Mail; DOCX-Extraktion als Präsident 200, als Schatzmeister ohne Schreibrecht 403 und Volltext unverändert.
+
+## Code-Review `supabase/migrations` (2026-10-04)
+
+`/code-review high supabase/migrations`: 9 Befunde. Angewendete Migrationen bleiben unverändert, Korrekturen in `20261004120600_review_migrations_fixes.sql`.
+
+- **Spaltenschutz erweitert:** In der Selbstpflege sind jetzt auch `notifications_enabled` (kein Voll-Opt-out) und die Login-/Nutzungsdaten (`first/last_login_at`, `*_standalone_at`, `last_browser_at`) gesperrt. Gilt nur für App-Anfragen (Rolle `authenticated`); `track_display_mode` kennzeichnet seinen Schreibzugriff per Transaktions-Flag `app.member_system_write`, `sync_member_login` läuft ohne `auth.uid()`.
+- **Termin-Reminder nach Berliner Datum:** `enqueue_due_reminders` vergleicht `(starts_at at time zone 'Europe/Berlin')::date`, Default `p_today` ebenfalls Berlin (vorher UTC unter pg_cron → Termine kurz nach Mitternacht einen Tag zu früh erinnert).
+- **`claim_notifications` neu:** liefert die reservierten Zeilen samt E-Mail und Kanal direkt zurück (kein zweiter Abruf mit bis zu 200 IDs in der URL mehr), prüft das Empfänger-Gate (aktiv + `notifications_enabled`) auch beim Versand, läuft als `security invoker`, Limit 100. `send-notifications` entsprechend angepasst und mit der Migration im selben Moment ausgerollt (alte und neue Fassung sind nicht kompatibel).
+- **Tests:** `review_migrations_test.sql` (Spaltenschutz, Berliner Datum), Outbox-Test um Gate und Rückgabedaten erweitert, Aufbewahrungs-Test prüft auch `anon`.
+- **`scripts/import-protokolle.mjs`:** prüft den Fehler beim Setzen von `file_path` und räumt dann Datei und Zeile wieder ab.
+- **Bewusst NICHT umgesetzt:** Inlining von `lions_year_at`/`current_lions_year` (Befund: `set search_path` verhindert es). Bei 35 Mitgliedern ohne messbaren Effekt, und `set search_path` ist Supabase-Empfehlung für Funktionen.
+- **Offen (User-Frage):** Typografie in bereits angewendeten Migrationen (u. a. Spaltenkommentar `member.last_browser_at` mit „…" statt „…“) – Migrationen bleiben unverändert; der Spaltenkommentar ließe sich per neuer Migration korrigieren.
+
+**Grün.** 102 Unit-Tests · 161 pgTAP. Lokal end-to-end mit `functions serve` + Mailpit: zwei gleichzeitige Läufe → 3 Mails, keine doppelt; Mitglied ohne Freigabe bekommt nichts.

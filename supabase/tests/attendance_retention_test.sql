@@ -3,7 +3,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(4);
+select plan(5);
 
 truncate auth.users, public.event cascade;
 
@@ -36,6 +36,11 @@ select is((select count(*)::int from public.event), 4, 'Termine werden nicht gel
 select ok(
   not has_function_privilege('authenticated', 'public.cleanup_attendance(timestamptz)', 'execute'),
   'authenticated hat kein Execute-Recht auf cleanup_attendance'
+);
+
+select ok(
+  not has_function_privilege('anon', 'public.cleanup_attendance(timestamptz)', 'execute'),
+  'anon hat kein Execute-Recht auf cleanup_attendance'
 );
 
 select * from finish();
