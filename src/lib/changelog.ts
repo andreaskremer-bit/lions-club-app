@@ -29,6 +29,27 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-10-04',
+		changes: [
+			{
+				kind: 'neu',
+				text: 'Du kannst für einen Termin absagen und trotzdem deinen Partner oder einen Gast anmelden. Die Begleitung zählt dann bei den Zusagen mit.'
+			},
+			{
+				kind: 'behoben',
+				text: 'Die Zahl „Offen“ stimmt jetzt mit der Liste überein, Benachrichtigungen gelten beim Antippen als gelesen, und Dokumente öffnen sich auch auf dem iPhone zuverlässig.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Nach dem Abmelden bekommt das Gerät keine Push-Mitteilungen mehr. Wer sich wieder anmeldet, aktiviert Push unter „Benachrichtigungen“ neu.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Sicherheit und Stabilität verbessert.'
+			}
+		]
+	},
+	{
 		date: '2026-10-02',
 		changes: [
 			{

@@ -490,3 +490,18 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 **Typografie:** `—` als Gedankenstrich in `src`, `scripts`, `static`, `e2e`, `supabase/functions`, `supabase/tests` durch `–` ersetzt (57 Dateien; Migrationen unverändert, allein stehendes `—` als „kein Wert“ bleibt). `typografie.test.ts` prüft jetzt diese Verzeichnisse auf `—` und auf falsch geschlossene Anführungszeichen. Edge Functions nicht neu deployt (nur Kommentare und eine Log-Zeile).
 
 **Grün.** `check` · `lint` · 97 Unit-Tests · 142 pgTAP; lokaler Smoke-Test per Playwright ohne JS-Fehler.
+
+## Code-Review `src/routes` + Club-Entscheidungen (2026-10-04)
+
+`/code-review high src/routes`: 10 Befunde, alle behoben. Dazu drei Entscheidungen des Webmasters.
+
+**Entscheidungen.**
+
+- **Absagen mit Begleitung:** Ein Mitglied kann absagen und trotzdem Partner oder Gast anmelden. Begleitpersonen zählen unabhängig vom Status des Mitglieds (Anmeldezahl, Meldungen, Gäste-Liste mit „Gast von …“ nur bei abgesagtem Mitglied, Teilnehmerliste/CSV). Wer abgesagt hat, beantwortet Zusatzfragen nicht selbst, nur für die Begleitung. Zählregeln zentral in `src/lib/rsvp.ts` (`rsvpCounts`). RLS erlaubte das schon immer, es war eine reine Anzeigefrage.
+- **Anwesenheit nur zwei Lions-Jahre:** Migration `20261004120400` – `cleanup_attendance()` per pg_cron (`attendance-cleanup`, monatlich am 1. um 03:15 UTC) löscht Anwesenheit zu Terminen vor dem 1. Juli des abgeschlossenen Vorjahres (Berlin). Laufendes und Vorjahr bleiben vollständig, Termine bleiben bestehen. Kein RPC-Recht für App-Rollen.
+- **Auswertung:** lädt Anwesenheit nur für die Termine des gewählten Lions-Jahres (vorher ungefiltert → stiller Abbruch an der PostgREST-Grenze von 1000 Zeilen nach ca. 29 Terminen). Auswahl: laufendes und Vorjahr; Vorauswahl Juli–September das Vorjahr (Einzug der Abwesenheitsspenden), sonst das laufende.
+- **Mitglied löschen:** neue Route `DELETE /api/mitglieder/[id]` – löscht die Zeile mit der Sitzung des Aufrufers (RLS `member_delete_privileged` entscheidet), danach mit Service-Key alle Fotos unter `<id>/` und das Login-Konto in `auth.users`. Eigenes Konto ausgeschlossen. Restprobleme erscheinen als Hinweis auf `/mitglieder`.
+
+**Weitere Korrekturen.** Dokumentenablage filtert Termin-Anhänge auch beim Nachladen und in der Suche aus, ignoriert überholte Abfragen und öffnet Dokumente iOS-fest (`openDocument()`: Fenster im Klick öffnen, danach auf die signierte URL lenken). „Offen“ = aktive Mitglieder ohne Rückmeldung (Start, Liste, Sheet). Mitgliederliste gruppiert je Anfangsbuchstabe (Umlaute zum Grundbuchstaben) statt nach DB-Reihenfolge. Benachrichtigungen werden beim Antippen gelesen, Geburtstage führen zu `/geburtstage`. Terminplanung: fehlgeschlagener Anhang-Upload erscheint als Hinweis auf der Termin-Seite (`page.state.notice`), ein nur vorgeschlagenes Ende wird bei Typen ohne Standarddauer geleert. Beim Ersetzen eines Fotos oder einer Dokumentdatei wird die alte Datei gelöscht.
+
+**Grün.** `check` · `lint` · 100 Unit-Tests · 146 pgTAP (4 neu). Lokal per Playwright verifiziert: Absage mit Gast (Zugesagt 1 · 0 Mitglieder, 1 Gast; „Gast von …“), Offen-Zahl, Buchstabengruppen, Auswertung, Mitglied löschen inkl. Foto und Login-Konto. **Hinweis lokal:** `.env.local` enthält den Produktions-Service-Key; für Server-Routen gegen den lokalen Stack den lokalen Key per Umgebungsvariable setzen.
