@@ -474,4 +474,11 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 
 **Bewusst NICHT umgesetzt:** F2 (Präsident/Vize können die Login-Mail höher berechtigter Konten ohne Bestätigung ändern) – User-Entscheidung, kein realistischer Täter im Club.
 
-**Offen (LOW, noch nicht entschieden):** CSV-Formelinjektion in Lions-, Teilnehmer- und Abwesenheitsexport (F4/F5/F8, ein gemeinsamer Helfer); Push-Abo bleibt nach Logout am Gerät (F6/F11); ungeprüfte Storage-Pfade `photo_path`/`file_path` beim Löschen (F9/F10/F12); Lions-Jahr hängt an der Session-Zeitzone (F7).
+**LOW-Befunde behoben (gleicher Tag).**
+
+- **CSV-Formelinjektion (F4/F5/F8):** gemeinsamer Helfer `src/lib/csv.ts` (`csvCell`/`csvRow`/`downloadCsv`) für Lions-, Teilnehmer- und Abwesenheitsexport. Werte, die mit `= + - @` (oder Tab/CR) beginnen, bekommen ein Hochkomma – außer reine Ziffern-/Telefonwerte wie „+49 228 123456“, die keine Formel ausführen können und sonst sichtbar verfälscht würden. Lokal per Playwright mit eingeschleustem `=HYPERLINK(…)` im Lions-Export geprüft.
+- **Push-Abo nach Logout (F6/F11):** `releasePushOnSignOut()` (vor `auth.signOut()`, löscht die eigene `push_subscription`-Zeile und kündigt das Abo) und `releaseForeignPush()` nach dem Login (kündigt ein Abo, dessen Zeile per RLS nicht sichtbar ist = fremdes Konto). **Folge:** Wer sich ab- und wieder anmeldet, muss Push neu aktivieren.
+- **Storage-Pfade (F9/F10/F12):** Migration `20261004120200`: CHECK `member_photo_path_own` und `document_file_path_own` (Pfad muss mit `<id>/` beginnen, kein `..`), Bestand beim Anlegen mitgeprüft. Zusätzlich löscht der Client nur noch Dateien unter dem eigenen Ordner (`src/lib/storagePath.ts`).
+- **Lions-Jahr und Zeitzone (F7):** Migration `20261004120300`: `current_lions_year()` rechnet über `lions_year_at(now())` fest in Europe/Berlin statt mit `current_date` der Sitzung.
+
+**Grün.** `check` · `lint` · 89 Unit-Tests (8 neu) · 142 pgTAP (9 neu in `storage_path_lions_year_test.sql`).
