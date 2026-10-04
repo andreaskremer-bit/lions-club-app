@@ -2,7 +2,7 @@
  * Versionskennung der laufenden App.
  *
  * Die Werte werden zur Build-Zeit per `define` (vite.config.ts) aus Git
- * eingesetzt — hier steht bewusst nichts Gepflegtes.
+ * eingesetzt – hier steht bewusst nichts Gepflegtes.
  *
  * Wozu das Ganze: eine installierte PWA kann durch den Service-Worker-Cache
  * länger auf einem älteren Stand laufen. Bei einer Rückmeldung aus dem Club

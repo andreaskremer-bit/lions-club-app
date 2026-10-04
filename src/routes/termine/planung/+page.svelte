@@ -49,7 +49,7 @@
 	let endTimeStr = $state('');
 	let endTouched = $state(false);
 	let reminderDays = $state('3');
-	// Achtung: `reminderDays` ist an ein <input type="number"> gebunden — Svelte
+	// Achtung: `reminderDays` ist an ein <input type="number"> gebunden – Svelte
 	// wandelt den Wert beim Bearbeiten in eine Zahl (bzw. null bei leer). Daher vor
 	// `.trim()` immer auf String normalisieren, sonst "trim is not a function".
 	let reminderDaysNum = $derived(
@@ -69,7 +69,7 @@
 	let busy = $state(false);
 	let err = $state('');
 
-	// Optionaler Dokument-Anhang (nur Einzeltermin) — wird nach dem Anlegen
+	// Optionaler Dokument-Anhang (nur Einzeltermin) – wird nach dem Anlegen
 	// hochgeladen und löst keine Benachrichtigung aus.
 	let docFile = $state<File | null>(null);
 	function onDocFile(f: File | null) {
@@ -150,7 +150,7 @@
 		}
 		busy = true;
 		err = '';
-		// try/finally: `busy` wird IMMER zurückgesetzt — auch wenn ein unerwarteter
+		// try/finally: `busy` wird IMMER zurückgesetzt – auch wenn ein unerwarteter
 		// Fehler fliegt. Sonst bleibt der Button stumm im „Anlegen …“-Zustand hängen.
 		try {
 			const { data: created, error } = await supabase
@@ -172,7 +172,7 @@
 				return;
 			}
 
-			// Optionalen Anhang hochladen (best-effort — der Termin ist bereits angelegt;
+			// Optionalen Anhang hochladen (best-effort – der Termin ist bereits angelegt;
 			// bei Fehler kann das Dokument auf der Termin-Seite ergänzt werden).
 			if (docFile) {
 				await uploadDocument(supabase, {

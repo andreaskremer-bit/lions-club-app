@@ -9,7 +9,7 @@ import { encodeSubject, type Kind, pathFor, renderEmail, type MailNotification }
  * wurden mit einem BODY-Encoder codiert, der alle 74 Zeichen `=\r\n` einfügt.
  * Im Header beendet CRLF den Header-Block -> `From:`/`Content-Type:` landeten
  * im Body und die Mail war zerstört. Betreffs OHNE Umlaute blieben zufällig
- * heil — deshalb prüft hier jeder Fall ausdrücklich auch die Umlaut-Variante.
+ * heil – deshalb prüft hier jeder Fall ausdrücklich auch die Umlaut-Variante.
  */
 
 /** Der Betreff, der es in Produktion tatsächlich zerlegt hat (75 codierte Zeichen). */
@@ -48,7 +48,7 @@ function decodeSubject(encoded: string): string {
 
 /** Die Regeln, an denen die kaputte Version gescheitert wäre. */
 function assertHeaderSafe(encoded: string) {
-	// 1) Reines ASCII — sonst ist der Header ohne Encoding nicht transportierbar.
+	// 1) Reines ASCII – sonst ist der Header ohne Encoding nicht transportierbar.
 	expect([...encoded].every((c) => c.charCodeAt(0) <= 127)).toBe(true);
 
 	const lines = encoded.split('\r\n');
@@ -64,7 +64,7 @@ function assertHeaderSafe(encoded: string) {
 		expect(line.trim().length).toBeLessThanOrEqual(75);
 	}
 
-	// 4) Keine Nutzlast darf mit einem angefangenen `=XX` enden — genau so sah
+	// 4) Keine Nutzlast darf mit einem angefangenen `=XX` enden – genau so sah
 	//    der abgeschnittene Betreff in Produktion aus (`...erkl=C3=A4run=`).
 	//    Geprüft wird die Nutzlast OHNE `=?utf-8?Q?`/`?=`, denn das Wort selbst
 	//    endet naturgemäß auf `=`.
@@ -146,7 +146,7 @@ describe('pathFor', () => {
 		expect(pathFor({ ...base, kind: 'document' })).toBe('/dokumente');
 	});
 
-	// News und Dokumente haben keine Detailseite — ein tiefer Link lief in eine 404.
+	// News und Dokumente haben keine Detailseite – ein tiefer Link lief in eine 404.
 	it('bleibt bei News und Dokumenten auf der Übersicht, auch mit ID', () => {
 		expect(pathFor({ ...base, kind: 'document', document_id: 'd1' })).toBe('/dokumente');
 		expect(pathFor({ ...base, kind: 'news', news_post_id: 'n1' })).toBe('/news');

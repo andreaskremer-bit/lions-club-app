@@ -70,7 +70,7 @@
 			code = '';
 			return;
 		}
-		// Gecachte Seiten/Fotos einer vorherigen Anmeldung wegräumen — auf einem
+		// Gecachte Seiten/Fotos einer vorherigen Anmeldung wegräumen – auf einem
 		// geteilten Gerät (oder nach abgelaufener Session ohne Logout) darf davon
 		// nichts stehen bleiben.
 		await clearPrivateCaches();

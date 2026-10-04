@@ -1,5 +1,5 @@
 /* ============================================================
-   Komponenten-CSS "Lions 2.0" — 1:1 aus design-referenz/components
+   Komponenten-CSS "Lions 2.0" – 1:1 aus design-referenz/components
    übernommen (Tokens/CSS direkt, Markup in Svelte nachgebaut).
    Globale lc-* Klassen; je Svelte-Komponente nur das Markup.
    ============================================================ */
@@ -705,7 +705,7 @@ textarea.lc-input {
 .lc-tabbar__item:hover {
 	text-decoration: none;
 }
-/* Hover-Farbe nur auf echten Hover-Geräten und nur für NICHT-aktive Tabs —
+/* Hover-Farbe nur auf echten Hover-Geräten und nur für NICHT-aktive Tabs –
    sonst gewinnt :hover (höhere Spezifität) über --active und färbt den
    aktiven Tab auf Touch-Geräten grau (iOS hält :hover nach dem Tap). */
 @media (hover: hover) {

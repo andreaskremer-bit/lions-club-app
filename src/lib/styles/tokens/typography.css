@@ -1,5 +1,5 @@
 /* ============================================================
-   TYPOGRAPHY — Source superfamily
+   TYPOGRAPHY – Source superfamily
    Serif display = headlines only. Sans = all content/UI.
    Mono = dates, times, short uppercase labels (sparing).
    Base size 17px, higher contrast & larger than the
@@ -7,7 +7,7 @@
    ============================================================ */
 
 :root {
-	/* Families — self-hosted via @fontsource-variable (DSGVO: kein Google-Fonts-CDN).
+	/* Families – self-hosted via @fontsource-variable (DSGVO: kein Google-Fonts-CDN).
      Die "… Variable"-Familien werden in src/routes/+layout.svelte importiert. */
 	--font-display: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
 	--font-sans:
@@ -25,7 +25,7 @@
 	/* Type scale (mobile-first; base 17px) */
 	--text-xs: 12px; /* mono labels, captions */
 	--text-sm: 14px; /* metadata, secondary */
-	--text-base: 17px; /* body — never below this in UI */
+	--text-base: 17px; /* body – never below this in UI */
 	--text-md: 19px; /* emphasised body / list titles */
 	--text-lg: 22px; /* card headlines */
 	--text-xl: 27px; /* screen titles */

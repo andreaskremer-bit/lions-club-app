@@ -29,7 +29,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	const user = data.user;
 
 	// Eigene Member-ID + Rechte (aus Ämtern) und ungelesene Benachrichtigungen
-	// zentral bereitstellen — beide Queries hängen nicht voneinander ab und laufen
+	// zentral bereitstellen – beide Queries hängen nicht voneinander ab und laufen
 	// daher parallel (ein Roundtrip statt zwei).
 	let memberId: string | null = null;
 	let permissions: string[] = [];

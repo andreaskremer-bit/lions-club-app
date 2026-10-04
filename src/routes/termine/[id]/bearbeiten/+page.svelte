@@ -54,7 +54,7 @@
 	let endDate = $state(e0.date);
 	let endTime = $state(e0.time);
 	let reminderDays = $state(String(ev.reminder_days_before));
-	// `reminderDays` ist an ein <input type="number"> gebunden — Svelte macht daraus
+	// `reminderDays` ist an ein <input type="number"> gebunden – Svelte macht daraus
 	// beim Bearbeiten eine Zahl (bzw. null). Vor `.trim()` auf String normalisieren,
 	// sonst "trim is not a function".
 	let reminderDaysNum = $derived(

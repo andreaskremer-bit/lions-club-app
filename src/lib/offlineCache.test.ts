@@ -35,7 +35,7 @@ describe('privateCacheNames', () => {
 // URL und Cache-Name der Offline-Seite stehen in drei Dateien, die nichts
 // voneinander wissen: static/offline.html (Inhalt), static/sw-offline.js (legt
 // sie beim Install ab) und vite.config.ts (holt sie im Fehlerfall). In den
-// beiden Service-Worker-Dateien MÜSSEN es Literale sein — sw-offline.js läuft
+// beiden Service-Worker-Dateien MÜSSEN es Literale sein – sw-offline.js läuft
 // ohne Bundler, und workbox-build serialisiert die Callbacks aus vite.config.ts
 // per toString() und verliert dabei jeden Modul-Import. Dieser Test hält die
 // drei Stellen an dieser Konstante zusammen.

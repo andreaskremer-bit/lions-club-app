@@ -1,15 +1,15 @@
 /**
- * Was ist neu — die für Mitglieder sichtbaren Änderungen.
+ * Was ist neu – die für Mitglieder sichtbaren Änderungen.
  *
  * Bewusst von Hand gepflegt und NICHT aus Commit-Messages erzeugt: Commits
  * sind Entwicklerprosa („fix(pwa): Offline-Seite bekommt eine eigene
  * Versionsspur“), hier steht, was ein Mitglied davon merkt. Nur Einträge
- * aufnehmen, die jemand ohne Vorwissen bemerken oder nutzen kann — interne
+ * aufnehmen, die jemand ohne Vorwissen bemerken oder nutzen kann – interne
  * Umbauten, Migrationen und Testabdeckung gehören nach `MEILENSTEINE.md`.
  *
  * Sicherheitsfixes werden hier NUR neutral zusammengefasst („Sicherheit und
  * Stabilität verbessert“). Details würden jedem, der einen Screenshot sieht,
- * verraten, was vorher offen war, und Mitglieder können ohnehin nichts tun —
+ * verraten, was vorher offen war, und Mitglieder können ohnehin nichts tun –
  * der Fix ist beim Lesen längst ausgeliefert. Nachvollziehbar dokumentiert
  * sind sie in `MEILENSTEINE.md`.
  *
@@ -21,7 +21,7 @@
 export type ChangeKind = 'neu' | 'verbessert' | 'behoben';
 
 export type ChangelogEntry = {
-	/** ISO-Datum (YYYY-MM-DD) des Stands — entspricht der Versionsnummer. */
+	/** ISO-Datum (YYYY-MM-DD) des Stands – entspricht der Versionsnummer. */
 	date: string;
 	changes: { kind: ChangeKind; text: string }[];
 };
@@ -164,7 +164,7 @@ export function formatChangelogDate(iso: string): string {
 	return `${d}. ${MONATE[m - 1]} ${y}`;
 }
 
-/** `2026-08-04` → `2026.08.04` — dieselbe Schreibweise wie die Versionsnummer. */
+/** `2026-08-04` → `2026.08.04` – dieselbe Schreibweise wie die Versionsnummer. */
 export function changelogVersion(iso: string): string {
 	return iso.replaceAll('-', '.');
 }

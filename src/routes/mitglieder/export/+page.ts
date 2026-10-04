@@ -4,7 +4,7 @@ import type { ExportMember } from '$lib/lionsExport';
 export const load: PageLoad = async ({ parent }) => {
 	const { supabase } = await parent();
 
-	// Alle Mitglieder (inkl. inaktive) — Verzeichnis-RLS erlaubt das Lesen.
+	// Alle Mitglieder (inkl. inaktive) – Verzeichnis-RLS erlaubt das Lesen.
 	const { data } = await supabase
 		.from('member')
 		.select(

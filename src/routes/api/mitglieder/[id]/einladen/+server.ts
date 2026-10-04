@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ locals, params }) => {
 	const { user } = await locals.safeGetSession();
 	if (!user) throw error(401, 'Nicht angemeldet');
 
-	// Berechtigung des Aufrufers prüfen (als Nutzer über RLS) — nur Ämter des aktuellen LJ.
+	// Berechtigung des Aufrufers prüfen (als Nutzer über RLS) – nur Ämter des aktuellen LJ.
 	const { data: meData } = await locals.supabase
 		.from('member')
 		.select('member_amt(amt(amt_permission(permission)))')

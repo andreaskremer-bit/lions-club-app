@@ -1,4 +1,4 @@
--- M2 — RLS-Tests für Termine/Rückmeldungen (pgTAP). Lauf: `npx supabase test db`.
+-- M2 – RLS-Tests für Termine/Rückmeldungen (pgTAP). Lauf: `npx supabase test db`.
 
 begin;
 create extension if not exists pgtap with schema extensions;

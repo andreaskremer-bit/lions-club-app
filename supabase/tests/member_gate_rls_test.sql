@@ -1,9 +1,9 @@
--- Security-Audit 2026-08-03 — Gate „verknüpfte member-Zeile“ (Migration
+-- Security-Audit 2026-08-03 – Gate „verknüpfte member-Zeile“ (Migration
 -- 20260803120100_authenticated_member_gate.sql).
 --
 -- Prüft den Fall, den die alten `using (true)`-Policies offen ließen: ein Konto in
 -- auth.users OHNE zugehörige member-Zeile (entstand über den damals offenen
--- Self-Signup). So ein Konto hat die Rolle `authenticated` wie jedes Mitglied —
+-- Self-Signup). So ein Konto hat die Rolle `authenticated` wie jedes Mitglied –
 -- sehen darf es trotzdem nichts. Gegenprobe mit einem echten Mitglied stellt sicher,
 -- dass die Härtung nicht zu weit greift.
 

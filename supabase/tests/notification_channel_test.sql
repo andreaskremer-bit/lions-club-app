@@ -1,4 +1,4 @@
--- P4 — Tests für die Benachrichtigungs-Präferenz (Versandkanal). Lauf: `npx supabase test db`.
+-- P4 – Tests für die Benachrichtigungs-Präferenz (Versandkanal). Lauf: `npx supabase test db`.
 -- Prüft Default, Selbstpflege durch das Mitglied und die Enum-Schranke.
 
 begin;

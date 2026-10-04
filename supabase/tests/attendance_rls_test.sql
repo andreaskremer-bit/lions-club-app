@@ -1,4 +1,4 @@
--- M3 — RLS-Tests für Anwesenheit (pgTAP). Lauf: `npx supabase test db`.
+-- M3 – RLS-Tests für Anwesenheit (pgTAP). Lauf: `npx supabase test db`.
 
 begin;
 create extension if not exists pgtap with schema extensions;

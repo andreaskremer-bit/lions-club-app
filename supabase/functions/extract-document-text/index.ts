@@ -1,15 +1,15 @@
-// Edge Function `extract-document-text` — füllt document.content_text für die
+// Edge Function `extract-document-text` – füllt document.content_text für die
 // deutsche Volltextsuche. Aufgerufen vom Upload-Flow per supabase.functions.invoke
 // (User-JWT, verify_jwt=Default an). Die eigentliche Verarbeitung läuft serverseitig
 // mit Service-Role (Storage-Download + Update). Idempotent re-runbar.
 //
 // AUFRUFER-PRÜFUNG (Security-Audit 2026-08-03): `verify_jwt` belegt nur, DASS ein
-// gültiges Token vorliegt — nicht, dass der Aufrufer dieses Dokument pflegen darf.
+// gültiges Token vorliegt – nicht, dass der Aufrufer dieses Dokument pflegen darf.
 // Ohne Prüfung konnte jedes eingeloggte Konto `content_text` beliebiger Dokumente
 // überschreiben (= Volltextsuche leeren). Geprüft wird per RLS-Probe (No-Op-Update
 // als Aufrufer) statt über einen fest verdrahteten Rechtenamen: die Schreibrechte auf
 // `document` verteilen sich auf ZWEI Policies (publish_content für alles,
-// manage_events nur für termin-gebundene Dokumente) — die Probe bleibt automatisch
+// manage_events nur für termin-gebundene Dokumente) – die Probe bleibt automatisch
 // deckungsgleich, ein nachgebauter Rechte-Check nicht.
 //
 // PDF: npm:unpdf (serverless-taugliches pdfjs). DOCX: ZIP entpacken (word/document.xml
@@ -20,7 +20,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // Für den nutzergebundenen Client (RLS greift). Neues Key-System benennt die
-// Variable um — beide Namen akzeptieren, damit der Deploy nicht daran hängt.
+// Variable um – beide Namen akzeptieren, damit der Deploy nicht daran hängt.
 const ANON_KEY =
 	Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ?? '';
 const MAX_CHARS = 500_000; // FTS-Sicherheitskappe für sehr große Dokumente
@@ -49,7 +49,7 @@ async function extractDocx(bytes: Uint8Array): Promise<string> {
 
 // CORS: der Upload-Flow ruft die Function aus dem Browser (supabase.functions.invoke).
 // Ohne Preflight-Antwort + Header blockt der Browser den eigentlichen POST.
-// Nur die eigenen Origins statt '*' — das Token steckt im Header (nicht im Cookie),
+// Nur die eigenen Origins statt '*' – das Token steckt im Header (nicht im Cookie),
 // eine fremde Seite kommt also ohnehin nicht an eine fremde Session; die Einengung
 // nimmt trotzdem die Möglichkeit, die Function aus beliebigen Seiten heraus zu rufen.
 const ALLOWED_ORIGINS = (
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 		auth: { persistSession: false, autoRefreshToken: false }
 	});
 
-	// Lesen als Aufrufer — wer das Dokument nicht sehen darf, bekommt 404 und
+	// Lesen als Aufrufer – wer das Dokument nicht sehen darf, bekommt 404 und
 	// erfährt so auch nicht, ob die id existiert.
 	const { data: doc } = await asCaller
 		.from('document')
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
 	} catch (e) {
 		// Vorhandenen Volltext NICHT durch einen Fehlversuch ersetzen: ein
 		// gescheiterter Re-Run hat sonst still die Suche für dieses Dokument
-		// geleert. Nicht unterstützte Typen (xlsx, Bilder) sind kein Fehlversuch —
+		// geleert. Nicht unterstützte Typen (xlsx, Bilder) sind kein Fehlversuch –
 		// dort ist der leere Volltext das korrekte Ergebnis.
 		console.error('Textextraktion fehlgeschlagen:', e);
 		failed = true;

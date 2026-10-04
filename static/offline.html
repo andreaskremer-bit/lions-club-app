@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="theme-color" content="#1E4FA3" />
 		<meta name="robots" content="noindex" />
-		<title>Offline — Lions Club Bonn-Rheinaue</title>
+		<title>Offline – Lions Club Bonn-Rheinaue</title>
 		<!--
 			Fallback-Seite, wenn eine Seitennavigation ohne Netz scheitert (Stufe 3 des
 			Caching-Stufenplans). Liegt bewusst als statische Datei in `static/` und NICHT
@@ -13,11 +13,11 @@
 			  * sie muss im Workbox-Precache liegen (dorthin kommt nur, was der
 			    `globPatterns`-Scan im Build-Output findet),
 			  * sie darf den Auth-Guard aus hooks.server.ts nicht durchlaufen und
-			  * sie darf beim Rendern keine Daten brauchen — ohne Netz gibt es keine.
+			  * sie darf beim Rendern keine Daten brauchen – ohne Netz gibt es keine.
 
 			Alles ist inline: ohne Netz kann nur geladen werden, was ebenfalls im
 			Precache liegt. Das Emblem (/icons/lions-emblem.png) ist dort, Schriften
-			nicht (die tragen im Build einen Hash im Dateinamen) — deshalb Systemschrift.
+			nicht (die tragen im Build einen Hash im Dateinamen) – deshalb Systemschrift.
 		-->
 		<style>
 			:root {
@@ -116,7 +116,7 @@
 		<div class="card">
 			<h1>Keine Verbindung</h1>
 			<p>
-				Diese Seite lässt sich gerade nicht laden — dein Gerät ist offline oder das Netz ist zu
+				Diese Seite lässt sich gerade nicht laden – dein Gerät ist offline oder das Netz ist zu
 				schwach.
 			</p>
 			<p class="last">Sobald du wieder Empfang hast, geht es weiter.</p>
@@ -134,10 +134,10 @@
 				});
 
 				// Kommt das Netz von selbst zurück, laden wir die ursprünglich
-				// angeforderte Seite ohne Zutun neu — location.href zeigt weiterhin
+				// angeforderte Seite ohne Zutun neu – location.href zeigt weiterhin
 				// auf sie, der Service Worker hat hier nur die Antwort ersetzt.
 				window.addEventListener('online', function () {
-					status.textContent = 'Verbindung ist wieder da — Seite wird geladen.';
+					status.textContent = 'Verbindung ist wieder da – Seite wird geladen.';
 					location.reload();
 				});
 			})();

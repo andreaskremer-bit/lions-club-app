@@ -17,7 +17,7 @@
 // Titel: "Protokoll <Typ> DD.MM.YYYY". Kategorie: MV → protokoll_mv,
 // Ausflug → sonstige, sonst → protokoll_clubabend.
 //
-// Der Service-Role-Key umgeht RLS — niemals committen / ins Memory schreiben.
+// Der Service-Role-Key umgeht RLS – niemals committen / ins Memory schreiben.
 
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync, readdirSync } from 'node:fs';

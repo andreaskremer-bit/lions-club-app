@@ -1,4 +1,4 @@
-// Edge Function `send-notifications` — liest die Outbox `public.notification`
+// Edge Function `send-notifications` – liest die Outbox `public.notification`
 // (sent_at is null) und stellt sie per Web-Push zu, mit E-Mail-Fallback (Club-SMTP).
 //
 // SICHERUNG (Geheim-Phase):
@@ -74,7 +74,7 @@ async function sendEmail(
 	const pass = Deno.env.get('SMTP_PASS');
 	const from = Deno.env.get('SMTP_FROM') ?? user ?? '';
 	if (!host || !user || !pass) {
-		console.warn('SMTP nicht konfiguriert — E-Mail-Fallback übersprungen.');
+		console.warn('SMTP nicht konfiguriert – E-Mail-Fallback übersprungen.');
 		return false;
 	}
 	const client = new SMTPClient({
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
 
 		const subs = subsByMember.get(n.recipient_id) ?? [];
 
-		// P4 — bevorzugte Kanäle des Empfängers (Default both).
+		// P4 – bevorzugte Kanäle des Empfängers (Default both).
 		const channel: Channel = n.member?.notification_channel ?? 'both';
 		const wantsPush = channel === 'push' || channel === 'both';
 		const wantsEmail = channel === 'email' || channel === 'both';

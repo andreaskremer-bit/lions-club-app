@@ -2,27 +2,27 @@
 //
 // Gecacht werden Mitgliederfotos aus dem privaten Storage-Bucket `member-photos`
 // (Stufe 1) und die zuletzt besuchten Seiten (Stufe 3). Beides sind
-// personenbezogene Daten — deshalb MUSS der Cache beim Ausloggen wieder
+// personenbezogene Daten – deshalb MUSS der Cache beim Ausloggen wieder
 // verschwinden (DSGVO), und beim Anmelden ebenfalls, damit auf einem geteilten
 // Gerät nichts von der Vorgängerin übrig bleibt. Die Logik ist hier gekapselt
 // und unit-testbar (siehe offlineCache.test.ts).
 
 /**
  * Name des Runtime-Caches für Mitgliederfotos.
- * MUSS mit `runtimeCaching[].options.cacheName` in `vite.config.ts` übereinstimmen —
+ * MUSS mit `runtimeCaching[].options.cacheName` in `vite.config.ts` übereinstimmen –
  * dort wird der Name aus genau dieser Konstante importiert.
  */
 export const PHOTO_CACHE_NAME = 'lions-member-photos';
 
 /**
  * Name des Runtime-Caches für Seitenaufrufe (Navigationen). Der serverseitig
- * gerenderte HTML-Code enthält die geladenen Daten (Mitglieder, Termine …) —
+ * gerenderte HTML-Code enthält die geladenen Daten (Mitglieder, Termine …) –
  * also personenbezogen und ebenfalls beim Ab-/Anmelden zu räumen.
  */
 export const PAGE_CACHE_NAME = 'lions-pages';
 
 /**
- * Statische Fallback-Seite aus `static/offline.html` — wird ausgeliefert, wenn
+ * Statische Fallback-Seite aus `static/offline.html` – wird ausgeliefert, wenn
  * eine Navigation weder Netz noch Cache-Treffer hat.
  */
 export const OFFLINE_FALLBACK_URL = '/offline.html';
@@ -54,7 +54,7 @@ type DeleteDbTarget = Pick<IDBFactory, 'deleteDatabase'>;
 /**
  * Löscht eine IndexedDB-Datenbank, ohne hängen zu bleiben: solange der Service
  * Worker noch eine Verbindung offen hält, feuert `blocked` statt `success`.
- * Der Logout darf darauf nicht warten — deshalb Timeout statt Endlos-Promise.
+ * Der Logout darf darauf nicht warten – deshalb Timeout statt Endlos-Promise.
  */
 export function deleteDatabaseWithTimeout(
 	factory: DeleteDbTarget,
@@ -86,7 +86,7 @@ export function deleteDatabaseWithTimeout(
 
 /**
  * Räumt alle Browser-Caches mit personenbezogenen Daten ab. Wird beim Ausloggen
- * UND direkt nach dem Anmelden aufgerufen (geteiltes Gerät) — der Workbox-Precache
+ * UND direkt nach dem Anmelden aufgerufen (geteiltes Gerät) – der Workbox-Precache
  * (reine App-Shell: JS/CSS/Fonts/Icons/Offline-Seite) bleibt bewusst stehen, damit
  * die App danach nicht komplett neu geladen werden muss.
  *
@@ -99,7 +99,7 @@ export async function clearPrivateCaches(): Promise<void> {
 		const names = await caches.keys();
 		await Promise.all(privateCacheNames(names).map((name) => caches.delete(name)));
 	} catch {
-		// Cache-API nicht verfügbar oder verweigert — Logout läuft trotzdem weiter.
+		// Cache-API nicht verfügbar oder verweigert – Logout läuft trotzdem weiter.
 	}
 	if (typeof indexedDB === 'undefined') return;
 	try {

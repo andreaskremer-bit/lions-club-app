@@ -482,3 +482,11 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 - **Lions-Jahr und Zeitzone (F7):** Migration `20261004120300`: `current_lions_year()` rechnet über `lions_year_at(now())` fest in Europe/Berlin statt mit `current_date` der Sitzung.
 
 **Grün.** `check` · `lint` · 89 Unit-Tests (8 neu) · 142 pgTAP (9 neu in `storage_path_lions_year_test.sql`).
+
+## Code-Review `src/lib` (2026-10-04)
+
+`/code-review high src/lib`: 10 Befunde, alle behoben. **Neu von heute:** Dateinamen mit `..` scheiterten an der neuen Pfad-Regel (jetzt `safeFileName()` in `src/lib/storagePath.ts`, Fehler beim Setzen von `file_path` wird nicht mehr verschluckt); CSV-Ausnahme für Telefonnummern zu weit (Excel rechnete `+49-228-…` aus) – jetzt bekommt alles mit `= + - @` ein Hochkomma außer reinen Zahlen (User-Entscheidung, sichtbares Hochkomma in Kauf genommen). **Älter:** Monatsserie ab dem 29.–31. lief in den Folgemonat (jetzt letzter Tag des Monats); schnelle Mehrfachauswahl bei Zusatzfragen verlor Optionen bzw. legte doppelte Antworten an (lokaler Stand in `AnswerField` + Speichern je Frage nacheinander); `lionsStartYear()` rechnet fest in Europe/Berlin wie die DB; Datei-Löschen bricht bei Storage-Fehler ab (Reihenfolge bleibt Datei vor Zeile, weil `documents_write_events` die Zeile prüft); CSV-Download hängt den Link ein und gibt die Blob-URL verzögert frei (iOS); News-Links ohne Satzzeichen am Ende; OTP-Feld zeigt abgelehnte Zeichen nicht mehr. Aufgeräumt: Lions-Export nutzt `csvRow`/`downloadCsv`, `EventCard` importiert `EventType` aus `$lib/dates`.
+
+**Typografie:** `—` als Gedankenstrich in `src`, `scripts`, `static`, `e2e`, `supabase/functions`, `supabase/tests` durch `–` ersetzt (57 Dateien; Migrationen unverändert, allein stehendes `—` als „kein Wert“ bleibt). `typografie.test.ts` prüft jetzt diese Verzeichnisse auf `—` und auf falsch geschlossene Anführungszeichen. Edge Functions nicht neu deployt (nur Kommentare und eine Log-Zeile).
+
+**Grün.** `check` · `lint` · 97 Unit-Tests · 142 pgTAP; lokaler Smoke-Test per Playwright ohne JS-Fehler.

@@ -66,7 +66,7 @@
 			pushState = 'denied';
 			return;
 		}
-		// getRegistration() löst sofort auf (undefined, wenn noch kein SW registriert) —
+		// getRegistration() löst sofort auf (undefined, wenn noch kein SW registriert) –
 		// im Gegensatz zu serviceWorker.ready, das bis zum aktiven SW blockieren kann.
 		try {
 			const reg = await navigator.serviceWorker.getRegistration();

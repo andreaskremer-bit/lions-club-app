@@ -1,5 +1,5 @@
 /* ============================================================
-   COLORS — "Lions 2.0" warm-reduced palette
+   COLORS – "Lions 2.0" warm-reduced palette
    Base values first, then semantic aliases.
    Light mode is the product default.
    ============================================================ */
@@ -27,8 +27,8 @@
 	--blue-100: #dee7f4; /* tint fill */
 	--blue-50: #eef3fa; /* lightest tint bg */
 
-	/* ---- Lions Gold (accent — sparing) ---- */
-	--gold-700: #856010; /* text-on-light gold — WCAG-AA auf Creme & Gold-Tint (>=4.5:1) */
+	/* ---- Lions Gold (accent – sparing) ---- */
+	--gold-700: #856010; /* text-on-light gold – WCAG-AA auf Creme & Gold-Tint (>=4.5:1) */
 	--gold-600: #b98a22; /* accent */
 	--gold-400: #d2a847; /* lighter */
 	--gold-100: #f3e8cc; /* tint fill */
@@ -40,14 +40,14 @@
 	--clay-100: #f3dfd5; /* tint fill */
 	--clay-50: #f8eae2; /* lightest tint bg */
 
-	/* ---- Sage green (present / success — disciplined use) ---- */
+	/* ---- Sage green (present / success – disciplined use) ---- */
 	--sage-700: #2f5e42;
 	--sage-600: #3f7a53;
 	--sage-100: #ddeadf;
 	--sage-50: #ecf3ed;
 
 	/* ====================================================
-     SEMANTIC ALIASES — reach for these in components
+     SEMANTIC ALIASES – reach for these in components
      ==================================================== */
 
 	/* Surfaces */
@@ -86,7 +86,7 @@
 	--accent-text: var(--gold-700);
 	--accent-tint: var(--gold-100);
 
-	/* Status — event registration */
+	/* Status – event registration */
 	--status-yes-fg: var(--gold-700); /* angemeldet */
 	--status-yes-bg: var(--gold-100);
 	--status-yes-dot: var(--gold-600);
@@ -97,7 +97,7 @@
 	--status-open-bg: var(--cream-200);
 	--status-open-dot: var(--ink-400);
 
-	/* Status — attendance / present */
+	/* Status – attendance / present */
 	--present-fg: var(--sage-700);
 	--present-bg: var(--sage-100);
 	--present-dot: var(--sage-600);

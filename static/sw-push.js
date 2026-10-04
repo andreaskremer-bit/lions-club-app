@@ -1,7 +1,7 @@
 // Web-Push-Handler für den Service Worker.
 //
 // Wird über `workbox.importScripts` in den von vite-pwa (generateSW) erzeugten
-// Service Worker eingebunden — bewusst als statische Datei, damit der SW-Build
+// Service Worker eingebunden – bewusst als statische Datei, damit der SW-Build
 // NICHT vom SvelteKit-Service-Worker-Build abhängt (das war unter rolldown-vite 8
 // auf Netlify nicht zuverlässig). Läuft im SW-Scope, `self` ist verfügbar.
 

@@ -3,7 +3,7 @@
 // (RPC `track_display_mode`, Migration 20260813120100).
 //
 // Hintergrund: `push_subscription` war bisher der einzige Anhaltspunkt für
-// „installiert“ — er übersieht aber jede Installation ohne aktivierten Push.
+// „installiert“ – er übersieht aber jede Installation ohne aktivierten Push.
 // Der Anzeige-Modus beantwortet die Frage direkt.
 //
 // Die Erkennung steckt in einer reinen Funktion (`isStandaloneMode`), damit sie
@@ -21,7 +21,7 @@ const STANDALONE_MODES = ['standalone', 'fullscreen', 'minimal-ui'] as const;
  * Reiner Kern der Erkennung.
  *
  * @param matchesMedia Prüft eine Media-Query (im Browser `window.matchMedia`).
- * @param iosStandalone `navigator.standalone` — von iOS-Safari gesetzt.
+ * @param iosStandalone `navigator.standalone` – von iOS-Safari gesetzt.
  *   Bewusst zusätzlich abgefragt: es ist der historisch zuverlässigste Marker
  *   für „zum Homescreen hinzugefügt“ auf iOS und kostet nichts.
  */
@@ -42,7 +42,7 @@ export function isStandalone(): boolean {
 	);
 }
 
-/** Minimalvertrag statt des vollen SupabaseClient-Typs — hält die Funktion testbar. */
+/** Minimalvertrag statt des vollen SupabaseClient-Typs – hält die Funktion testbar. */
 type RpcCaller = {
 	rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<unknown>;
 };
@@ -56,6 +56,6 @@ export async function trackDisplayMode(supabase: RpcCaller): Promise<void> {
 	try {
 		await supabase.rpc('track_display_mode', { standalone: isStandalone() });
 	} catch {
-		// bewusst ignoriert — s. o.
+		// bewusst ignoriert – s. o.
 	}
 }

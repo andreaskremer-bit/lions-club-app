@@ -1,4 +1,4 @@
--- M1 — RLS-Tests (pgTAP). Lauf: `npx supabase test db`.
+-- M1 – RLS-Tests (pgTAP). Lauf: `npx supabase test db`.
 -- Prüft die Policies aus Sicht verschiedener Rollen + Auth-Link-Trigger + Spaltenschutz.
 
 begin;

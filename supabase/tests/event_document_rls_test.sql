@@ -1,6 +1,6 @@
 -- RLS-Tests für Termin-Dokumente: manage_events (Clubmaster) darf NUR
 -- event-gebundene Dokumente schreiben, publish_content weiterhin alle,
--- normale Mitglieder keine. (pgTAP — Lauf: `npx supabase test db`.)
+-- normale Mitglieder keine. (pgTAP – Lauf: `npx supabase test db`.)
 
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -63,7 +63,7 @@ select lives_ok(
 -- ── Rolle: normales Mitglied ────────────────────────────────────────────────
 set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000e0001","role":"authenticated"}';
 
--- (5) Kein Schreiben — auch nicht event-gebunden.
+-- (5) Kein Schreiben – auch nicht event-gebunden.
 select throws_ok(
   $$ insert into public.document (title, category, event_id)
      values ('X', 'sonstige', '00000000-0000-0000-0000-0000000ee001') $$,

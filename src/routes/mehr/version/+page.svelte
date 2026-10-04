@@ -11,7 +11,7 @@
 	import { APP_COMMIT, APP_VERSION } from '$lib/version';
 	import { ChevronLeft } from '@lucide/svelte';
 
-	// Farbe ist nur Beiwerk — die Art der Änderung steht immer als Wort da.
+	// Farbe ist nur Beiwerk – die Art der Änderung steht immer als Wort da.
 	const TONE: Record<ChangeKind, 'blue' | 'sage' | 'clay'> = {
 		neu: 'blue',
 		verbessert: 'sage',

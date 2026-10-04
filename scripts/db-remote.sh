@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Nativer psql gegen die Remote-Supabase-DB (Pooler) — ersetzt den frueheren
+# Nativer psql gegen die Remote-Supabase-DB (Pooler) – ersetzt den frueheren
 # docker-psql-Umweg (Host hat jetzt psql via Homebrew/libpq).
 #
 # DB-Passwort kommt aus .env.local (git-ignoriert, NIE committen). Den Projekt-Ref
-# lesen wir aus .env (Produktions-URL) — .env.local zeigt PUBLIC_SUPABASE_URL i. d. R.
+# lesen wir aus .env (Produktions-URL) – .env.local zeigt PUBLIC_SUPABASE_URL i. d. R.
 # auf den lokalen Stack (127.0.0.1) und taugt dafuer nicht.
 # Region-Pooler ist eu-west-1 (Irland), siehe CLAUDE.md.
 #

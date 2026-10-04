@@ -53,7 +53,7 @@ export const load: PageLoad = async ({ parent }) => {
 			.select(
 				'id, title, type, location, starts_at, ends_at, event_response(member_id, status, companion(id))'
 			)
-			// Noch nicht zu Ende — ein laufender Termin bleibt „nächster Termin“, bis er endet.
+			// Noch nicht zu Ende – ein laufender Termin bleibt „nächster Termin“, bis er endet.
 			.or(`ends_at.gt.${nowIso},and(ends_at.is.null,starts_at.gt.${startCutoffIso})`)
 			.order('starts_at', { ascending: true })
 			.limit(1)

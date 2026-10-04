@@ -7,7 +7,7 @@
 //   - Layout über <table>, kein Flex/Grid (Outlook rendert mit der Word-Engine).
 //   - Alle Styles inline; <style>-Blöcke werden von Gmail teils entfernt.
 //   - Feste Hex-Werte statt CSS-Variablen (Tokens aus `tokens/colors.css` hier
-//     bewusst dupliziert — Mail-Clients kennen `var()` nicht).
+//     bewusst dupliziert – Mail-Clients kennen `var()` nicht).
 //   - Das Emblem wird als URL von der eigenen Domain geladen, NICHT als
 //     data:-URI: Gmail zeigt base64-Bilder in <img> nicht an. Blockiert ein
 //     Client Bilder, trägt das Text-Lockup daneben die Marke.
@@ -43,11 +43,11 @@ export type MailNotification = {
 };
 
 /**
- * Ziel-Pfad in der App — geteilt mit dem Push-Payload, damit beide Kanäle gleich landen.
+ * Ziel-Pfad in der App – geteilt mit dem Push-Payload, damit beide Kanäle gleich landen.
  *
  * WICHTIG: Nur Pfade, für die es in `src/routes/` wirklich eine Seite gibt.
  * News und Dokumente haben KEINE Detailseite (`news/[id]`/`dokumente/[id]` enthalten
- * nur `bearbeiten/`) — eine tiefe Verlinkung landete dort auf einer 404-Seite.
+ * nur `bearbeiten/`) – eine tiefe Verlinkung landete dort auf einer 404-Seite.
  * Beide Anlässe zeigen deshalb auf die Übersicht, genau wie die In-App-Liste
  * unter `/benachrichtigungen`.
  */
@@ -71,7 +71,7 @@ export function pathFor(n: MailNotification): string {
 /**
  * Je Anlass: Kicker über der Überschrift, Beschriftung des Buttons und ein
  * Ersatztext für die Fälle, in denen die Outbox-Zeile keinen `body` hat
- * (Geburtstag, Dokument, Anwesenheit) — sonst stünde dort nur der Betreff nochmal.
+ * (Geburtstag, Dokument, Anwesenheit) – sonst stünde dort nur der Betreff nochmal.
  */
 const PRESET: Record<Kind, { kicker: string; cta: string; fallback: string }> = {
 	event_reminder: {
@@ -102,11 +102,11 @@ const PRESET: Record<Kind, { kicker: string; cta: string; fallback: string }> = 
 };
 
 /**
- * Betreffzeile MIME-codieren (RFC 2047) — bewusst selbst gebaut.
+ * Betreffzeile MIME-codieren (RFC 2047) – bewusst selbst gebaut.
  *
  * denomailer 1.6.0 codiert Betreffs mit Umlauten über `quotedPrintableEncode`,
  * einen BODY-Encoder: der setzt alle 74 Zeichen einen Soft-Umbruch `=\r\n`.
- * Im Header beendet ein CRLF aber den Header-Block — ab ~75 codierten Zeichen
+ * Im Header beendet ein CRLF aber den Header-Block – ab ~75 codierten Zeichen
  * landeten `From:`/`To:`/`Content-Type:` im Body und die Mail war zerstört.
  * (Verifiziert am 2026-07-20; 1.6.0 ist die neueste Version, kein Upstream-Fix.)
  *
@@ -117,7 +117,7 @@ const PRESET: Record<Kind, { kicker: string; cta: string; fallback: string }> = 
  * laut RFC 5322 erlaubt und wird von Clients ignoriert.
  */
 export function encodeSubject(raw: string): string {
-	// CR/LF/TAB raus — die würden den Header ebenfalls zerlegen.
+	// CR/LF/TAB raus – die würden den Header ebenfalls zerlegen.
 	const clean = raw.replace(/[\r\n\t]+/g, ' ').trim();
 
 	// Reines ASCII braucht kein Encoding; denomailer lässt es dann in Ruhe.
@@ -154,7 +154,7 @@ export function encodeSubject(raw: string): string {
 	if (current) words.push(current);
 
 	// Mehrere Encoded-Words werden per CRLF + Leerzeichen gefaltet (RFC 5322).
-	// Das ist eine gültige Fortsetzungszeile — anders als der Umbruch mitten im Wort.
+	// Das ist eine gültige Fortsetzungszeile – anders als der Umbruch mitten im Wort.
 	return ' ' + words.map((w) => PREFIX + w + SUFFIX).join('\r\n ');
 }
 
@@ -269,6 +269,6 @@ export function renderEmail(n: MailNotification): {
 		`E-Mail eingestellt hast. Kanal ändern: ${base}/mehr`
 	].join('\n');
 
-	// Betreff wire-ready MIME-codiert (siehe encodeSubject) — nicht der Rohtitel.
+	// Betreff wire-ready MIME-codiert (siehe encodeSubject) – nicht der Rohtitel.
 	return { subject: encodeSubject(n.title), html, text };
 }

@@ -1,4 +1,4 @@
--- M4 — RLS-Tests für Abfrage-Engine (pgTAP). Lauf: `npx supabase test db`.
+-- M4 – RLS-Tests für Abfrage-Engine (pgTAP). Lauf: `npx supabase test db`.
 
 begin;
 create extension if not exists pgtap with schema extensions;

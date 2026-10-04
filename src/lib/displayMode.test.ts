@@ -43,7 +43,7 @@ describe('trackDisplayMode', () => {
 		expect(rpc).toHaveBeenCalledWith('track_display_mode', { standalone: false });
 	});
 
-	it('schluckt Fehler — Telemetrie darf den App-Start nie blockieren', async () => {
+	it('schluckt Fehler – Telemetrie darf den App-Start nie blockieren', async () => {
 		const rpc = vi.fn().mockRejectedValue(new Error('offline'));
 		await expect(trackDisplayMode({ rpc })).resolves.toBeUndefined();
 	});

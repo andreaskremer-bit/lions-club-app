@@ -149,7 +149,7 @@
 			return;
 		}
 
-		// E-Mail (Verzeichnis + Login) synchron über die Server-Route — nur bei Änderung.
+		// E-Mail (Verzeichnis + Login) synchron über die Server-Route – nur bei Änderung.
 		if (data.canEditMaster && email.trim().toLowerCase() !== init.email.toLowerCase()) {
 			const res = await fetch(`/api/mitglieder/${m.id}/email`, {
 				method: 'PATCH',

@@ -1,4 +1,4 @@
--- P2 — Zeitabhängige Ämter-Rechte, Past-Präsident-Ableitung, Vereinslokal (pgTAP).
+-- P2 – Zeitabhängige Ämter-Rechte, Past-Präsident-Ableitung, Vereinslokal (pgTAP).
 
 begin;
 create extension if not exists pgtap with schema extensions;

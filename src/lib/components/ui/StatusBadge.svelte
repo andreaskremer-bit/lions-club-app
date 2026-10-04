@@ -16,7 +16,7 @@
 
 	type Props = {
 		status?: Status;
-		/** Nur der Punkt, ohne Label — für dichte Listenzeilen. */
+		/** Nur der Punkt, ohne Label – für dichte Listenzeilen. */
 		dotOnly?: boolean;
 		children?: Snippet;
 	} & HTMLAttributes<HTMLSpanElement>;

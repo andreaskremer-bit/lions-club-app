@@ -29,7 +29,7 @@
 		// Push-Abo zuerst beenden: das Löschen der Zeile braucht noch die Sitzung.
 		await releasePushOnSignOut(supabase);
 		await supabase.auth.signOut();
-		// Gecachte Mitgliederfotos sind personenbezogen — beim Abmelden weg (DSGVO).
+		// Gecachte Mitgliederfotos sind personenbezogen – beim Abmelden weg (DSGVO).
 		await clearPrivateCaches();
 		await goto(resolve('/login'), { invalidateAll: true });
 	}

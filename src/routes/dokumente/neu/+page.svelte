@@ -41,7 +41,7 @@
 	});
 
 	let eventOptions = $derived([
-		{ value: '', label: '— keiner —' },
+		{ value: '', label: '– keiner –' },
 		...data.events.map((ev) => ({
 			value: ev.id,
 			label: `${eventFmt.format(new Date(ev.starts_at))} · ${ev.title}`

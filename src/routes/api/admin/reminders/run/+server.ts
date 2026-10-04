@@ -9,7 +9,7 @@ import type { RequestHandler } from './$types';
  * Manueller Test-Trigger für die Reminder-Engine (nur `manage_members`).
  * Schritt 1: `enqueue_due_reminders()` füllt die Outbox (In-App sofort sichtbar).
  * Schritt 2: ruft optional die Edge Function `send-notifications` für den
- * Außen-Versand (Push/E-Mail) — die respektiert ihrerseits REMINDERS_ARMED (Dry-Run).
+ * Außen-Versand (Push/E-Mail) – die respektiert ihrerseits REMINDERS_ARMED (Dry-Run).
  *
  * Sicher in der Geheim-Phase: enqueue erzeugt nur für freigeschaltete Mitglieder
  * (member.notifications_enabled), der Versand ist per Default Dry-Run.
@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const { user } = await locals.safeGetSession();
 	if (!user) throw error(401, 'Nicht angemeldet');
 
-	// Berechtigung des Aufrufers prüfen (als Nutzer über RLS) — nur Ämter des aktuellen LJ.
+	// Berechtigung des Aufrufers prüfen (als Nutzer über RLS) – nur Ämter des aktuellen LJ.
 	const { data: meData } = await locals.supabase
 		.from('member')
 		.select('member_amt(amt(amt_permission(permission)))')

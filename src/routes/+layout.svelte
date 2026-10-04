@@ -39,7 +39,7 @@
 	// Neue Version ausgeliefert (SvelteKit-Versionspoll, s. `version` in
 	// vite.config.ts): Die nächste Navigation wird zu einem vollen Seitenaufruf,
 	// damit frisches HTML und die neuen Build-Dateien geladen werden. Bewusst
-	// nicht sofort neu laden — das würde jemanden mitten im Formular unterbrechen.
+	// nicht sofort neu laden – das würde jemanden mitten im Formular unterbrechen.
 	beforeNavigate(({ willUnload, to }) => {
 		if (updated.current && !willUnload && to?.url) {
 			location.href = to.url.href;
@@ -90,7 +90,7 @@
 		// Kommt ein Tab nach Tagen wieder in den Vordergrund, sofort nachsehen statt
 		// auf den nächsten Poll-Tick zu warten: Versionsdatei UND Service Worker.
 		// Der Browser prüft die sw.js von sich aus nur bei vollen Seitenaufrufen
-		// und Push-Ereignissen — beides fehlt in einem dauerhaft offenen Tab.
+		// und Push-Ereignissen – beides fehlt in einem dauerhaft offenen Tab.
 		const checkForUpdate = () => {
 			if (document.visibilityState !== 'visible') return;
 			updated.check().catch(() => {});
@@ -111,7 +111,7 @@
 
 		const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
 			// Beim Anmelden bleibt das Root-Layout montiert (Client-Navigation), der
-			// onMount-Aufruf oben lief da noch ohne Session — hier nachholen.
+			// onMount-Aufruf oben lief da noch ohne Session – hier nachholen.
 			// 'INITIAL_SESSION' ist der Ladefall und deshalb bewusst nicht dabei.
 			if (event === 'SIGNED_IN') trackDisplayMode(supabase);
 

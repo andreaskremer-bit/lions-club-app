@@ -67,7 +67,7 @@
 	type MemberGroup = { letter: string | null; members: MemberListItem[] };
 	/**
 	 * Gruppierung nach Nachnamen-Anfangsbuchstaben (DB liefert bereits nach
-	 * last_name sortiert). Bei aktiver Suche KEINE Buchstaben-Header — dann ist
+	 * last_name sortiert). Bei aktiver Suche KEINE Buchstaben-Header – dann ist
 	 * die Trefferliste die relevante Struktur.
 	 */
 	let groups = $derived.by<MemberGroup[]>(() => {
@@ -203,7 +203,7 @@
 		border-bottom: 1px solid var(--border-hairline);
 	}
 	/* Keine doppelte Linie: die letzte Zeile vor einem Buchstaben-Trenner und die
-	   allerletzte Zeile verzichten auf die eigene Haarlinie — der Divider trennt. */
+	   allerletzte Zeile verzichten auf die eigene Haarlinie – der Divider trennt. */
 	.mrow:has(+ .ltr),
 	.mrow:last-child {
 		border-bottom: none;

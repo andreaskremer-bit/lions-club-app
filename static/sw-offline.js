@@ -4,7 +4,7 @@
 // Warum NICHT über den Workbox-Precache?
 //   1. @vite-pwa/sveltekit schneidet in seiner manifestTransform JEDER `.html`-Datei
 //      die Endung ab (gedacht für prerenderte SvelteKit-Seiten). Aus `offline.html`
-//      würde die Precache-URL `/offline` — ob die auf Netlify wirklich ausgeliefert
+//      würde die Precache-URL `/offline` – ob die auf Netlify wirklich ausgeliefert
 //      wird, hängt an dessen Pretty-URL-Verhalten.
 //   2. Scheitert im Precache EIN Request, schlägt die ganze Installation fehl und
 //      der neue Service Worker wird nie aktiv. Diese Nebensache darf das nicht können.
@@ -36,7 +36,7 @@ self.addEventListener('install', (event) => {
 					})
 				);
 			} catch {
-				// Kein Netz beim Update o. Ä. — der alte Eintrag bleibt einfach liegen.
+				// Kein Netz beim Update o. Ä. – der alte Eintrag bleibt einfach liegen.
 			}
 		})()
 	);

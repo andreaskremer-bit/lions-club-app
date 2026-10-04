@@ -17,7 +17,7 @@
 // Mitglieds), damit der Eintrag in den Update-Pfad läuft statt eine Dublette zu
 // erzeugen.
 //
-// Der Service-Role-Key umgeht RLS — niemals committen / ins Memory schreiben.
+// Der Service-Role-Key umgeht RLS – niemals committen / ins Memory schreiben.
 
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
@@ -128,7 +128,7 @@ function extFromUrl(u) {
 }
 
 // Foto holen, in den Bucket legen, photo_path setzen, altes Objekt entfernen.
-// Content-Type aus der Endung ableiten — die Quelle liefert oft octet-stream,
+// Content-Type aus der Endung ableiten – die Quelle liefert oft octet-stream,
 // womit der Browser das Avatar über die signierte URL nicht inline rendert.
 async function setPhoto(supabase, memberId, oldPath, photoUrl) {
 	const res = await fetch(photoUrl);

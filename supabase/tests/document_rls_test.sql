@@ -1,4 +1,4 @@
--- M6 — RLS- + Funktions-Tests für Dokumente (pgTAP). Lauf: `npx supabase test db`.
+-- M6 – RLS- + Funktions-Tests für Dokumente (pgTAP). Lauf: `npx supabase test db`.
 
 begin;
 create extension if not exists pgtap with schema extensions;
