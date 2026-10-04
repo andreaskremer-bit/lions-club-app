@@ -14,6 +14,7 @@
 	} from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { MemberStatus } from '../../+page';
+	import { isOwnStoragePath } from '$lib/storagePath';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -88,7 +89,10 @@
 		if (!m.photo_path) return;
 		uploading = true;
 		error = '';
-		await supabase.storage.from('member-photos').remove([m.photo_path]);
+		// Nur Dateien im eigenen Ordner löschen – photo_path könnte auf ein fremdes Foto zeigen.
+		if (isOwnStoragePath(m.id, m.photo_path)) {
+			await supabase.storage.from('member-photos').remove([m.photo_path]);
+		}
 		const { error: updErr } = await supabase
 			.from('member')
 			.update({ photo_path: null })

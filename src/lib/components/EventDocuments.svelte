@@ -4,6 +4,7 @@
 	import { Download, Trash2, Plus } from '@lucide/svelte';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { uploadDocument, MAX_FILE_BYTES, type DocumentRow } from '$lib/documents';
+	import { isOwnStoragePath } from '$lib/storagePath';
 
 	let {
 		supabase,
@@ -92,7 +93,10 @@
 		if (busy || !confirm('Dokument wirklich löschen?')) return;
 		busy = true;
 		err = '';
-		if (d.file_path) await supabase.storage.from('documents').remove([d.file_path]);
+		// Nur Dateien im eigenen Ordner löschen – file_path könnte auf eine fremde Datei zeigen.
+		if (isOwnStoragePath(d.id, d.file_path)) {
+			await supabase.storage.from('documents').remove([d.file_path]);
+		}
 		const { error } = await supabase.from('document').delete().eq('id', d.id);
 		busy = false;
 		if (error) {

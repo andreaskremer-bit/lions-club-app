@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
+	import { isOwnStoragePath } from '$lib/storagePath';
 	import {
 		categoryOptions,
 		MAX_FILE_BYTES,
@@ -108,7 +109,8 @@
 		if (!confirm('Dokument wirklich löschen?')) return;
 		busy = true;
 		err = '';
-		if (doc.file_path) {
+		// Nur Dateien im eigenen Ordner löschen – file_path könnte auf eine fremde Datei zeigen.
+		if (isOwnStoragePath(doc.id, doc.file_path)) {
 			await supabase.storage.from('documents').remove([doc.file_path]);
 		}
 		const { error: delErr } = await supabase.from('document').delete().eq('id', doc.id);
