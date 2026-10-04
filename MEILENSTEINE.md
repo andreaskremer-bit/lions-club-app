@@ -505,3 +505,16 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 **Weitere Korrekturen.** Dokumentenablage filtert Termin-Anhänge auch beim Nachladen und in der Suche aus, ignoriert überholte Abfragen und öffnet Dokumente iOS-fest (`openDocument()`: Fenster im Klick öffnen, danach auf die signierte URL lenken). „Offen“ = aktive Mitglieder ohne Rückmeldung (Start, Liste, Sheet). Mitgliederliste gruppiert je Anfangsbuchstabe (Umlaute zum Grundbuchstaben) statt nach DB-Reihenfolge. Benachrichtigungen werden beim Antippen gelesen, Geburtstage führen zu `/geburtstage`. Terminplanung: fehlgeschlagener Anhang-Upload erscheint als Hinweis auf der Termin-Seite (`page.state.notice`), ein nur vorgeschlagenes Ende wird bei Typen ohne Standarddauer geleert. Beim Ersetzen eines Fotos oder einer Dokumentdatei wird die alte Datei gelöscht.
 
 **Grün.** `check` · `lint` · 100 Unit-Tests · 146 pgTAP (4 neu). Lokal per Playwright verifiziert: Absage mit Gast (Zugesagt 1 · 0 Mitglieder, 1 Gast; „Gast von …“), Offen-Zahl, Buchstabengruppen, Auswertung, Mitglied löschen inkl. Foto und Login-Konto. **Hinweis lokal:** `.env.local` enthält den Produktions-Service-Key; für Server-Routen gegen den lokalen Stack den lokalen Key per Umgebungsvariable setzen.
+
+## Code-Review `supabase/functions` (2026-10-04)
+
+`/code-review high supabase/functions`: 10 Befunde, alle behoben. Auf Produktion hing vorher keine Benachrichtigung (0 von 366 unversendet), die Versandfixes sind also Vorsorge.
+
+- **Outbox-Zustand (Migration `20261004120500`):** `notification.attempts`, `last_attempt_at`, `claimed_at` + RPC `claim_notifications(p_limit)` (nur `service_role`, `FOR UPDATE SKIP LOCKED`). Ein Lauf reserviert Zeilen atomar → zwei gleichzeitige Läufe (Cron + Admin-Route) senden nichts doppelt. Fehlversuche zählen hoch, Wartezeit wächst (attempts Stunden), nach 5 Versuchen ruht die Zeile – vorher wäre eine unzustellbare Zeile ewig offen geblieben und hätte ab 500 Stück alles Neue verdrängt. Dry-Run reserviert nichts.
+- **„Nur Push“ ohne Push-Abo:** bekommt jetzt die E-Mail als Rückfallebene (vorher gar nichts außerhalb der App; es gibt kein Voll-Opt-out).
+- **SMTP:** ein Client je Lauf, erst bei der ersten Mail geöffnet; `tls` nur bei Port 465 (587 = STARTTLS); Fehler beim Schließen beenden den Lauf nicht mehr mit 500. Lokaler Test gegen Mailpit nur mit `SMTP_ALLOW_INSECURE=true` (kein TLS, kein AUTH) – in Produktion nie setzen.
+- **Fehler beim Laden der Push-Abos** → 500 und Reservierung freigeben (statt allen eine E-Mail statt Push).
+- **Mail-Text:** Absätze bleiben erhalten, Links sind klickbar (`bodyToHtml()` in `email.ts`).
+- **`extract-document-text`:** schreibt `content_text` als Aufrufer (RLS entscheidet, kein Probe-Update mehr, das den Titel zurückschrieb), prüft den Schreibfehler; DOCX: Tab/Umbruch als Leerraum, Entities einmal und vollständig aufgelöst (`&amp;` zuletzt).
+
+**Grün.** 102 Unit-Tests · 152 pgTAP (6 neu in `notification_outbox_test.sql`). Lokal mit `supabase functions serve` + Mailpit end-to-end geprüft: zwei gleichzeitige Läufe → 3 Mails, keine doppelt; „Nur Push“ ohne Abo → E-Mail; DOCX-Extraktion als Präsident 200, als Schatzmeister ohne Schreibrecht 403 und Volltext unverändert.
