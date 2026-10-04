@@ -72,6 +72,7 @@
 			error = 'Upload fehlgeschlagen: ' + upErr.message;
 			return;
 		}
+		const oldPath = m.photo_path;
 		const { error: updErr } = await supabase
 			.from('member')
 			.update({ photo_path: path })
@@ -79,8 +80,14 @@
 		uploading = false;
 		input.value = '';
 		if (updErr) {
+			// Neues Foto wieder entfernen, sonst bliebe es ohne Verweis im Speicher.
+			await supabase.storage.from('member-photos').remove([path]);
 			error = 'Speichern fehlgeschlagen: ' + updErr.message;
 			return;
+		}
+		// Altes Foto löschen – personenbezogene Daten nicht ohne Zweck aufbewahren.
+		if (oldPath !== path && isOwnStoragePath(m.id, oldPath)) {
+			await supabase.storage.from('member-photos').remove([oldPath]);
 		}
 		await invalidateAll();
 	}
@@ -175,12 +182,20 @@
 			)
 		)
 			return;
-		const { error: err } = await supabase.from('member').delete().eq('id', m.id);
-		if (err) {
-			error = 'Löschen fehlgeschlagen: ' + err.message;
+		// Server-Route: löscht auch Profilfotos und Login-Konto (braucht den Service-Key).
+		const res = await fetch(`/api/mitglieder/${m.id}`, { method: 'DELETE' });
+		if (!res.ok) {
+			const body = await res.json().catch(() => null);
+			error = 'Löschen fehlgeschlagen: ' + (body?.message ?? res.statusText);
 			return;
 		}
-		await goto(resolve('/mitglieder'), { invalidateAll: true });
+		const { problems } = (await res.json()) as { problems: string[] };
+		await goto(resolve('/mitglieder'), {
+			invalidateAll: true,
+			state: problems.length
+				? { notice: `Mitglied gelöscht, aber nicht alles aufgeräumt: ${problems.join('; ')}` }
+				: {}
+		});
 	}
 </script>
 

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Switch, Avatar } from '$lib/components/ui';
+	import { page } from '$app/state';
+	import { AppBar, IconButton, Input, Switch, Avatar, HintCard } from '$lib/components/ui';
 	import { Search, UserPlus, Phone, Mail } from '@lucide/svelte';
 	import type { MemberListItem } from './+page';
 
@@ -65,24 +66,32 @@
 	);
 
 	type MemberGroup = { letter: string | null; members: MemberListItem[] };
+
+	/** Anfangsbuchstabe wie im Telefonbuch: Umlaute zum Grundbuchstaben (Ö → O). */
+	const initial = (name: string) =>
+		(name.trim()[0] ?? '#').normalize('NFD').replace(/\p{M}/gu, '').toUpperCase();
+
 	/**
-	 * Gruppierung nach Nachnamen-Anfangsbuchstaben (DB liefert bereits nach
-	 * last_name sortiert). Bei aktiver Suche KEINE Buchstaben-Header – dann ist
-	 * die Trefferliste die relevante Struktur.
+	 * Gruppierung nach Nachnamen-Anfangsbuchstaben. Gesammelt wird je Buchstabe statt nach der
+	 * DB-Reihenfolge: deren Sortierung (Collation) kann z. B. „Oberg, Özdemir, Otto“ oder
+	 * kleingeschriebene „von …“ so ordnen, dass ein Buchstabe mehrfach begänne.
+	 * Bei aktiver Suche KEINE Buchstaben-Header – dann ist die Trefferliste die relevante
+	 * Struktur.
 	 */
 	let groups = $derived.by<MemberGroup[]>(() => {
 		if (query.trim()) return [{ letter: null, members: filtered }];
-		const out: MemberGroup[] = [];
-		let cur: MemberGroup | null = null;
-		for (const m of filtered) {
-			const letter = (m.last_name[0] ?? '#').toUpperCase();
-			if (!cur || cur.letter !== letter) {
-				cur = { letter, members: [] };
-				out.push(cur);
-			}
-			cur.members.push(m);
-		}
-		return out;
+		const byLetter: Record<string, MemberListItem[]> = {};
+		for (const m of filtered) (byLetter[initial(m.last_name)] ??= []).push(m);
+		return Object.entries(byLetter)
+			.sort(([a], [b]) => a.localeCompare(b, 'de'))
+			.map(([letter, members]) => ({
+				letter,
+				members: members.sort(
+					(a, b) =>
+						a.last_name.localeCompare(b.last_name, 'de') ||
+						a.first_name.localeCompare(b.first_name, 'de')
+				)
+			}));
 	});
 </script>
 
@@ -107,6 +116,7 @@
 	</AppBar>
 
 	<main class="shell__body">
+		{#if page.state.notice}<HintCard tone="warning">{page.state.notice}</HintCard>{/if}
 		<Input placeholder="Name oder Amt suchen…" bind:value={query} aria-label="Mitglied suchen">
 			{#snippet icon()}<Search size={18} />{/snippet}
 		</Input>
