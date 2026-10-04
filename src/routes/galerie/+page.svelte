@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { env } from '$env/dynamic/public';
 	import { AppBar, IconButton, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Images } from '@lucide/svelte';
 
 	let { data } = $props();
 	let canManage = $derived((data.permissions ?? []).includes('publish_content'));
 
-	// Galerie-Ziel aus der Env (Netlify). Dynamic statt static: Build bricht nicht,
-	// wenn die Variable fehlt.
-	const galleryUrl = env.PUBLIC_GALLERY_URL ?? '';
+	// Galerie-Ziel kommt aus dem Server-Load (private Env `GALLERY_URL`, nur für Mitglieder).
+	let galleryUrl = $derived(data.galleryUrl ?? '');
 
 	function openGallery() {
 		if (galleryUrl) window.open(galleryUrl, '_blank', 'noopener,noreferrer');
@@ -42,7 +40,7 @@
 			{:else}
 				<p class="gal__hint">
 					Der Galerie-Link ist noch nicht hinterlegt.{#if canManage}
-						Bitte die Umgebungsvariable <code>PUBLIC_GALLERY_URL</code> setzen.{/if}
+						Bitte die Umgebungsvariable <code>GALLERY_URL</code> setzen.{/if}
 				</p>
 			{/if}
 		</Card>
