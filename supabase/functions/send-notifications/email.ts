@@ -166,6 +166,21 @@ function esc(s: string): string {
 		.replace(/"/g, '&quot;');
 }
 
+/**
+ * Klartext (News) als HTML-Absatzinhalt: escapen, URLs klickbar machen (Satzzeichen am
+ * Ende gehören nicht dazu, wie im App-Feed) und Zeilenumbrüche erhalten. Vorher lief
+ * der ganze Text in einen Absatz, Links waren nicht anklickbar.
+ */
+export function bodyToHtml(text: string, linkColor: string): string {
+	return esc(text)
+		.replace(/https?:\/\/[^\s<]+/g, (raw) => {
+			const url = raw.replace(/[.,;:!?)\]'"“‘»]+$/, '');
+			const rest = raw.slice(url.length);
+			return `<a href="${url}" style="color:${linkColor}; text-decoration:underline;">${url}</a>${rest}`;
+		})
+		.replace(/\r?\n/g, '<br>');
+}
+
 export function renderEmail(n: MailNotification): {
 	subject: string;
 	html: string;
@@ -177,7 +192,7 @@ export function renderEmail(n: MailNotification): {
 	const bodyText = n.body?.trim() ? n.body.trim() : preset.fallback;
 
 	const title = esc(n.title);
-	const body = esc(bodyText);
+	const body = bodyToHtml(bodyText, C.blue);
 	const kicker = esc(preset.kicker);
 	const cta = esc(preset.cta);
 

@@ -2,7 +2,14 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { encodeSubject, type Kind, pathFor, renderEmail, type MailNotification } from './email.ts';
+import {
+	bodyToHtml,
+	encodeSubject,
+	type Kind,
+	pathFor,
+	renderEmail,
+	type MailNotification
+} from './email.ts';
 
 /**
  * Regressionstest zum denomailer-Bug vom 2026-07-20: Betreffs mit Umlauten
@@ -218,5 +225,17 @@ describe('renderEmail', () => {
 		const link = `https://app.lions-bonn-rheinaue.de${pathFor(news)}`;
 		expect(html).toContain(link);
 		expect(text).toContain(link);
+	});
+});
+
+describe('bodyToHtml', () => {
+	it('erhält Zeilenumbrüche und macht Links klickbar, ohne Satzzeichen am Ende', () => {
+		expect(bodyToHtml('Absatz 1\n\nMehr unter https://x.de/info.', '#00f')).toBe(
+			'Absatz 1<br><br>Mehr unter <a href="https://x.de/info" style="color:#00f; text-decoration:underline;">https://x.de/info</a>.'
+		);
+	});
+
+	it('escaped HTML vor der Umwandlung', () => {
+		expect(bodyToHtml('<b>fett</b> & mehr', '#00f')).toBe('&lt;b&gt;fett&lt;/b&gt; &amp; mehr');
 	});
 });
