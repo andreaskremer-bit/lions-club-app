@@ -11,10 +11,22 @@
 
 	let { qtype, options = null, value, disabled = false, onsave }: Props = $props();
 
-	let selected = $derived(Array.isArray(value) ? (value as string[]) : []);
+	// Lokaler Stand der Mehrfachauswahl: `value` kommt erst nach dem Speichern zurück.
+	// Ohne ihn baute ein schnelles zweites Antippen auf dem alten Array auf und die
+	// erste Auswahl ginge verloren.
+	let pending = $state<string[] | null>(null);
+	let saved = $derived(Array.isArray(value) ? (value as string[]) : []);
+	let selected = $derived(pending ?? saved);
+
+	// Sobald der gespeicherte Wert den lokalen Stand eingeholt hat, gilt wieder `value`.
+	$effect(() => {
+		if (pending && JSON.stringify(pending) === JSON.stringify(saved)) pending = null;
+	});
 
 	function toggleMulti(opt: string, checked: boolean) {
-		onsave(checked ? [...selected, opt] : selected.filter((x) => x !== opt));
+		const next = checked ? [...selected, opt] : selected.filter((x) => x !== opt);
+		pending = next;
+		onsave(next);
 	}
 </script>
 

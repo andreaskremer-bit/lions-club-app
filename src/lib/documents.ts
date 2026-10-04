@@ -1,7 +1,8 @@
-// Gemeinsame Konstanten/Typen für die Dokumente (M6) — von Liste, Upload und
+// Gemeinsame Konstanten/Typen für die Dokumente (M6) – von Liste, Upload und
 // Bearbeiten genutzt.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { safeFileName } from './storagePath';
 
 export type DocumentCategory = 'protokoll_clubabend' | 'protokoll_mv' | 'satzung' | 'sonstige';
 
@@ -48,7 +49,7 @@ export type UploadDocumentOpts = {
 /**
  * Legt einen Dokument-Datensatz an, lädt die Datei in den `documents`-Bucket
  * ("<id>/<bereinigter-name>"), trägt den Pfad nach und stößt die Volltext-
- * Extraktion best-effort an. Benachrichtigung NICHT enthalten — der Aufrufer
+ * Extraktion best-effort an. Benachrichtigung NICHT enthalten – der Aufrufer
  * entscheidet (Termin-Anhänge benachrichtigen z. B. nie). Gibt die neue ID
  * oder eine Fehlermeldung zurück.
  */
@@ -75,8 +76,7 @@ export async function uploadDocument(
 		return { error: 'Anlegen fehlgeschlagen: ' + (insErr?.message ?? 'unbekannt') };
 	}
 
-	const safeName = opts.file.name.replace(/[^\w.-]+/g, '_');
-	const path = `${created.id}/${safeName}`;
+	const path = `${created.id}/${safeFileName(opts.file.name)}`;
 	const { error: upErr } = await supabase.storage
 		.from('documents')
 		.upload(path, opts.file, { contentType: opts.file.type || undefined, upsert: true });
@@ -85,7 +85,16 @@ export async function uploadDocument(
 		await supabase.from('document').delete().eq('id', created.id);
 		return { error: 'Upload fehlgeschlagen: ' + upErr.message };
 	}
-	await supabase.from('document').update({ file_path: path }).eq('id', created.id);
+	const { error: pathErr } = await supabase
+		.from('document')
+		.update({ file_path: path })
+		.eq('id', created.id);
+	if (pathErr) {
+		// Ohne file_path wäre das Dokument nicht abrufbar: Datei und Zeile wieder entfernen.
+		await supabase.storage.from('documents').remove([path]);
+		await supabase.from('document').delete().eq('id', created.id);
+		return { error: 'Speichern fehlgeschlagen: ' + pathErr.message };
+	}
 
 	// Volltext serverseitig extrahieren (best-effort, nicht fatal).
 	supabase.functions.invoke('extract-document-text', { body: { id: created.id } }).catch(() => {});

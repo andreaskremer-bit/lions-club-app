@@ -9,9 +9,22 @@ export const companionAllowed = (t: EventType): boolean =>
 /** Spendenpflichtig? (Spiegelt event.donation_required, Spec §4.2.) */
 export const donationRequired = (t: EventType): boolean => t === 'clubabend' || t === 'versammlung';
 
-/** Lions-Jahr läuft 1. Juli – 30. Juni; liefert das Startjahr zu einem Datum. */
+const BERLIN_YEAR_MONTH = new Intl.DateTimeFormat('en-US', {
+	timeZone: 'Europe/Berlin',
+	year: 'numeric',
+	month: 'numeric'
+});
+
+/**
+ * Lions-Jahr läuft 1. Juli – 30. Juni; liefert das Startjahr zu einem Zeitpunkt.
+ * Fest in Europe/Berlin wie `current_lions_year()` in der Datenbank – sonst rechnete der
+ * Server (Netlify, UTC) am 1. Juli zwischen 0 und 2 Uhr noch mit dem alten Jahr.
+ */
 export function lionsStartYear(d: Date): number {
-	return d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1;
+	const parts = BERLIN_YEAR_MONTH.formatToParts(d);
+	const year = Number(parts.find((p) => p.type === 'year')?.value);
+	const month = Number(parts.find((p) => p.type === 'month')?.value);
+	return month >= 7 ? year : year - 1;
 }
 
 /** Standarddauer, wenn ein Termin kein `ends_at` hat (gleicher Default wie Planung und .ics). */
@@ -48,7 +61,10 @@ export function seriesDates(start: Date, rhythm: Rhythm, count: number): Date[] 
 	const mi = start.getMinutes();
 	for (let i = 0; i < count; i++) {
 		if (rhythm === 'monthly') {
-			out.push(new Date(y, mo + i, d, h, mi));
+			// Gleicher Tag im Monat, bei kürzeren Monaten der letzte Tag (31.1. → 28./29.2.),
+			// sonst liefe das Datum in den Folgemonat über.
+			const lastDay = new Date(y, mo + i + 1, 0).getDate();
+			out.push(new Date(y, mo + i, Math.min(d, lastDay), h, mi));
 		} else {
 			const step = rhythm === 'weekly' ? 7 : 14;
 			out.push(new Date(y, mo, d + i * step, h, mi));

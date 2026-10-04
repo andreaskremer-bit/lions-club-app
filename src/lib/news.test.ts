@@ -22,6 +22,24 @@ describe('linkify', () => {
 		]);
 	});
 
+	it('lässt Satzzeichen am Ende nicht in den Link', () => {
+		expect(linkify('Anmeldung unter https://lions.de/event.')).toEqual([
+			{ text: 'Anmeldung unter ' },
+			{ text: 'https://lions.de/event', href: 'https://lions.de/event' },
+			{ text: '.' }
+		]);
+		expect(linkify('(siehe https://x.de/info)')).toEqual([
+			{ text: '(siehe ' },
+			{ text: 'https://x.de/info', href: 'https://x.de/info' },
+			{ text: ')' }
+		]);
+	});
+
+	it('behält eine Klammer, die zum Link gehört', () => {
+		const url = 'https://de.wikipedia.org/wiki/Lions_(Club)';
+		expect(linkify(`Info: ${url}`)).toEqual([{ text: 'Info: ' }, { text: url, href: url }]);
+	});
+
 	it('gibt für leeren Text ein leeres Array zurück', () => {
 		expect(linkify('')).toEqual([]);
 	});

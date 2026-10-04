@@ -42,9 +42,13 @@
 	}
 
 	function handleInput(i: number, e: Event) {
-		const raw = (e.target as HTMLInputElement).value.replace(/\D/g, '');
+		const input = e.target as HTMLInputElement;
+		const raw = input.value.replace(/\D/g, '');
 		if (!raw) {
 			setChar(i, '');
+			// Abgelehnte Zeichen (z. B. Buchstaben) aus dem Feld nehmen: bleibt `value`
+			// gleich, schreibt Svelte den Wert nicht zurück und das Zeichen bliebe sichtbar.
+			input.value = '';
 			return;
 		}
 		if (raw.length >= length) {
@@ -53,6 +57,7 @@
 		}
 		const digit = raw[raw.length - 1];
 		setChar(i, digit);
+		input.value = digit;
 		if (i < length - 1) refs[i + 1]?.focus();
 	}
 

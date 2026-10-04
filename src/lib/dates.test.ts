@@ -33,6 +33,12 @@ describe('lionsStartYear (1.7.–30.6.)', () => {
 		expect(lionsStartYear(new Date(2026, 5, 30))).toBe(2025); // 30. Juni 2026
 		expect(lionsStartYear(new Date(2026, 0, 15))).toBe(2025); // Januar 2026
 	});
+	it('rechnet in Berliner Zeit, unabhängig von der Zeitzone des Rechners', () => {
+		// 30.06. 22:30 UTC = 1.7. 00:30 Berlin → neues Lions-Jahr (Server auf Netlify = UTC).
+		expect(lionsStartYear(new Date('2026-06-30T22:30:00Z'))).toBe(2026);
+		// 30.06. 21:30 UTC = 30.6. 23:30 Berlin → noch das alte.
+		expect(lionsStartYear(new Date('2026-06-30T21:30:00Z'))).toBe(2025);
+	});
 });
 
 describe('nextBirthdayInfo', () => {
@@ -67,6 +73,12 @@ describe('seriesDates', () => {
 	it('monatlich (gleiches Datum, mit Jahreswechsel)', () => {
 		const ds = seriesDates(new Date(2026, 10, 8), 'monthly', 3);
 		expect(ds.map(iso)).toEqual(['2026-11-8', '2026-12-8', '2027-1-8']);
+	});
+	it('monatlich ab dem 31. bleibt im Monat (letzter Tag bei kürzeren Monaten)', () => {
+		const ds = seriesDates(new Date(2026, 0, 31), 'monthly', 4);
+		expect(ds.map(iso)).toEqual(['2026-1-31', '2026-2-28', '2026-3-31', '2026-4-30']);
+		const leap = seriesDates(new Date(2028, 0, 30), 'monthly', 2);
+		expect(leap.map(iso)).toEqual(['2028-1-30', '2028-2-29']);
 	});
 	it('behält die Uhrzeit', () => {
 		const ds = seriesDates(new Date(2026, 8, 1, 19, 30), 'weekly', 2);

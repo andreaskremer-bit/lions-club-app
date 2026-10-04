@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
-	import { isOwnStoragePath } from '$lib/storagePath';
+	import { isOwnStoragePath, safeFileName } from '$lib/storagePath';
 	import {
 		categoryOptions,
 		MAX_FILE_BYTES,
@@ -16,7 +16,7 @@
 	let supabase = $derived(data.supabase);
 	let canManage = $derived((data.permissions ?? []).includes('publish_content'));
 
-	// Geladenes Dokument einmalig als Snapshot — das Formular soll sich nicht
+	// Geladenes Dokument einmalig als Snapshot – das Formular soll sich nicht
 	// reaktiv zurücksetzen, während der Nutzer es bearbeitet.
 	const doc = untrack(() => data.doc);
 	let title = $state(doc.title);
@@ -29,7 +29,7 @@
 	let err = $state('');
 
 	let eventOptions = $derived([
-		{ value: '', label: '— keiner —' },
+		{ value: '', label: '– keiner –' },
 		...data.events.map((ev) => ({
 			value: ev.id,
 			label: `${eventFmt.format(new Date(ev.starts_at))} · ${ev.title}`
@@ -72,8 +72,7 @@
 
 		// Datei ersetzen (optional).
 		if (newFile) {
-			const safeName = newFile.name.replace(/[^\w.-]+/g, '_');
-			const path = `${doc.id}/${safeName}`;
+			const path = `${doc.id}/${safeFileName(newFile.name)}`;
 			const { error: upErr } = await supabase.storage
 				.from('documents')
 				.upload(path, newFile, { contentType: newFile.type || undefined, upsert: true });
@@ -110,8 +109,15 @@
 		busy = true;
 		err = '';
 		// Nur Dateien im eigenen Ordner löschen – file_path könnte auf eine fremde Datei zeigen.
+		// Datei VOR der Zeile löschen: die Storage-Regel für Terminverwalter prüft die Zeile.
+		// Scheitert das, abbrechen – sonst bliebe ein Eintrag ohne Datei.
 		if (isOwnStoragePath(doc.id, doc.file_path)) {
-			await supabase.storage.from('documents').remove([doc.file_path]);
+			const { error: stErr } = await supabase.storage.from('documents').remove([doc.file_path]);
+			if (stErr) {
+				busy = false;
+				err = 'Löschen fehlgeschlagen: ' + stErr.message;
+				return;
+			}
 		}
 		const { error: delErr } = await supabase.from('document').delete().eq('id', doc.id);
 		busy = false;

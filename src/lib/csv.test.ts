@@ -14,10 +14,15 @@ describe('neutralizeFormula', () => {
 		expect(neutralizeFormula('=1+1')).toBe(`'=1+1`);
 	});
 
-	it('lässt Telefonnummern und Zahlen unverändert', () => {
-		expect(neutralizeFormula('+49 228 123456')).toBe('+49 228 123456');
-		expect(neutralizeFormula('+49 (0)228 / 12-34')).toBe('+49 (0)228 / 12-34');
+	it('schützt auch Telefonnummern mit + oder - am Anfang (Excel würde rechnen)', () => {
+		expect(neutralizeFormula('+49-228-123456')).toBe(`'+49-228-123456`);
+		expect(neutralizeFormula('+49 228 123456')).toBe(`'+49 228 123456`);
+		expect(neutralizeFormula('-5+3')).toBe(`'-5+3`);
+	});
+
+	it('lässt reine Zahlen und gewöhnliche Telefonnummern unverändert', () => {
 		expect(neutralizeFormula('-5')).toBe('-5');
+		expect(neutralizeFormula('+3,5')).toBe('+3,5');
 		expect(neutralizeFormula('0228 123')).toBe('0228 123');
 	});
 

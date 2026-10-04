@@ -75,7 +75,7 @@
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));
 	let zuGuests = $derived(zugesagt.reduce((n, r) => n + r.companion.length, 0));
 	let zuPersonen = $derived(zugesagt.length + zuGuests);
-	// Gäste namentlich (meist Partner — wer zu wem gehört, weiß der Club; bei fremden
+	// Gäste namentlich (meist Partner – wer zu wem gehört, weiß der Club; bei fremden
 	// Gästen ist das einladende Mitglied nicht die interessante Information).
 	let gaeste = $derived(
 		zugesagt.flatMap((r) => r.companion).sort((a, b) => a.name.localeCompare(b.name, 'de'))
@@ -168,7 +168,20 @@
 	const valueFor = (qid: string, companionId: string | null): unknown =>
 		answersMap[answerKey(qid, companionId)]?.value ?? null;
 
-	async function saveAnswer(qid: string, companionId: string | null, value: unknown) {
+	// Speichervorgänge je Frage nacheinander ausführen: Zwei schnelle Änderungen würden
+	// sonst beide als INSERT laufen (doppelte Antwort) oder sich überholen.
+	const answerQueue: Record<string, Promise<void>> = {};
+
+	function saveAnswer(qid: string, companionId: string | null, value: unknown) {
+		const key = answerKey(qid, companionId);
+		const run = (answerQueue[key] ?? Promise.resolve()).then(() =>
+			persistAnswer(qid, companionId, value)
+		);
+		answerQueue[key] = run;
+		return run;
+	}
+
+	async function persistAnswer(qid: string, companionId: string | null, value: unknown) {
 		if (!data.myMemberId) return;
 		answerErr = '';
 		const key = answerKey(qid, companionId);

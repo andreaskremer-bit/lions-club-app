@@ -1,9 +1,9 @@
-// P3 — Mitglieder-Export für die Meldung an Lions Deutschland (Wiesbaden).
+// P3 – Mitglieder-Export für die Meldung an Lions Deutschland (Wiesbaden).
 // Reiner Helfer (testbar); die Seite kümmert sich um Laden + Download.
 // Allgemeines CSV (Excel-tauglich): später bei Bedarf aufs echte Lions-Template
 // mappen. Bewusst OHNE Partner-/Notizfelder (DSGVO-Datensparsamkeit).
 
-import { csvCell } from './csv';
+import { csvRow } from './csv';
 
 export type MemberStatus = 'aktiv' | 'inaktiv' | 'ehrenmitglied';
 
@@ -55,7 +55,7 @@ export function formatDate(iso: string | null): string {
 }
 
 function row(m: ExportMember): string {
-	return [
+	return csvRow([
 		m.lions_member_no,
 		m.title,
 		m.first_name,
@@ -70,9 +70,7 @@ function row(m: ExportMember): string {
 		m.city,
 		formatDate(m.birthday),
 		formatDate(m.joined_on)
-	]
-		.map(csvCell)
-		.join(',');
+	]);
 }
 
 /**
@@ -81,7 +79,7 @@ function row(m: ExportMember): string {
  * Umlaute in Excel korrekt erscheinen.
  */
 export function buildMemberCsv(members: ExportMember[]): string {
-	const lines = [HEADERS.map(csvCell).join(',')];
+	const lines = [csvRow(HEADERS)];
 	for (const m of members) lines.push(row(m));
 	return lines.join('\r\n');
 }

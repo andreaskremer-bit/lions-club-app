@@ -4,21 +4,14 @@
 	import { AppBar, IconButton, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
 	import { buildMemberCsv, exportFilename } from '$lib/lionsExport';
+	import { downloadCsv } from '$lib/csv';
 
 	let { data } = $props();
 	let canExport = $derived((data.permissions ?? []).includes('export_lions'));
 	let members = $derived(data.members);
 
 	function download() {
-		const csv = buildMemberCsv(members);
-		// BOM für korrekte Umlaute in Excel.
-		const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = exportFilename();
-		a.click();
-		URL.revokeObjectURL(url);
+		downloadCsv([buildMemberCsv(members)], exportFilename());
 	}
 </script>
 

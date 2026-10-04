@@ -9,3 +9,15 @@
 export function isOwnStoragePath(id: string, path: string | null | undefined): path is string {
 	return !!path && path.startsWith(`${id}/`) && !path.includes('..');
 }
+
+/**
+ * Dateiname für einen Storage-Pfad: nur Buchstaben, Ziffern, `_`, `.` und `-`, und keine
+ * Punktfolgen (`..`), die die Datenbankregel für Pfade ablehnt (Migration 20261004120200).
+ */
+export function safeFileName(name: string): string {
+	const cleaned = name
+		.replace(/[^\w.-]+/g, '_')
+		.replace(/\.{2,}/g, '.')
+		.replace(/^\.+/, '');
+	return cleaned || 'datei';
+}

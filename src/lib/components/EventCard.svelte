@@ -4,7 +4,7 @@
 	import { Tag, StatusBadge } from '$lib/components/ui';
 	import type { Status } from '$lib/components/ui';
 	import { MapPin, Check, X, HelpCircle } from '@lucide/svelte';
-	import type { EventType } from '../../routes/termine/+page';
+	import type { EventType } from '$lib/dates';
 
 	type Props = {
 		id: string;

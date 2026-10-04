@@ -7,17 +7,15 @@
  * wertet Excel ihn als Formel aus – z. B. ein `=HYPERLINK(…)`, das beim Klick Daten
  * anderer Zeilen nach außen schickt. Solche Werte bekommen ein führendes Hochkomma.
  *
- * Ausnahme: Werte nur aus Ziffern, Leerzeichen und ()/.,+- (Telefonnummern wie
- * „+49 228 123456“, negative Zahlen). Sie können keine Funktion aufrufen und keine
- * Zelle referenzieren, bleiben also unverändert – sonst stünde vor jeder
- * internationalen Telefonnummer ein sichtbares Hochkomma.
+ * Das gilt auch für Telefonnummern wie „+49-228-123456“: Excel rechnet sie sonst aus
+ * (Ergebnis -123635). Ausgenommen sind nur reine Zahlen wie „-5“ oder „+3,5“.
  */
 const FORMULA_START = /^[=+\-@\t\r]/;
-const HARMLESS = /^[\d\s()/.,+-]*$/;
+const PLAIN_NUMBER = /^[+-]?\d+([.,]\d+)?$/;
 
 /** Neutralisiert Formel-Anfänge (siehe oben), sonst unverändert. */
 export function neutralizeFormula(value: string): string {
-	return FORMULA_START.test(value) && !HARMLESS.test(value) ? `'${value}` : value;
+	return FORMULA_START.test(value) && !PLAIN_NUMBER.test(value) ? `'${value}` : value;
 }
 
 /** Ein CSV-Feld: Formel-Schutz, quoten, interne Anführungszeichen verdoppeln. */
@@ -37,6 +35,10 @@ export function downloadCsv(lines: readonly string[], filename: string): void {
 	const a = document.createElement('a');
 	a.href = url;
 	a.download = filename;
+	// Im Dokument einhängen und die URL erst später freigeben: WebKit (iOS-PWA) startet
+	// den Download asynchron und bekäme sonst eine schon ungültige Blob-URL.
+	document.body.appendChild(a);
 	a.click();
-	URL.revokeObjectURL(url);
+	a.remove();
+	setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }

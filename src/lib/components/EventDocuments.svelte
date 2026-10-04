@@ -94,8 +94,15 @@
 		busy = true;
 		err = '';
 		// Nur Dateien im eigenen Ordner löschen – file_path könnte auf eine fremde Datei zeigen.
+		// Datei VOR der Zeile löschen: die Storage-Regel für Terminverwalter prüft die Zeile.
+		// Scheitert das, abbrechen – sonst bliebe ein Eintrag ohne Datei.
 		if (isOwnStoragePath(d.id, d.file_path)) {
-			await supabase.storage.from('documents').remove([d.file_path]);
+			const { error: stErr } = await supabase.storage.from('documents').remove([d.file_path]);
+			if (stErr) {
+				busy = false;
+				err = stErr.message;
+				return;
+			}
 		}
 		const { error } = await supabase.from('document').delete().eq('id', d.id);
 		busy = false;
