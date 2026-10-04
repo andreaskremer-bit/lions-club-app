@@ -12,7 +12,7 @@ import { PAGE_CACHE_NAME, PHOTO_CACHE_NAME } from './src/lib/offlineCache';
 // WARUM: `static/offline.html` liegt bewusst NICHT im Workbox-Precache (s. u.),
 // taucht also im Precache-Manifest der `sw.js` nicht auf. Ohne diesen Hash wäre
 // die generierte `sw.js` nach einer reinen Textänderung an der Offline-Seite
-// BYTEGLEICH — der Browser sähe kein Update, der `install`-Handler liefe nie
+// BYTEGLEICH – der Browser sähe kein Update, der `install`-Handler liefe nie
 // wieder, und die alte Fassung bliebe für immer im Cache. Der Hash hängt am
 // `importScripts`-Eintrag und landet damit wörtlich in der `sw.js`: neue Seite
 // → neue `sw.js` → SW-Update → `install` holt die Seite frisch.
@@ -26,13 +26,13 @@ const offlineRevision = createHash('sha256')
 // Versionskennung der ausgelieferten App (Anzeige unter /mehr → Version).
 //
 // CalVer statt SemVer: „Breaking Change für API-Konsumenten?" fragt hier
-// niemand — die einzige real gestellte Frage ist „habe ich den aktuellen
+// niemand – die einzige real gestellte Frage ist „habe ich den aktuellen
 // Stand?". Genau die ist bei einer PWA mit Service Worker nicht rhetorisch,
 // weil ein Gerät durchaus tagelang eine ältere Shell fahren kann.
 //
 // Beide Werte entstehen zur BUILD-Zeit aus Git. Bewusst nichts von Hand
 // gepflegtes (auch nicht `package.json.version`): eine Nummer, die jemand
-// bumpen muss, ist nach drei Wochen falsch — und eine falsche Nummer ist
+// bumpen muss, ist nach drei Wochen falsch – und eine falsche Nummer ist
 // schlechter als gar keine.
 function gitOutput(cmd: string): string | null {
 	try {
@@ -46,7 +46,7 @@ function gitOutput(cmd: string): string | null {
 	}
 }
 
-/** `2026.08.04` — Datum in Europe/Berlin, damit ein Nacht-Deploy (Netlify baut
+/** `2026.08.04` – Datum in Europe/Berlin, damit ein Nacht-Deploy (Netlify baut
  *  in UTC) nicht auf den Vortag datiert wird. */
 function berlinDate(d: Date): string {
 	const parts = new Intl.DateTimeFormat('de-DE', {
@@ -103,7 +103,7 @@ export default defineConfig({
 			}
 		}),
 		// PWA mit Web-Push + Offline-Asset-Caching (M5).
-		// generateSW (Default): vite-pwa erzeugt den Service Worker selbst — KEINE
+		// generateSW (Default): vite-pwa erzeugt den Service Worker selbst – KEINE
 		// Abhängigkeit vom SvelteKit-SW-Build (dessen injectManifest-Kopplung unter
 		// rolldown-vite 8 auf Netlify im closeBundle scheiterte: swSrc ENOENT).
 		// Push-/notificationclick-Handler kommen via importScripts aus static/sw-push.js.
@@ -113,14 +113,14 @@ export default defineConfig({
 				// Workbox-Runtime IN die sw.js schreiben statt per `define()`/importScripts
 				// nachzuladen: im AMD-Wrapper läuft die Factory erst in einem Microtask,
 				// Workbox registriert seinen `fetch`-Listener dann NICHT während der
-				// initialen Auswertung des Worker-Skripts — der Browser wertet den SW
+				// initialen Auswertung des Worker-Skripts – der Browser wertet den SW
 				// daraufhin als „ohne Fetch-Handler" und umgeht ihn bei Requests.
 				// Ohne dieses Flag greift `runtimeCaching` schlicht nicht.
 				inlineWorkboxRuntime: true,
 				// Build-Assets inkl. self-hosted Fonts vorab cachen (Offline-Shell).
 				// BEWUSST OHNE `html`: @vite-pwa/sveltekit schneidet in seiner
 				// manifestTransform jeder `.html`-Datei die Endung ab (gedacht für
-				// prerenderte Seiten) — `static/offline.html` läge dann unter der URL
+				// prerenderte Seiten) – `static/offline.html` läge dann unter der URL
 				// `/offline` im Precache, und ein Fehlschlag beim Holen würde die
 				// GESAMTE Installation kippen. Die Offline-Seite cacht deshalb
 				// `static/sw-offline.js` selbst. Der Client-Output enthält sonst keine
@@ -131,19 +131,19 @@ export default defineConfig({
 				// KEIN `navigateFallback`: vite-pwa würde daraus `createHandlerBoundToURL('/')`
 				// bauen, aber `/` liegt nicht im Precache (die App wird nicht prerendert,
 				// SSR läuft auf Netlify). Das warf beim SW-Start `non-precached-url` und
-				// brach die Registrierung der NACHFOLGENDEN Routen ab — im alten AMD-Build
+				// brach die Registrierung der NACHFOLGENDEN Routen ab – im alten AMD-Build
 				// unsichtbar, weil der Fehler in einer Promise verschwand.
 				// Der Offline-Start läuft stattdessen über die Navigations-Route unten:
 				// erst Netz, dann zuletzt besuchte Seite, dann `/offline.html`.
 				navigateFallback: null,
 				// ACHTUNG bei allen Callbacks hier drin: workbox-build schreibt sie per
 				// `Function.prototype.toString()` in die sw.js. Sie dürfen deshalb NICHTS
-				// aus diesem Modul-Scope benutzen — importierte Konstanten stehen im
+				// aus diesem Modul-Scope benutzen – importierte Konstanten stehen im
 				// Service Worker nicht zur Verfügung. Nur `cacheName` & Co. sind normale
 				// Werte, die beim Build ausgewertet werden.
 				runtimeCaching: [
 					// Stufe 3 des Caching-Stufenplans: Seitenaufrufe (Navigationen).
-					// NetworkFirst BEWUSST ohne `networkTimeoutSeconds` — solange das Netz
+					// NetworkFirst BEWUSST ohne `networkTimeoutSeconds` – solange das Netz
 					// antwortet, sieht man immer den frischen SSR-Stand. Erst wenn der
 					// Request scheitert, kommt die zuletzt besuchte Fassung, und wenn auch
 					// die fehlt, die statische Offline-Seite.
@@ -169,7 +169,7 @@ export default defineConfig({
 										// unter der ursprünglichen URL. Aus dem Cache zurückgegeben
 										// bricht so eine Antwort die Navigation ab ("a redirected
 										// response was used for a request whose redirect mode is not
-										// follow") — und sie gehört ohnehin nicht zu dieser URL.
+										// follow") – und sie gehört ohnehin nicht zu dieser URL.
 										if (!response || response.status !== 200 || response.redirected) return null;
 										// Die Login-Seite ist offline nutzlos (der Code kommt per Mail)
 										// und soll den Platz nicht belegen.
@@ -190,9 +190,9 @@ export default defineConfig({
 					// Stufe 1 des Caching-Stufenplans: Mitgliederfotos aus dem privaten
 					// Storage-Bucket `member-photos`. CacheFirst ist hier unkritisch, weil
 					// jedes neue Foto unter einem NEUEN Pfad landet (`avatar_<timestamp>.<ext>`)
-					// — ein Bildwechsel erzeugt also einen Cache-Miss statt eines alten Bilds.
+					// – ein Bildwechsel erzeugt also einen Cache-Miss statt eines alten Bilds.
 					{
-						// ACHTUNG: KEIN RegExp verwenden — Workbox wendet RegExp-Muster auf
+						// ACHTUNG: KEIN RegExp verwenden – Workbox wendet RegExp-Muster auf
 						// Cross-Origin-Requests nur an, wenn sie den URL-ANFANG matchen. Die
 						// Fotos liegen auf einem fremden Origin (Supabase-Storage, lokal
 						// 127.0.0.1:54321), ein Muster ab `/storage/...` greift dort nie.
@@ -204,7 +204,7 @@ export default defineConfig({
 							cacheName: PHOTO_CACHE_NAME,
 							// Signierte URLs tragen ein bei JEDEM Aufruf neues Token im
 							// Query-String. Ohne Normalisierung wäre jede Sitzung ein
-							// Cache-Miss und der Cache liefe voll — deshalb Cache-Key ohne Query.
+							// Cache-Miss und der Cache liefe voll – deshalb Cache-Key ohne Query.
 							plugins: [
 								{
 									cacheKeyWillBeUsed: async ({ request }: { request: Request }) => {
