@@ -1,16 +1,17 @@
 // Edge Function `extract-document-text` – füllt document.content_text für die
 // deutsche Volltextsuche. Aufgerufen vom Upload-Flow per supabase.functions.invoke
-// (User-JWT, verify_jwt=Default an). Die eigentliche Verarbeitung läuft serverseitig
-// mit Service-Role (Storage-Download + Update). Idempotent re-runbar.
+// (User-JWT, verify_jwt=Default an). Der Storage-Download läuft mit Service-Role,
+// das Schreiben des Volltexts als Aufrufer. Idempotent re-runbar.
 //
 // AUFRUFER-PRÜFUNG (Security-Audit 2026-08-03): `verify_jwt` belegt nur, DASS ein
 // gültiges Token vorliegt – nicht, dass der Aufrufer dieses Dokument pflegen darf.
 // Ohne Prüfung konnte jedes eingeloggte Konto `content_text` beliebiger Dokumente
-// überschreiben (= Volltextsuche leeren). Geprüft wird per RLS-Probe (No-Op-Update
-// als Aufrufer) statt über einen fest verdrahteten Rechtenamen: die Schreibrechte auf
-// `document` verteilen sich auf ZWEI Policies (publish_content für alles,
-// manage_events nur für termin-gebundene Dokumente) – die Probe bleibt automatisch
-// deckungsgleich, ein nachgebauter Rechte-Check nicht.
+// überschreiben (= Volltextsuche leeren). Deshalb schreibt die Function `content_text`
+// mit dem Token des Aufrufers: die Schreibrechte auf `document` verteilen sich auf ZWEI
+// Policies (publish_content für alles, manage_events nur für termin-gebundene
+// Dokumente) – RLS bleibt so automatisch deckungsgleich, ein nachgebauter
+// Rechte-Check nicht. (Bis 2026-10-04 per No-Op-Probe-Update vorab, das aber den
+// gelesenen Titel zurückschrieb und eine parallele Änderung überschreiben konnte.)
 //
 // PDF: npm:unpdf (serverless-taugliches pdfjs). DOCX: ZIP entpacken (word/document.xml
 // -> Tags strippen). Andere Typen (xlsx, Bilder) -> kein Volltext, nur Metadaten-Suche.
@@ -37,14 +38,29 @@ async function extractDocx(bytes: Uint8Array): Promise<string> {
 	const files = unzipSync(bytes);
 	const xml = files['word/document.xml'];
 	if (!xml) return '';
-	return strFromU8(xml)
-		.replace(/<\/w:p>/g, '\n')
-		.replace(/<[^>]+>/g, '')
-		.replace(/&amp;/g, '&')
-		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>')
+	return decodeXmlEntities(
+		strFromU8(xml)
+			.replace(/<\/w:p>/g, '\n')
+			// Tabulator und Zeilenumbrüche als Leerraum erhalten, sonst kleben Wörter
+			// zusammen („Datum<w:tab/>Ort“ → „DatumOrt“) und die Suche findet sie nicht.
+			.replace(/<w:tab\/>/g, ' ')
+			.replace(/<w:(br|cr)\/>/g, '\n')
+			.replace(/<[^>]+>/g, '')
+	)
 		.replace(/[ \t]+\n/g, '\n')
 		.trim();
+}
+
+/** XML-Entities auflösen; &amp; zuletzt, sonst würde „&amp;lt;“ doppelt zu „<“. */
+export function decodeXmlEntities(s: string): string {
+	return s
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&apos;/g, "'")
+		.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+		.replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+		.replace(/&amp;/g, '&');
 }
 
 // CORS: der Upload-Flow ruft die Function aus dem Browser (supabase.functions.invoke).
@@ -91,23 +107,15 @@ Deno.serve(async (req) => {
 	// erfährt so auch nicht, ob die id existiert.
 	const { data: doc } = await asCaller
 		.from('document')
-		.select('id, title, file_path, mime_type, file_name')
+		.select('id, file_path, mime_type, file_name')
 		.eq('id', id)
 		.maybeSingle();
 	if (!doc?.file_path)
 		return new Response('Dokument oder Datei nicht gefunden', { status: 404, headers: CORS });
 
-	// RLS-Probe: No-Op-Update (Titel auf sich selbst) als Aufrufer. Fehlt das
-	// Schreibrecht, filtert RLS die Zeile weg -> keine Daten zurück -> 403.
-	// `document` hat keinen updated_at-Trigger, das Update ist folgenlos.
-	const { data: writable } = await asCaller
-		.from('document')
-		.update({ title: doc.title })
-		.eq('id', id)
-		.select('id')
-		.maybeSingle();
-	if (!writable) return new Response('Keine Berechtigung', { status: 403, headers: CORS });
-
+	// Datei mit dem Service-Key laden; das Schreiben des Volltexts läuft unten als
+	// Aufrufer, dort entscheidet RLS über das Schreibrecht (kein Probe-Update mehr, das
+	// den eben gelesenen Titel zurückschrieb und eine parallele Änderung überschrieb).
 	const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
 
 	const { data: file, error: dlErr } = await supabase.storage
@@ -145,10 +153,18 @@ Deno.serve(async (req) => {
 	}
 
 	text = text.slice(0, MAX_CHARS).trim();
-	await supabase
+	const { data: written, error: writeErr } = await asCaller
 		.from('document')
 		.update({ content_text: text || null })
-		.eq('id', id);
+		.eq('id', id)
+		.select('id')
+		.maybeSingle();
+	if (writeErr) {
+		console.error('Volltext speichern fehlgeschlagen:', writeErr);
+		return new Response('Volltext speichern fehlgeschlagen', { status: 500, headers: CORS });
+	}
+	// Fehlt das Schreibrecht, filtert RLS die Zeile weg -> keine Daten zurück.
+	if (!written) return new Response('Keine Berechtigung', { status: 403, headers: CORS });
 
 	return new Response(JSON.stringify({ id, chars: text.length }), {
 		headers: { ...CORS, 'Content-Type': 'application/json' }
