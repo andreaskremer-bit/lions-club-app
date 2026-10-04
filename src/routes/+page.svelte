@@ -7,6 +7,7 @@
 	import NewsCard from '$lib/components/NewsCard.svelte';
 	import { Bell } from '@lucide/svelte';
 	import { isEventRunning } from '$lib/dates';
+	import { rsvpCounts } from '$lib/rsvp';
 
 	let { data } = $props();
 	let nextEvent = $derived(data.nextEvent);
@@ -18,15 +19,10 @@
 		return r ? (r.status === 'zugesagt' ? 'yes' : 'no') : 'open';
 	});
 
-	let counts = $derived.by(() => {
-		if (!nextEvent) return { zu: 0, ab: 0, offen: 0 };
-		const zuResp = nextEvent.event_response.filter((r) => r.status === 'zugesagt');
-		const zuMembers = zuResp.length;
-		const guests = zuResp.reduce((n, r) => n + r.companion.length, 0);
-		const ab = nextEvent.event_response.filter((r) => r.status === 'abgesagt').length;
-		// „zu“ = angemeldete Personen gesamt (Mitglieder + Gäste); „offen“ bleibt mitgliederbezogen.
-		return { zu: zuMembers + guests, ab, offen: Math.max(0, data.activeCount - zuMembers - ab) };
-	});
+	let activeIds = $derived(new Set(data.activeMemberIds));
+	let counts = $derived(
+		nextEvent ? rsvpCounts(nextEvent.event_response, activeIds) : { zu: 0, ab: 0, offen: 0 }
+	);
 </script>
 
 <div class="shell">

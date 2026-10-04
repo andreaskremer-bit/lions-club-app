@@ -7,16 +7,22 @@
 
 	let { data } = $props();
 
-	type Person = { name: string; kind: 'Mitglied' | 'Begleitung'; lookup: string };
+	type Person = { name: string; kind: string; lookup: string };
 
-	// Personen = zugesagte Mitglieder + ihre Begleitpersonen.
+	// Personen = zugesagte Mitglieder + alle Begleitpersonen. Begleitung zählt auch, wenn das
+	// Mitglied selbst abgesagt hat; dann steht dabei, zu wem sie gehört.
 	let persons = $derived.by((): Person[] => {
 		const out: Person[] = [];
 		for (const r of data.responses) {
 			const mn = r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
-			out.push({ name: mn, kind: 'Mitglied', lookup: `m:${r.member_id}` });
+			const zugesagt = r.status === 'zugesagt';
+			if (zugesagt) out.push({ name: mn, kind: 'Mitglied', lookup: `m:${r.member_id}` });
 			for (const c of r.companion)
-				out.push({ name: c.name, kind: 'Begleitung', lookup: `c:${c.id}` });
+				out.push({
+					name: c.name,
+					kind: zugesagt ? 'Begleitung' : `Begleitung von ${mn} (selbst abgesagt)`,
+					lookup: `c:${c.id}`
+				});
 		}
 		return out.sort((a, b) => a.name.localeCompare(b.name, 'de'));
 	});

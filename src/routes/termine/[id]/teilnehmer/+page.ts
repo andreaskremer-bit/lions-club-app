@@ -29,8 +29,8 @@ export const load: PageLoad = async ({ parent, params }) => {
 		supabase
 			.from('event_response')
 			.select('member_id, status, member(first_name, last_name), companion(id, name)')
-			.eq('event_id', params.id)
-			.eq('status', 'zugesagt'),
+			// Alle Rückmeldungen: Begleitpersonen zählen auch, wenn das Mitglied abgesagt hat.
+			.eq('event_id', params.id),
 		supabase
 			.from('answer')
 			.select('question_id, member_id, companion_id, value, question!inner(event_id)')

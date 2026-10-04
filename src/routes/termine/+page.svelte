@@ -14,6 +14,7 @@
 	} from '@lucide/svelte';
 	import type { EventListItem } from './+page';
 	import { isEventOver, isEventRunning } from '$lib/dates';
+	import { rsvpCounts } from '$lib/rsvp';
 
 	let { data } = $props();
 
@@ -68,7 +69,9 @@
 	let nameById = $derived(
 		new Map(data.members.map((m) => [m.id, `${m.first_name} ${m.last_name}`]))
 	);
-	let activeCount = $derived(data.members.filter((m) => m.status === 'aktiv').length);
+	let activeIds = $derived(
+		new Set(data.members.filter((m) => m.status === 'aktiv').map((m) => m.id))
+	);
 
 	function ownStatus(e: EventListItem): Status {
 		const r = e.event_response.find((x) => x.member_id === data.myMemberId);
@@ -77,13 +80,7 @@
 	}
 
 	function counts(e: EventListItem) {
-		const zuResp = e.event_response.filter((r) => r.status === 'zugesagt');
-		const zuMembers = zuResp.length;
-		const guests = zuResp.reduce((n, r) => n + r.companion.length, 0);
-		const ab = e.event_response.filter((r) => r.status === 'abgesagt').length;
-		const offen = Math.max(0, activeCount - zuMembers - ab);
-		// „zu“ = angemeldete Personen gesamt (Mitglieder + Gäste); „offen“ bleibt mitgliederbezogen.
-		return { zu: zuMembers + guests, ab, offen };
+		return rsvpCounts(e.event_response, activeIds);
 	}
 
 	let now = Date.now();
@@ -136,13 +133,20 @@
 				.filter((m) => m.status === 'aktiv' && !responders.has(m.id))
 				.map((m) => `${m.first_name} ${m.last_name}`);
 		}
+		// Unter „Zugesagt“ stehen auch Mitglieder, die selbst abgesagt, aber Begleitung
+		// angemeldet haben – deren Gäste zählen in der Zahl mit.
 		return sheetEvent.event_response
-			.filter((r) => r.status === sheetTab)
+			.filter((r) =>
+				sheetTab === 'zugesagt'
+					? r.status === 'zugesagt' || r.companion.length > 0
+					: r.status === sheetTab
+			)
 			.map((r) => {
 				const nm = nameById.get(r.member_id) ?? 'Unbekannt';
-				return sheetTab === 'zugesagt' && r.companion.length
-					? `${nm} (+${r.companion.length})`
-					: nm;
+				if (sheetTab !== 'zugesagt' || !r.companion.length) return nm;
+				return r.status === 'abgesagt'
+					? `${nm} (selbst abgesagt, +${r.companion.length})`
+					: `${nm} (+${r.companion.length})`;
 			})
 			.sort((a, b) => a.localeCompare(b, 'de'));
 	});

@@ -67,7 +67,7 @@ export const load: PageLoad = async ({ parent }) => {
 			.order('published_at', { ascending: false })
 			.limit(1)
 			.maybeSingle(),
-		supabase.from('member').select('id', { count: 'exact', head: true }).eq('status', 'aktiv')
+		supabase.from('member').select('id').eq('status', 'aktiv')
 	]);
 
 	let latestNews: StartNews | null = null;
@@ -94,7 +94,7 @@ export const load: PageLoad = async ({ parent }) => {
 	return {
 		nextEvent: (eventRes.data ?? null) as StartEvent | null,
 		latestNews,
-		activeCount: activeRes.count ?? 0,
+		activeMemberIds: (activeRes.data ?? []).map((m) => m.id as string),
 		myMemberId: memberId
 	};
 };

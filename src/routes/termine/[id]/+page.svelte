@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { AppBar, IconButton, Button, Card, Tag, Input } from '$lib/components/ui';
 	import AnswerField from '$lib/components/AnswerField.svelte';
 	import EventDocuments from '$lib/components/EventDocuments.svelte';
@@ -71,22 +72,32 @@
 	let busy = $state(false);
 	let err = $state('');
 
+	const name = (r: { member: { first_name: string; last_name: string } | null }) =>
+		r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
 	let zugesagt = $derived(e.event_response.filter((r) => r.status === 'zugesagt'));
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));
-	let zuGuests = $derived(zugesagt.reduce((n, r) => n + r.companion.length, 0));
+	// Begleitpersonen zählen auch, wenn das Mitglied selbst abgesagt hat (Entscheidung
+	// 2026-10-04): z. B. kommt der Partner allein.
+	let zuGuests = $derived(e.event_response.reduce((n, r) => n + r.companion.length, 0));
 	let zuPersonen = $derived(zugesagt.length + zuGuests);
-	// Gäste namentlich (meist Partner – wer zu wem gehört, weiß der Club; bei fremden
-	// Gästen ist das einladende Mitglied nicht die interessante Information).
+	// Gäste namentlich (meist Partner – wer zu wem gehört, weiß der Club). Nur wenn das
+	// Mitglied selbst nicht kommt, steht dabei, zu wem der Gast gehört.
 	let gaeste = $derived(
-		zugesagt.flatMap((r) => r.companion).sort((a, b) => a.name.localeCompare(b.name, 'de'))
+		e.event_response
+			.flatMap((r) =>
+				r.companion.map((c) => ({
+					id: c.id,
+					name: c.name,
+					host: r.status === 'abgesagt' ? name(r) : null
+				}))
+			)
+			.sort((a, b) => a.name.localeCompare(b.name, 'de'))
 	);
 	// „Offen“ = aktive Mitglieder, die noch nicht reagiert haben (deckt sich mit dem Karten-Zaehler).
 	let offen = $derived.by(() => {
 		const responded = new Set(e.event_response.map((r) => r.member_id));
 		return data.activeMembers.filter((m) => !responded.has(m.id));
 	});
-	const name = (r: { member: { first_name: string; last_name: string } | null }) =>
-		r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
 
 	async function setStatus(status: 'zugesagt' | 'abgesagt') {
 		if (!data.myMemberId || busy) return;
@@ -147,9 +158,11 @@
 
 	// ── Zusatzabfragen beantworten ──────────────────────────────────────────────
 	// Respondenten: das Mitglied selbst (id = null) + eigene Begleitpersonen.
+	// Wer abgesagt hat, beantwortet die Zusatzfragen nicht selbst – nur für angemeldete
+	// Begleitpersonen.
 	let respondents = $derived([
-		{ id: null as string | null, label: 'Du' },
-		...(myResponse?.companion ?? []).map((c) => ({ id: c.id, label: c.name }))
+		...(ownStatus === 'abgesagt' ? [] : [{ id: null as string | null, label: 'Du' }]),
+		...(myResponse?.companion ?? []).map((c) => ({ id: c.id as string | null, label: c.name }))
 	]);
 
 	const answerKey = (qid: string, companionId: string | null) => `${qid}:${companionId ?? 'self'}`;
@@ -234,6 +247,8 @@
 		{#if e.description}
 			<Card><p class="desc">{e.description}</p></Card>
 		{/if}
+
+		{#if page.state.notice}<p class="err" role="alert">{page.state.notice}</p>{/if}
 
 		<EventDocuments
 			{supabase}
@@ -332,6 +347,11 @@
 		{#if e.companion_allowed}
 			<Card>
 				<h2 class="sec">Begleitpersonen</h2>
+				{#if ownStatus === 'abgesagt'}
+					<p class="muted">
+						Du hast abgesagt. Begleitpersonen, die du hier einträgst, sind trotzdem angemeldet.
+					</p>
+				{/if}
 				{#if myResponse}
 					{#each myResponse.companion as c (c.id)}
 						<div class="comp">
@@ -370,7 +390,9 @@
 						</div>
 					{/if}
 				{:else}
-					<p class="muted">Sage zuerst zu, um Begleitpersonen einzutragen.</p>
+					<p class="muted">
+						Gib zuerst deine Rückmeldung (Zusage oder Absage), um Begleitpersonen einzutragen.
+					</p>
 				{/if}
 			</Card>
 		{/if}
@@ -386,7 +408,10 @@
 							: 'Vergangener Termin – Antworten sind schreibgeschützt.'}
 					</p>
 				{/if}
-				{#each data.questions as q (q.id)}
+				{#if respondents.length === 0}
+					<p class="muted">Du hast abgesagt – keine Angaben nötig.</p>
+				{/if}
+				{#each respondents.length ? data.questions : [] as q (q.id)}
 					<div class="q-block">
 						<p class="q-label">{q.label}{q.required ? ' *' : ''}</p>
 						{#each respondents as r (r.id ?? 'self')}
@@ -424,9 +449,11 @@
 				<ul class="names">
 					{#each zugesagt as r (r.id)}
 						<li>{name(r)}{r.companion.length ? ` (+${r.companion.length})` : ''}</li>
-					{:else}
-						<li class="muted">—</li>
 					{/each}
+					{#each abgesagt.filter((r) => r.companion.length) as r (r.id)}
+						<li>{name(r)}: selbst abgesagt, +{r.companion.length}</li>
+					{/each}
+					{#if zuPersonen === 0}<li class="muted">—</li>{/if}
 				</ul>
 			</details>
 
@@ -466,7 +493,7 @@
 					</summary>
 					<ul class="names">
 						{#each gaeste as c (c.id)}
-							<li>{c.name}</li>
+							<li>{c.name}{c.host ? ` (Gast von ${c.host})` : ''}</li>
 						{:else}
 							<li class="muted">—</li>
 						{/each}
