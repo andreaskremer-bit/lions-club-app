@@ -60,7 +60,7 @@ Versionierte DB-Migrationen, **RLS-Policies mit Tests**, sauber getrennte Kompon
 - `.env.local` (git-ignoriert): DB-Passwort, lokale Stack-Overrides, **`SUPABASE_SERVICE_ROLE_KEY`** (lokal), **`VAPID_PRIVATE_KEY`** + `VAPID_SUBJECT`, **`REMINDERS_ARMED`** (Dry-Run-Schalter) — nie committen, nie ins Memory.
 - **Service-Key serverseitig:** `SUPABASE_SERVICE_ROLE_KEY` nur in Server-Routen (z. B. `/api/mitglieder/[id]/einladen`, `DELETE /api/mitglieder/[id]` (Mitglied inkl. Fotos + Login-Konto löschen), `/api/admin/reminders/run`); in Produktion als **Netlify-Env-Var**. `sb_secret_…` **niemals** in den Client.
 - **Edge Function `send-notifications`** (Deno): Secrets via `supabase secrets set` bzw. lokal `supabase/functions/.env` — `REMINDERS_ARMED` (Default false = Dry-Run), `REMINDERS_ALLOWLIST`, `VAPID_*`, `SMTP_HOST/PORT/USER/PASS/FROM` (Port 465 = TLS, sonst STARTTLS); `SMTP_ALLOW_INSECURE=true` nur für lokale Tests gegen Mailpit, in Produktion nie.
-- **Versand-Sicherung (Geheim-Phase):** Reminder werden nur für `member.notifications_enabled=true` ERZEUGT (Default false); zusätzlich sendet die Edge Function nur bei `REMINDERS_ARMED=true`. Go-live-Schalter siehe `MEILENSTEINE.md` (M5).
+- **Versand-Sicherung (Geheim-Phase):** Reminder werden nur für `member.notifications_enabled=true` ERZEUGT (Default seit 2026-10-07 `true`, vorher false – neue Mitglieder fielen sonst durch); zusätzlich sendet die Edge Function nur bei `REMINDERS_ARMED=true`. Go-live-Schalter siehe `MEILENSTEINE.md` (M5).
 
 ## Aktueller Stand
 
