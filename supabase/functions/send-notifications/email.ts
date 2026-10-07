@@ -181,36 +181,39 @@ export function bodyToHtml(text: string, linkColor: string): string {
 		.replace(/\r?\n/g, '<br>');
 }
 
-export function renderEmail(n: MailNotification): {
-	subject: string;
-	html: string;
-	text: string;
-} {
-	const preset = PRESET[n.kind] ?? PRESET.news;
+/** Gemeinsamer Rahmen aller Club-Mails: Kopf mit Emblem, Karte mit Button, Fußzeile. */
+type Layout = {
+	kicker: string;
+	title: string;
+	/** Fertiges, bereits escaptes HTML für den Inhalt der Karte (oberhalb des Buttons). */
+	bodyHtml: string;
+	preheader: string;
+	cta: string;
+	link: string;
+	/** Fertiges HTML für die Fußzeile unter der Karte. */
+	footerHtml: string;
+};
+
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+
+/** Absatz im Stil des Karteninhalts – für Vorlagen mit mehreren Absätzen. */
+function para(html: string, marginBottom = 16): string {
+	return `<p style="margin:0 0 ${marginBottom}px 0; font-family:${FONT}; font-size:17px; line-height:1.55; color:${C.body};">${html}</p>`;
+}
+
+function renderLayout(l: Layout): string {
 	const base = appUrl();
-	const link = `${base}${pathFor(n)}`;
-	const bodyText = n.body?.trim() ? n.body.trim() : preset.fallback;
-
-	const title = esc(n.title);
-	const body = bodyToHtml(bodyText, C.blue);
-	const kicker = esc(preset.kicker);
-	const cta = esc(preset.cta);
-
-	// Preheader: die Zeile, die Mail-Apps neben dem Betreff in der Liste zeigen.
-	// Wird im Body versteckt, damit sie nicht doppelt sichtbar ist.
-	const preheader = esc(bodyText.slice(0, 120));
-
-	const html = `<!doctype html>
+	return `<!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
-<title>${title}</title>
+<title>${esc(l.title)}</title>
 </head>
 <body style="margin:0; padding:0; background-color:${C.cream}; -webkit-text-size-adjust:100%;">
-<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; font-size:1px; line-height:1px;">${preheader}</div>
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; font-size:1px; line-height:1px;">${esc(l.preheader)}</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${C.cream};">
 <tr><td align="center" style="padding:24px 12px 32px 12px;">
@@ -224,7 +227,7 @@ export function renderEmail(n: MailNotification): {
           <img src="${base}/icons/lions-emblem.png" width="36" height="36" alt=""
                style="display:block; width:36px; height:36px; border:0;">
         </td>
-        <td style="vertical-align:middle; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; font-weight:600; letter-spacing:0.02em; color:${C.blue};">
+        <td style="vertical-align:middle; font-family:${FONT}; font-size:15px; font-weight:600; letter-spacing:0.02em; color:${C.blue};">
           Lions Club Bonn-Rheinaue
         </td>
       </tr></table>
@@ -233,32 +236,31 @@ export function renderEmail(n: MailNotification): {
     <!-- Karte -->
     <tr><td style="background-color:${C.card}; border:1px solid ${C.hairline}; border-radius:14px; padding:28px 24px;">
 
-      <p style="margin:0 0 10px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:${C.gold};">${kicker}</p>
+      <p style="margin:0 0 10px 0; font-family:${FONT}; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:${C.gold};">${esc(l.kicker)}</p>
 
-      <h1 style="margin:0 0 14px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:21px; line-height:1.35; font-weight:700; color:${C.ink};">${title}</h1>
+      <h1 style="margin:0 0 14px 0; font-family:${FONT}; font-size:21px; line-height:1.35; font-weight:700; color:${C.ink};">${esc(l.title)}</h1>
 
-      <p style="margin:0 0 26px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:17px; line-height:1.55; color:${C.body};">${body}</p>
+      ${l.bodyHtml}
 
       <!-- Button: Tabelle statt gestyltem <a>, damit Outlook die Fläche rendert -->
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;">
         <tr><td align="center" bgcolor="${C.blue}" style="border-radius:10px;">
-          <a href="${link}"
-             style="display:inline-block; min-height:24px; padding:14px 26px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:17px; font-weight:600; line-height:1.2; color:${C.onPrimary}; text-decoration:none; border-radius:10px;">${cta}</a>
+          <a href="${l.link}"
+             style="display:inline-block; min-height:24px; padding:14px 26px; font-family:${FONT}; font-size:17px; font-weight:600; line-height:1.2; color:${C.onPrimary}; text-decoration:none; border-radius:10px;">${esc(l.cta)}</a>
         </td></tr>
       </table>
 
-      <p style="margin:22px 0 0 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:1.5; color:${C.muted};">
+      <p style="margin:22px 0 0 0; font-family:${FONT}; font-size:13px; line-height:1.5; color:${C.muted};">
         Falls der Button nicht funktioniert:<br>
-        <a href="${link}" style="color:${C.blue}; text-decoration:underline; word-break:break-all;">${esc(link)}</a>
+        <a href="${l.link}" style="color:${C.blue}; text-decoration:underline; word-break:break-all;">${esc(l.link)}</a>
       </p>
 
     </td></tr>
 
     <!-- Fuß -->
     <tr><td style="padding:20px 24px 0 24px;">
-      <p style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:1.6; color:${C.muted};">
-        Du bekommst diese E-Mail, weil du in der Club-App Benachrichtigungen per E-Mail eingestellt hast.
-        Unter <a href="${base}/mehr" style="color:${C.blue}; text-decoration:underline;">Mehr &rarr; Benachrichtigungen</a> kannst du den Kanal jederzeit ändern.
+      <p style="margin:0; font-family:${FONT}; font-size:13px; line-height:1.6; color:${C.muted};">
+        ${l.footerHtml}
       </p>
     </td></tr>
 
@@ -268,6 +270,30 @@ export function renderEmail(n: MailNotification): {
 </table>
 </body>
 </html>`;
+}
+
+export function renderEmail(n: MailNotification): {
+	subject: string;
+	html: string;
+	text: string;
+} {
+	const preset = PRESET[n.kind] ?? PRESET.news;
+	const base = appUrl();
+	const link = `${base}${pathFor(n)}`;
+	const bodyText = n.body?.trim() ? n.body.trim() : preset.fallback;
+
+	const html = renderLayout({
+		kicker: preset.kicker,
+		title: n.title,
+		bodyHtml: para(bodyToHtml(bodyText, C.blue), 16),
+		// Preheader: die Zeile, die Mail-Apps neben dem Betreff in der Liste zeigen.
+		// Wird im Body versteckt, damit sie nicht doppelt sichtbar ist.
+		preheader: bodyText.slice(0, 120),
+		cta: preset.cta,
+		link,
+		footerHtml: `Du bekommst diese E-Mail, weil du in der Club-App Benachrichtigungen per E-Mail eingestellt hast.
+        Unter <a href="${base}/mehr" style="color:${C.blue}; text-decoration:underline;">Mehr &rarr; Benachrichtigungen</a> kannst du den Kanal jederzeit ändern.`
+	});
 
 	const text = [
 		preset.kicker.toUpperCase(),
@@ -286,4 +312,78 @@ export function renderEmail(n: MailNotification): {
 
 	// Betreff wire-ready MIME-codiert (siehe encodeSubject) – nicht der Rohtitel.
 	return { subject: encodeSubject(n.title), html, text };
+}
+
+/**
+ * Einladung in die Club-App (Edge Function `send-invite`). Geht an ein Mitglied, für
+ * das gerade ein Login-Konto angelegt wurde – das Anlegen selbst verschickt nichts.
+ * Kein Passwort, kein Magic-Link: die Mail erklärt nur den Weg zum Anmelde-Code.
+ */
+export function renderInviteEmail(m: { firstName: string; email: string }): {
+	subject: string;
+	html: string;
+	text: string;
+} {
+	const base = appUrl();
+	const link = `${base}/login`;
+	const appHost = base.replace(/^https?:\/\//, '');
+	const title = `Willkommen in der Club-App, ${m.firstName}`;
+	const intro =
+		'für dich ist ab sofort ein Zugang zur App des Lions Club Bonn-Rheinaue eingerichtet. Dort findest du Termine mit Zu- und Absage, das Mitgliederverzeichnis, Neuigkeiten, Dokumente und die Geburtstage im Club.';
+	const steps = [
+		`Öffne ${appHost} – am einfachsten über den Button unten.`,
+		`Gib diese E-Mail-Adresse ein: ${m.email}`,
+		'Du bekommst gleich darauf einen 6-stelligen Code per E-Mail. Trag ihn in der App ein – fertig. Ein Passwort brauchst du nicht.'
+	];
+	const tip =
+		'Tipp: Leg die App auf den Home-Bildschirm deines Smartphones. Auf dem iPhone in Safari über „Teilen“ → „Zum Home-Bildschirm“, auf Android in Chrome über das Menü → „App installieren“. Dann öffnet sie sich wie jede andere App.';
+	const outro = 'Bei Fragen antworte einfach auf diese E-Mail.';
+
+	const stepsHtml = `<ol style="margin:0 0 16px 0; padding-left:22px; font-family:${FONT}; font-size:17px; line-height:1.55; color:${C.body};">${steps
+		.map((s) => `<li style="margin:0 0 6px 0;">${esc(s)}</li>`)
+		.join('')}</ol>`;
+
+	const html = renderLayout({
+		kicker: 'Einladung',
+		title,
+		bodyHtml: [
+			para(`Hallo ${esc(m.firstName)},`, 12),
+			para(esc(intro)),
+			para('<strong>So meldest du dich an:</strong>', 8),
+			stepsHtml,
+			para(esc(tip)),
+			para(esc(outro), 16)
+		].join('\n      '),
+		preheader: 'Dein Zugang zur Club-App ist eingerichtet – so meldest du dich an.',
+		cta: 'Zur Club-App',
+		link,
+		footerHtml:
+			'Du bekommst diese E-Mail, weil du als Mitglied des Lions Club Bonn-Rheinaue in der Club-App angelegt wurdest.'
+	});
+
+	const text = [
+		'EINLADUNG',
+		'',
+		title,
+		'',
+		`Hallo ${m.firstName},`,
+		'',
+		intro,
+		'',
+		'So meldest du dich an:',
+		...steps.map((s, i) => `${i + 1}. ${s}`),
+		'',
+		tip,
+		'',
+		outro,
+		'',
+		`Zur Club-App: ${link}`,
+		'',
+		'--',
+		'Lions Club Bonn-Rheinaue',
+		'Du bekommst diese E-Mail, weil du als Mitglied des Lions Club Bonn-Rheinaue',
+		'in der Club-App angelegt wurdest.'
+	].join('\n');
+
+	return { subject: encodeSubject(title), html, text };
 }

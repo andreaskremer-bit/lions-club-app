@@ -8,6 +8,7 @@ import {
 	type Kind,
 	pathFor,
 	renderEmail,
+	renderInviteEmail,
 	type MailNotification
 } from './email.ts';
 
@@ -237,5 +238,39 @@ describe('bodyToHtml', () => {
 
 	it('escaped HTML vor der Umwandlung', () => {
 		expect(bodyToHtml('<b>fett</b> & mehr', '#00f')).toBe('&lt;b&gt;fett&lt;/b&gt; &amp; mehr');
+	});
+});
+
+describe('renderInviteEmail', () => {
+	const invite = { firstName: 'Jürgen', email: 'j.neu@example.org' };
+
+	it('nennt Vorname, Login-Adresse und den Weg zum Code – in HTML und Klartext', () => {
+		const { html, text } = renderInviteEmail(invite);
+		for (const out of [html, text]) {
+			expect(out).toContain('Hallo Jürgen,');
+			expect(out).toContain('j.neu@example.org');
+			expect(out).toContain('6-stelligen Code');
+			expect(out).toContain('https://app.lions-bonn-rheinaue.de/login');
+		}
+	});
+
+	it('codiert den Umlaut-Betreff als RFC-2047-Encoded-Word', () => {
+		const { subject } = renderInviteEmail(invite);
+		expect(subject.startsWith(' =?utf-8?Q?')).toBe(true);
+		expect([...subject].every((c) => c.charCodeAt(0) <= 127)).toBe(true);
+		expect(decodeSubject(subject)).toBe('Willkommen in der Club-App, Jürgen');
+	});
+
+	it('escaped Namen und Adresse im HTML', () => {
+		const { html } = renderInviteEmail({ firstName: '<b>X</b>', email: 'a&b@example.org' });
+		expect(html).not.toContain('<b>X</b>');
+		expect(html).toContain('&lt;b&gt;X&lt;/b&gt;');
+		expect(html).toContain('a&amp;b@example.org');
+	});
+
+	it('verweist nicht auf Benachrichtigungs-Einstellungen', () => {
+		const { html, text } = renderInviteEmail(invite);
+		expect(html).not.toContain('Benachrichtigungen per E-Mail eingestellt');
+		expect(text).not.toContain('Kanal ändern');
 	});
 });

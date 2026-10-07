@@ -532,3 +532,15 @@ Der Changelog startet bewusst am **16.07.2026** (Freischaltung für alle 35) —
 - **Offen (User-Frage):** Typografie in bereits angewendeten Migrationen (u. a. Spaltenkommentar `member.last_browser_at` mit geradem statt typografischem Abführungszeichen) – Migrationen bleiben unverändert; der Spaltenkommentar ließe sich per neuer Migration korrigieren.
 
 **Grün.** 102 Unit-Tests · 161 pgTAP. Lokal end-to-end mit `functions serve` + Mailpit: zwei gleichzeitige Läufe → 3 Mails, keine doppelt; Mitglied ohne Freigabe bekommt nichts.
+
+## Einladungs-Mail + Punkt-Bug im Mailversand (2026-10-07)
+
+Anlass: Zwei neue Mitglieder angelegt und „eingeladen“ – es ging keine Mail raus. `auth.admin.createUser` legt nur das Konto an und verschickt nichts; der Knopf versprach mehr, als er tat.
+
+- **Edge Function `send-invite`** (Service-Key, `verify_jwt = false`): Einladungs-Mail über den Club-SMTP (Vorlage `renderInviteEmail()` in `send-notifications/email.ts`, gemeinsames Layout mit den Benachrichtigungen), vermerkt den Versand in **`member.invite_sent_at`** (Migration `20261007120000`, Systemfeld im Spaltenschutz). Bewusst nicht an `REMINDERS_ARMED`/`notifications_enabled` gebunden – ausdrückliche Einzelaktion.
+- **`/api/mitglieder/[id]/einladen`:** legt das Konto nur noch an, wenn es fehlt, und ruft danach `send-invite`. Scheitert die Mail, bleibt das Konto, und die Antwort sagt es (`konto_ohne_mail`).
+- **Mitgliederseite → Zugang:** „Eingeladen am …, noch nie angemeldet“ bzw. „noch keine Einladungs-Mail verschickt“, Knopf „Einladung (erneut) senden“, solange `first_login_at` leer ist.
+- **SMTP-Mailer nach `supabase/functions/_shared/mailer.ts`** (beide Functions teilen ihn).
+- **Bug in ALLEN Mails behoben:** denomailer 1.6.0 codiert Text/HTML als Quoted-Printable mit Umbruch alle 74 Zeichen, macht aber kein SMTP-Dot-Stuffing – ein Punkt am Zeilenanfang wird vom Server entfernt. In der Einladung wurde so `lions-emblem.png` zu `lions-emblempng` (Emblem fehlte); in Benachrichtigungen konnten an zufälligen Stellen Punkte verschwinden. Fix: Text und HTML selbst als Base64 codieren (`_shared/mime.ts`, Übergabe per `mimeContent`); Base64 enthält keinen Punkt. **Lehre: Bei denomailer nie `content`/`html` übergeben, immer `mimeParts()`.**
+
+**Grün.** 25 Unit-Tests in `supabase/functions` · 164 pgTAP (neu `member_invite_test.sql`). Lokal mit `functions serve` + Mailpit: Mail kommt an, Umlaut-Betreff korrekt, Emblem lädt, `invite_sent_at` gesetzt.

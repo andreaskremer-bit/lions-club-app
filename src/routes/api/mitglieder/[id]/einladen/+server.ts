@@ -6,10 +6,14 @@ import { lionsStartYear } from '$lib/dates';
 import type { RequestHandler } from './$types';
 
 /**
- * Lädt ein Mitglied ein = legt ein Auth-Konto an (kein Self-Signup), damit es sich
- * per E-Mail-OTP einloggen kann. Der on_auth_user_created-Trigger verknüpft das Konto
- * automatisch per E-Mail mit der member-Zeile. Nur mit manage_members; Service-Key
- * bleibt serverseitig.
+ * Lädt ein Mitglied ein: legt – falls noch nicht vorhanden – ein Auth-Konto an (kein
+ * Self-Signup), damit es sich per E-Mail-OTP einloggen kann, und verschickt danach die
+ * Einladungs-Mail über die Edge Function `send-invite`. Der on_auth_user_created-Trigger
+ * verknüpft das Konto automatisch per E-Mail mit der member-Zeile.
+ *
+ * `createUser` selbst verschickt KEINE Mail – bis 2026-10-07 legte „Einladen“ nur das
+ * Konto an, und die Mitglieder erfuhren nichts davon. Existiert das Konto schon, wird
+ * nur die Mail (erneut) verschickt. Nur mit manage_members; Service-Key bleibt serverseitig.
  */
 export const POST: RequestHandler = async ({ locals, params }) => {
 	const { user } = await locals.safeGetSession();
@@ -38,7 +42,6 @@ export const POST: RequestHandler = async ({ locals, params }) => {
 		.eq('id', params.id)
 		.maybeSingle();
 	if (!member) throw error(404, 'Mitglied nicht gefunden');
-	if (member.user_id) return json({ status: 'bereits_eingeladen' });
 
 	const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 	if (!serviceKey) throw error(500, 'Service-Key nicht konfiguriert (SUPABASE_SERVICE_ROLE_KEY).');
@@ -47,11 +50,27 @@ export const POST: RequestHandler = async ({ locals, params }) => {
 		auth: { persistSession: false, autoRefreshToken: false }
 	});
 
-	const { error: createErr } = await admin.auth.admin.createUser({
-		email: member.email,
-		email_confirm: true
-	});
-	if (createErr) throw error(400, 'Einladen fehlgeschlagen: ' + createErr.message);
+	if (!member.user_id) {
+		const { error: createErr } = await admin.auth.admin.createUser({
+			email: member.email,
+			email_confirm: true
+		});
+		if (createErr) throw error(400, 'Einladen fehlgeschlagen: ' + createErr.message);
+	}
 
-	return json({ status: 'eingeladen' });
+	// Konto steht – Mail-Fehler sind kein Abbruch, die UI bietet „erneut senden“ an.
+	try {
+		const res = await fetch(`${PUBLIC_SUPABASE_URL}/functions/v1/send-invite`, {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+			body: JSON.stringify({ member_id: params.id })
+		});
+		if (!res.ok) {
+			const body = await res.json().catch(() => ({}));
+			return json({ status: 'konto_ohne_mail', reason: body.error ?? `HTTP ${res.status}` });
+		}
+		return json({ status: 'eingeladen' });
+	} catch {
+		return json({ status: 'konto_ohne_mail', reason: 'Edge Function nicht erreichbar' });
+	}
 };

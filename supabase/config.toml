@@ -390,6 +390,9 @@ deno_version = 2
 [functions.send-notifications]
 verify_jwt = false
 
+[functions.send-invite]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

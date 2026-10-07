@@ -17,14 +17,28 @@
 		inviteMsg = '';
 		const res = await fetch(`/api/mitglieder/${m.id}/einladen`, { method: 'POST' });
 		inviting = false;
+		const body = await res.json().catch(() => ({}));
 		if (!res.ok) {
-			const body = await res.json().catch(() => ({}));
 			inviteMsg = 'Einladen fehlgeschlagen: ' + (body.message ?? res.status);
 			return;
 		}
-		inviteMsg = 'Konto angelegt – Login per E-Mail-Code möglich.';
+		inviteMsg =
+			body.status === 'eingeladen'
+				? `Einladung an ${m.email} verschickt.`
+				: `Konto angelegt, aber die E-Mail ging nicht raus (${body.reason}). Bitte später erneut senden.`;
 		await invalidateAll();
 	}
+
+	// Datum + Uhrzeit in Berliner Zeit, z. B. „7. Oktober 2026, 22:47 Uhr“.
+	const inviteDate = (iso: string) =>
+		new Date(iso).toLocaleString('de-DE', {
+			timeZone: 'Europe/Berlin',
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		}) + ' Uhr';
 
 	const statusLabel: Record<MemberStatus, string> = {
 		aktiv: 'aktiv',
@@ -146,15 +160,28 @@
 		{#if data.permissions.includes('manage_members')}
 			<Card>
 				<h2 class="sec">Zugang</h2>
-				{#if m.user_id}
+				{#if m.user_id && m.first_login_at}
 					<p class="muted">Login aktiv.</p>
 				{:else}
 					<p class="muted">
-						Noch kein Login. Lade das Mitglied ein, um den Anmelde-Code per E-Mail zu aktivieren.
+						{#if !m.user_id}
+							Noch kein Login. Lade das Mitglied ein: Das legt den Zugang an und schickt eine E-Mail
+							mit der Anleitung zur Anmeldung.
+						{:else if m.invite_sent_at}
+							Eingeladen am {inviteDate(m.invite_sent_at)}, noch nie angemeldet.
+						{:else}
+							Zugang angelegt, aber noch keine Einladungs-Mail verschickt und noch nie angemeldet.
+						{/if}
 					</p>
 					<Button variant="secondary" disabled={inviting} onclick={einladen}>
 						{#snippet iconLeft()}<Send size={18} />{/snippet}
-						{inviting ? 'Einladen …' : 'Einladen'}
+						{inviting
+							? 'Wird gesendet …'
+							: m.invite_sent_at
+								? 'Einladung erneut senden'
+								: m.user_id
+									? 'Einladung senden'
+									: 'Einladen'}
 					</Button>
 				{/if}
 				{#if inviteMsg}<p class="muted">{inviteMsg}</p>{/if}
