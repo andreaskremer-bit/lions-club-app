@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { unread } from '$lib/unread.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { AppBar, Button } from '$lib/components/ui';
@@ -71,7 +72,13 @@
 
 		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/benachrichtigungen'))}>
 			{#snippet iconLeft()}<Bell size={18} />{/snippet}
-			Benachrichtigungen{#if data.unread > 0}&nbsp;({data.unread}){/if}
+			Benachrichtigungen{#if unread.count > 0}&nbsp;({unread.count}){/if}
+			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
+		</Button>
+
+		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/mehr/vorstand'))}>
+			{#snippet iconLeft()}<Award size={18} />{/snippet}
+			Vorstand
 			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 		</Button>
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { linkify } from './news';
+import { authorAmtAt, linkify } from './news';
 
 describe('linkify', () => {
 	it('gibt reinen Text als ein Segment ohne href zurück', () => {
@@ -42,5 +42,20 @@ describe('linkify', () => {
 
 	it('gibt für leeren Text ein leeres Array zurück', () => {
 		expect(linkify('')).toEqual([]);
+	});
+});
+
+describe('authorAmtAt', () => {
+	const amts = [
+		{ lions_year: 2025, amt: { label: 'Präsident(in)', sort_order: 10 } },
+		{ lions_year: 2026, amt: { label: 'Presse', sort_order: 90 } },
+		{ lions_year: 2026, amt: { label: 'Vizepräsident(in)', sort_order: 20 } }
+	];
+	it('nimmt das Amt im Lions-Jahr der Veröffentlichung', () => {
+		expect(authorAmtAt(amts, '2026-06-30T10:00:00Z')?.label).toBe('Präsident(in)');
+		expect(authorAmtAt(amts, '2026-07-02T10:00:00Z')?.label).toBe('Vizepräsident(in)');
+	});
+	it('liefert null ohne Amt in dem Jahr', () => {
+		expect(authorAmtAt(amts, '2024-10-01T10:00:00Z')).toBeNull();
 	});
 });

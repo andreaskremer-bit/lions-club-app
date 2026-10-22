@@ -15,7 +15,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3';
 import { Mailer } from '../_shared/mailer.ts';
-import { type Kind, pathFor, renderEmail } from './email.ts';
+import { type Kind, linkFor, renderEmail } from './email.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -33,7 +33,8 @@ if (VAPID_PUBLIC && VAPID_PRIVATE) {
 	webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 }
 
-type Channel = 'push' | 'email' | 'both';
+// 'push' = Push, E-Mail nur ohne erreichbares Gerät; 'email' = nur E-Mail ('both' entfiel 2026-10-22).
+type Channel = 'push' | 'email';
 
 type Notification = {
 	id: string;
@@ -59,7 +60,7 @@ function buildPayload(n: Notification) {
 		title: n.title,
 		body: n.body ?? '',
 		// Ziel-Pfad kommt aus `email.ts`, damit Push und E-Mail dieselbe Stelle öffnen.
-		url: pathFor(n),
+		url: linkFor(n),
 		tag: n.id
 	});
 }
@@ -105,7 +106,7 @@ Deno.serve(async (req) => {
 	const ids = ARMED ? rows.map((r) => r.id) : null;
 	const pending: Notification[] = rows.map(({ email, notification_channel, ...n }) => ({
 		...n,
-		member: email ? { email, notification_channel: notification_channel ?? 'both' } : null
+		member: email ? { email, notification_channel: notification_channel ?? 'push' } : null
 	}));
 
 	// Push-Abos je Mitglied vorab laden. Scheitert das, abbrechen statt alle Empfänger
@@ -158,8 +159,8 @@ Deno.serve(async (req) => {
 			const subs = subsByMember.get(n.recipient_id) ?? [];
 
 			// P4 – bevorzugte Kanäle des Empfängers (Default both).
-			const channel: Channel = n.member?.notification_channel ?? 'both';
-			const wantsPush = channel === 'push' || channel === 'both';
+			const channel: Channel = n.member?.notification_channel ?? 'push';
+			const wantsPush = channel !== 'email';
 
 			if (!ARMED) {
 				// Dry-Run: nur protokollieren, nichts senden, sent_at NICHT setzen.

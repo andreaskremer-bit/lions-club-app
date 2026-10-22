@@ -63,6 +63,13 @@
 			{/if}
 		</section>
 
+		{#if data.pinnedNews}
+			<section class="block">
+				<p class="block__label">Angepinnt</p>
+				<NewsCard {...data.pinnedNews} />
+			</section>
+		{/if}
+
 		<section class="block">
 			<p class="block__label">Neueste News</p>
 			{#if latestNews}

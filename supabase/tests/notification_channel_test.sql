@@ -13,10 +13,10 @@ insert into public.member (email, first_name, last_name) values
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000c4001', 'chan@example.com');
 
--- (1) Default ist 'both'.
+-- (1) Default ist 'push' (Push, sonst E-Mail; 'both' entfiel am 2026-10-22).
 select is(
   (select notification_channel::text from public.member where email = 'chan@example.com'),
-  'both', 'Neues Mitglied hat Default-Kanal both'
+  'push', 'Neues Mitglied hat Default-Kanal push'
 );
 
 -- ── Rolle: das Mitglied selbst ──────────────────────────────────────────────

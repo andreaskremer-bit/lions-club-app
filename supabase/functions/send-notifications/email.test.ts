@@ -7,6 +7,7 @@ import {
 	encodeSubject,
 	type Kind,
 	pathFor,
+	linkFor,
 	renderEmail,
 	renderInviteEmail,
 	type MailNotification
@@ -160,6 +161,20 @@ describe('pathFor', () => {
 		expect(pathFor({ ...base, kind: 'news', news_post_id: 'n1' })).toBe('/news');
 	});
 
+	it('führt Termin-Benachrichtigungen und Termin-Unterlagen zum Termin', () => {
+		expect(pathFor({ ...base, kind: 'event_changed', event_id: 'e1' })).toBe('/termine/e1');
+		expect(pathFor({ ...base, kind: 'event_question', event_id: 'e1' })).toBe('/termine/e1');
+		expect(pathFor({ ...base, kind: 'event_cancelled' })).toBe('/termine');
+		expect(pathFor({ ...base, kind: 'document', event_id: 'e1', document_id: 'd1' })).toBe(
+			'/termine/e1'
+		);
+	});
+
+	it('hängt die Outbox-ID als Fragment an (gelesen beim Antippen)', () => {
+		expect(linkFor({ ...base, id: 'n1', kind: 'news' })).toBe('/news#n=n1');
+		expect(linkFor({ ...base, kind: 'news' })).toBe('/news');
+	});
+
 	// Drift-Bremse: jeder erzeugbare Pfad muss eine echte SvelteKit-Seite treffen.
 	it('zeigt nur auf Routen, die es wirklich gibt', () => {
 		const withIds: MailNotification = {
@@ -168,7 +183,17 @@ describe('pathFor', () => {
 			document_id: 'ID',
 			news_post_id: 'ID'
 		};
-		const kinds: Kind[] = ['event_reminder', 'attendance_due', 'birthday', 'document', 'news'];
+		const kinds: Kind[] = [
+			'event_reminder',
+			'attendance_due',
+			'birthday',
+			'document',
+			'news',
+			'event_new',
+			'event_changed',
+			'event_cancelled',
+			'event_question'
+		];
 		const paths = new Set<string>();
 		for (const kind of kinds) {
 			paths.add(pathFor({ ...withIds, kind }));

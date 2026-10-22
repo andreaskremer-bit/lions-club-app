@@ -16,7 +16,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 	if (!permissions.includes('manage_events')) throw redirect(303, `/termine/${params.id}`);
 
 	const [evRes, qRes] = await Promise.all([
-		supabase.from('event').select('id, title').eq('id', params.id).maybeSingle(),
+		supabase.from('event').select('id, title, starts_at').eq('id', params.id).maybeSingle(),
 		supabase
 			.from('question')
 			.select('id, label, qtype, options, required, sort_order')
@@ -28,7 +28,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 	if (!evRes.data) throw error(404, 'Termin nicht gefunden');
 
 	return {
-		event: evRes.data as { id: string; title: string },
+		event: evRes.data as { id: string; title: string; starts_at: string },
 		questions: (qRes.data ?? []) as QuestionRow[]
 	};
 };

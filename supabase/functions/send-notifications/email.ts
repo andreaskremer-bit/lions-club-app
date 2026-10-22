@@ -31,9 +31,20 @@ const C = {
 	onPrimary: '#FBF8F1'
 };
 
-export type Kind = 'event_reminder' | 'birthday' | 'attendance_due' | 'document' | 'news';
+export type Kind =
+	| 'event_reminder'
+	| 'birthday'
+	| 'attendance_due'
+	| 'document'
+	| 'news'
+	| 'event_new'
+	| 'event_changed'
+	| 'event_cancelled'
+	| 'event_question';
 
 export type MailNotification = {
+	/** Outbox-ID: hängt als `#n=<id>` am Link, damit Antippen die Meldung als gelesen markiert. */
+	id?: string;
 	kind: Kind;
 	title: string;
 	body: string | null;
@@ -54,18 +65,33 @@ export type MailNotification = {
 export function pathFor(n: MailNotification): string {
 	switch (n.kind) {
 		case 'event_reminder':
+		case 'event_new':
+		case 'event_changed':
+		case 'event_question':
 			return n.event_id ? `/termine/${n.event_id}` : '/termine';
+		case 'event_cancelled':
+			return '/termine';
 		case 'attendance_due':
 			return n.event_id ? `/termine/${n.event_id}/anwesenheit` : '/termine';
 		case 'birthday':
 			return '/geburtstage';
 		case 'document':
-			return '/dokumente';
+			// Termin-Unterlage: zum Termin (dort hängt sie), sonst in die Ablage.
+			return n.event_id ? `/termine/${n.event_id}` : '/dokumente';
 		case 'news':
 			return '/news';
 		default:
 			return '/benachrichtigungen';
 	}
+}
+
+/**
+ * Link für Push und E-Mail: Zielpfad plus `#n=<id>`. Das Fragment geht nicht an den
+ * Server (kein Log, keine Personendaten in der URL); das Root-Layout liest es, markiert
+ * die Benachrichtigung als gelesen und entfernt es wieder.
+ */
+export function linkFor(n: MailNotification): string {
+	return n.id ? `${pathFor(n)}#n=${n.id}` : pathFor(n);
 }
 
 /**
@@ -98,6 +124,26 @@ const PRESET: Record<Kind, { kicker: string; cta: string; fallback: string }> = 
 		kicker: 'Neuigkeit',
 		cta: 'Beitrag lesen',
 		fallback: 'Es gibt eine neue Mitteilung im Club.'
+	},
+	event_new: {
+		kicker: 'Neuer Termin',
+		cta: 'Termin ansehen',
+		fallback: 'Es gibt einen neuen Termin im Club.'
+	},
+	event_changed: {
+		kicker: 'Termin geändert',
+		cta: 'Termin ansehen',
+		fallback: 'Ein Termin, auf den du reagiert hast, hat sich geändert.'
+	},
+	event_cancelled: {
+		kicker: 'Termin abgesagt',
+		cta: 'Zu den Terminen',
+		fallback: 'Ein Termin wurde abgesagt.'
+	},
+	event_question: {
+		kicker: 'Neue Frage',
+		cta: 'Frage beantworten',
+		fallback: 'Zu einem Termin, für den du zugesagt hast, gibt es eine neue Frage.'
 	}
 };
 
@@ -279,7 +325,7 @@ export function renderEmail(n: MailNotification): {
 } {
 	const preset = PRESET[n.kind] ?? PRESET.news;
 	const base = appUrl();
-	const link = `${base}${pathFor(n)}`;
+	const link = `${base}${linkFor(n)}`;
 	const bodyText = n.body?.trim() ? n.body.trim() : preset.fallback;
 
 	const html = renderLayout({

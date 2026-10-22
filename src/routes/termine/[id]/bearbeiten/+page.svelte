@@ -2,10 +2,11 @@
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Input, Select, Button, Card, Checkbox } from '$lib/components/ui';
 	import EventDocuments from '$lib/components/EventDocuments.svelte';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
 	import { companionAllowed, type EventType } from '$lib/dates';
+	import { cancelText, changeSummary } from '$lib/eventNotify';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -73,6 +74,20 @@
 
 	const orNull = (v: string) => (v.trim() === '' ? null : v.trim());
 
+	// Termin in der Zukunft: Beginn/Ort-Änderungen und Absagen an die Mitglieder melden
+	// (vorausgewählt, abwählbar). Vergangene Termine betrifft das nicht mehr.
+	const isUpcoming = new Date(ev.starts_at).getTime() > Date.now();
+	let changeText = $derived.by(() => {
+		const start = combine(startDate, startTime);
+		if (!start) return null;
+		return changeSummary(
+			{ starts_at: ev.starts_at, location: ev.location },
+			{ starts_at: start.toISOString(), location: orNull(location) }
+		);
+	});
+	let notifyChange = $state(true);
+	let notifyCancel = $state(true);
+
 	async function save() {
 		if (busy || !canManage) return;
 		if (!title.trim()) {
@@ -122,6 +137,17 @@
 				err = 'Speichern fehlgeschlagen: ' + error.message;
 				return;
 			}
+			if (isUpcoming && notifyChange && changeText) {
+				const { error: nErr } = await supabase.rpc('notify_event', {
+					p_event: ev.id,
+					p_kind: 'event_changed',
+					p_body: changeText
+				});
+				if (nErr) {
+					err = 'Gespeichert, aber die Benachrichtigung ist fehlgeschlagen: ' + nErr.message;
+					return;
+				}
+			}
 			await goto(resolve('/termine/[id]', { id: ev.id }), { invalidateAll: true });
 		} catch (e) {
 			err = 'Unerwarteter Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e));
@@ -143,7 +169,12 @@
 			return;
 		busy = true;
 		err = '';
-		const { error } = await supabase.from('event').delete().eq('id', ev.id);
+		// Löschen + Absage-Benachrichtigung in einer Transaktion (cancel_event).
+		const { error } = await supabase.rpc('cancel_event', {
+			p_event: ev.id,
+			p_notify: isUpcoming && notifyCancel,
+			p_body: cancelText(ev.starts_at)
+		});
 		busy = false;
 		if (error) {
 			err = 'Löschen fehlgeschlagen: ' + error.message;
@@ -205,6 +236,16 @@
 				memberId={data.memberId}
 			/>
 
+			{#if isUpcoming && changeText}
+				<Card>
+					<p class="muted">{changeText}</p>
+					<Checkbox
+						label="Mitglieder mit Rückmeldung über die Änderung benachrichtigen"
+						bind:checked={notifyChange}
+					/>
+				</Card>
+			{/if}
+
 			{#if err}<p class="err">{err}</p>{/if}
 
 			<Button fullWidth disabled={busy} onclick={save}>{busy ? 'Speichern …' : 'Speichern'}</Button>
@@ -214,6 +255,12 @@
 					darf.
 				</p>
 			{:else}
+				{#if isUpcoming}
+					<Checkbox
+						label="Beim Löschen alle über die Absage benachrichtigen"
+						bind:checked={notifyCancel}
+					/>
+				{/if}
 				<Button variant="ghost" disabled={busy} onclick={remove}>
 					{#snippet iconLeft()}<Trash2 size={18} />{/snippet}
 					Termin löschen

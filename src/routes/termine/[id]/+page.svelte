@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { afterNavigate, invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -62,6 +62,18 @@
 		hour: '2-digit',
 		minute: '2-digit'
 	});
+
+	// „Zurück“ dorthin, woher man kam (Startseite, Benachrichtigungen, Kalender …). Ohne
+	// Vorgeschichte in der App (Push/Mail-Link, Lesezeichen) zur Terminliste.
+	let cameFromApp = $state(false);
+	afterNavigate(({ from, type }) => {
+		if (type !== 'enter' && from?.route.id && !from.route.id.startsWith('/termine/[id]'))
+			cameFromApp = true;
+	});
+	function back() {
+		if (cameFromApp) history.back();
+		else goto(resolve('/termine'));
+	}
 
 	let myResponse = $derived(e.event_response.find((r) => r.member_id === data.myMemberId) ?? null);
 	let ownStatus = $derived(myResponse?.status ?? null);
@@ -181,6 +193,17 @@
 	const valueFor = (qid: string, companionId: string | null): unknown =>
 		answersMap[answerKey(qid, companionId)]?.value ?? null;
 
+	// Pflichtfragen: Zusagen bleibt möglich, aber offene Pflichtangaben werden genannt.
+	const isEmpty = (v: unknown) =>
+		v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0);
+	let missingRequired = $derived(
+		data.isPast
+			? 0
+			: data.questions
+					.filter((q) => q.required)
+					.reduce((n, q) => n + respondents.filter((r) => isEmpty(valueFor(q.id, r.id))).length, 0)
+	);
+
 	// Speichervorgänge je Frage nacheinander ausführen: Zwei schnelle Änderungen würden
 	// sonst beide als INSERT laufen (doppelte Antwort) oder sich überholen.
 	const answerQueue: Record<string, Promise<void>> = {};
@@ -224,7 +247,7 @@
 <div class="shell">
 	<AppBar title="Termin" eyebrow={typeLabel[e.type]} bordered>
 		{#snippet leading()}
-			<IconButton label="Zurück" onclick={() => goto(resolve('/termine'))}>
+			<IconButton label="Zurück" onclick={back}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
 			</IconButton>
 		{/snippet}
@@ -444,6 +467,13 @@
 						{/each}
 					</div>
 				{/each}
+				{#if missingRequired > 0}
+					<p class="err" role="status">
+						{missingRequired === 1
+							? 'Eine Pflichtangabe (*) fehlt noch.'
+							: `${missingRequired} Pflichtangaben (*) fehlen noch.`}
+					</p>
+				{/if}
 				{#if answerErr}<p class="err">{answerErr}</p>{/if}
 			</Card>
 		{/if}

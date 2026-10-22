@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '$lib/styles/fonts'; // self-hosted Schriften (DSGVO: kein Google-Fonts-CDN)
 	import '$lib/styles/app.css'; // Design-Tokens "Lions 2.0"
-	import { beforeNavigate, goto, invalidate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto, invalidate, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page, updated } from '$app/state';
 	import { onMount } from 'svelte';
@@ -9,6 +9,7 @@
 	import { trackDisplayMode } from '$lib/displayMode';
 	import type { ChangelogEntry } from '$lib/changelog';
 	import { markChangelogSeen, readSeen, storageAvailable, unseenEntries } from '$lib/whatsNew';
+	import { markRead, notificationIdFromHash, refreshUnread, unread } from '$lib/unread';
 	import {
 		House,
 		CalendarDays,
@@ -62,6 +63,29 @@
 		if (page.url.pathname === '/mehr/version' && whatsNew.length) dismissWhatsNew();
 	});
 
+	// Zähler aus dem Root-Load übernehmen (läuft nach invalidateAll neu, z. B. auf
+	// /benachrichtigungen); zwischendurch frischt refreshUnread() ihn auf.
+	$effect(() => {
+		unread.count = data.unread;
+	});
+
+	// Push oder E-Mail angetippt: Der Link trägt `#n=<id>` (linkFor() in der Edge
+	// Function). Benachrichtigung als gelesen markieren und das Fragment entfernen.
+	afterNavigate(({ to }) => {
+		const id = to?.url ? notificationIdFromHash(to.url.hash) : null;
+		if (!id || !data.user) return;
+		markRead(supabase, id).then(() => refreshUnread(supabase));
+		const clean = to!.url.pathname + to!.url.search;
+		try {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- dieselbe, bereits aufgelöste URL ohne Fragment
+			replaceState(clean, page.state);
+		} catch {
+			// Direkter Aufruf (Push/Mail öffnet die App): Der Router ist beim ersten
+			// afterNavigate noch nicht bereit – dann über die Browser-API.
+			history.replaceState(history.state, '', clean);
+		}
+	});
+
 	let tabs = $derived<TabItem[]>([
 		{ id: 'start', label: 'Start', icon: House, href: resolve('/') },
 		{ id: 'termine', label: 'Termine', icon: CalendarDays, href: resolve('/termine') },
@@ -72,7 +96,7 @@
 			label: 'Mehr',
 			icon: Ellipsis,
 			href: resolve('/mehr'),
-			badge: data.unread || undefined
+			badge: unread.count || undefined
 		}
 	]);
 
@@ -93,6 +117,8 @@
 		// und Push-Ereignissen – beides fehlt in einem dauerhaft offenen Tab.
 		const checkForUpdate = () => {
 			if (document.visibilityState !== 'visible') return;
+			// Zurück in der App: Zähler auffrischen (Push kann inzwischen gekommen sein).
+			if (data.user) refreshUnread(supabase).catch(() => {});
 			updated.check().catch(() => {});
 			if ('serviceWorker' in navigator) {
 				navigator.serviceWorker

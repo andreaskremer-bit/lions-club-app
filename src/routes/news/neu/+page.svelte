@@ -34,8 +34,15 @@
 			return;
 		}
 
+		// Scheitert die Benachrichtigung, sagen statt still weiterleiten – sonst glaubt man,
+		// alle seien informiert.
 		if (notify) {
-			await supabase.rpc('notify_news', { p_news_post_id: created.id });
+			const { error: nErr } = await supabase.rpc('notify_news', { p_news_post_id: created.id });
+			if (nErr) {
+				busy = false;
+				err = 'Veröffentlicht, aber die Benachrichtigung ist fehlgeschlagen: ' + nErr.message;
+				return;
+			}
 		}
 
 		busy = false;

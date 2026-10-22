@@ -10,11 +10,13 @@
 		Card,
 		SegmentedControl,
 		HintCard,
-		FilePicker
+		FilePicker,
+		Checkbox
 	} from '$lib/components/ui';
 	import { ChevronLeft, Plus } from '@lucide/svelte';
 	import { seriesDates, type Rhythm, type EventType } from '$lib/dates';
 	import { uploadDocument, EVENT_ONLY_CATEGORY, MAX_FILE_BYTES } from '$lib/documents';
+	import { newEventText } from '$lib/eventNotify';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -49,6 +51,9 @@
 	let endTimeStr = $state('');
 	let endTouched = $state(false);
 	let reminderDays = $state('3');
+	// Neuen Einzeltermin ankündigen (optional, aus). Serien kündigen bewusst nicht an –
+	// die Jahresplanung legt viele Termine auf einmal an.
+	let notifyNew = $state(false);
 	// Achtung: `reminderDays` ist an ein <input type="number"> gebunden – Svelte
 	// wandelt den Wert beim Bearbeiten in eine Zahl (bzw. null bei leer). Daher vor
 	// `.trim()` immer auf String normalisieren, sonst "trim is not a function".
@@ -182,6 +187,15 @@
 			// Optionalen Anhang hochladen. Der Termin ist bereits angelegt; scheitert der Upload,
 			// zeigt die Termin-Seite den Fehler, dort lässt sich der Anhang ergänzen.
 			let uploadError: string | undefined;
+			if (notifyNew) {
+				const { error: nErr } = await supabase.rpc('notify_event', {
+					p_event: created.id,
+					p_kind: 'event_new',
+					p_body: newEventText(s.toISOString(), orNull(location))
+				});
+				if (nErr)
+					uploadError = `Der Termin ist angelegt, aber die Benachrichtigung fehlt: ${nErr.message}`;
+			}
 			if (docFile) {
 				const res = await uploadDocument(supabase, {
 					file: docFile,
@@ -290,6 +304,10 @@
 					<span class="docfield__label">Dokument (optional)</span>
 					<FilePicker file={docFile} disabled={busy} onpick={onDocFile} />
 				</div>
+				<Checkbox
+					label="Mitglieder über den neuen Termin benachrichtigen"
+					bind:checked={notifyNew}
+				/>
 			{/if}
 		</Card>
 

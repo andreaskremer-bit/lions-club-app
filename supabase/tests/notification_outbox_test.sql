@@ -10,6 +10,10 @@ truncate auth.users, public.event cascade;
 insert into public.member (email, first_name, last_name, status, notifications_enabled) values
   ('o@out.example', 'Otto', 'Outbox', 'aktiv', true),
   ('g@out.example', 'Gesa', 'Gesperrt', 'aktiv', false);
+-- Login-Konten: Ohne Konto wird seit 20261022120800 nichts versandt.
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-00000000ab01', 'o@out.example'),
+  ('00000000-0000-0000-0000-00000000ab02', 'g@out.example');
 
 insert into public.notification (kind, recipient_id, for_date, title, attempts, last_attempt_at, sent_at)
 select 'birthday', m.id, current_date - v.tag, v.title, v.attempts, v.last_attempt, v.sent_at

@@ -38,7 +38,7 @@
 	let eventId = $derived(manualEventId ?? suggestedEventId ?? '');
 	let eventOnly = $derived(category === EVENT_ONLY_CATEGORY);
 	// Default aus der Kategorie (Protokolle: an), per Checkbox überschreibbar. Termin-
-	// Unterlagen nie: der Link der Benachrichtigung führt in die Ablage, wo sie fehlen.
+	// Unterlagen gehen nur an die Zugesagten des Termins und verlinken auf den Termin.
 	let notify = $derived(notifyByDefault.includes(category));
 	let file = $state<File | null>(null);
 	let busy = $state(false);
@@ -110,9 +110,14 @@
 			return;
 		}
 
-		// Optional Mitglieder benachrichtigen.
-		if (notify && !eventOnly) {
-			await supabase.rpc('notify_document', { p_document_id: res.id });
+		// Optional Mitglieder benachrichtigen. Scheitert das, sagen statt still weiterleiten.
+		if (notify) {
+			const { error: nErr } = await supabase.rpc('notify_document', { p_document_id: res.id });
+			if (nErr) {
+				busy = false;
+				err = 'Dokument gespeichert, aber die Benachrichtigung ist fehlgeschlagen: ' + nErr.message;
+				return;
+			}
 		}
 
 		busy = false;
@@ -148,9 +153,10 @@
 				<span class="filepick__label">Datei</span>
 				<FilePicker {file} disabled={busy} onpick={onFile} />
 			</div>
-			{#if !eventOnly}
-				<Checkbox label="Mitglieder benachrichtigen" bind:checked={notify} />
-			{/if}
+			<Checkbox
+				label={eventOnly ? 'Zugesagte des Termins benachrichtigen' : 'Mitglieder benachrichtigen'}
+				bind:checked={notify}
+			/>
 		</Card>
 
 		{#if err}<p class="err">{err}</p>{/if}

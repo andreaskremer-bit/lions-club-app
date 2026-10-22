@@ -32,7 +32,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	for (const ma of me?.member_amt ?? []) {
 		for (const p of ma.amt?.amt_permission ?? []) perms.add(p.permission);
 	}
-	if (!perms.has('manage_members')) throw error(403, 'Keine Berechtigung');
+	// Löst echten Versand aus (vor 09:00 die Tagesbenachrichtigungen an alle) – nur Webmaster.
+	if (!perms.has('admin_system')) throw error(403, 'Keine Berechtigung');
 
 	const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 	if (!serviceKey) throw error(500, 'Service-Key nicht konfiguriert (SUPABASE_SERVICE_ROLE_KEY).');

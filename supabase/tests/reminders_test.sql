@@ -13,6 +13,12 @@ insert into public.member (email, first_name, last_name, status, birthday, notif
   ('b@r.example',   'Bert',  'Beispiel',  'aktiv', null,         true),
   ('sek@r.example', 'Sina',  'Sekretär',  'aktiv', null,         true),
   ('off@r.example', 'Olaf',  'Ohne',      'aktiv', null,         false); -- Gate aus
+-- Login-Konten: Ohne Konto entstehen seit 20261022120800 keine Benachrichtigungen.
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-00000000ac01', 'a@r.example'),
+  ('00000000-0000-0000-0000-00000000ac02', 'b@r.example'),
+  ('00000000-0000-0000-0000-00000000ac03', 'sek@r.example'),
+  ('00000000-0000-0000-0000-00000000ac04', 'off@r.example');
 
 insert into public.member_amt (member_id, amt_id)
 select m.id, a.id from public.member m, public.amt a

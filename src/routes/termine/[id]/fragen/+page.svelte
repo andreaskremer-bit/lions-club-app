@@ -24,6 +24,9 @@
 	let qtype = $state<QuestionType>('single');
 	let optionsText = $state('');
 	let required = $state(false);
+	// Wer schon zugesagt hat, erfährt sonst nichts von einer neuen Frage (vorausgewählt).
+	let isUpcoming = $derived(new Date(data.event.starts_at).getTime() > Date.now());
+	let notifyQuestion = $state(true);
 	let busy = $state(false);
 	let err = $state('');
 
@@ -57,6 +60,15 @@
 			required,
 			sort_order: nextOrder
 		});
+		if (!error && isUpcoming && notifyQuestion) {
+			const { error: nErr } = await supabase.rpc('notify_event', {
+				p_event: data.event.id,
+				p_kind: 'event_question',
+				p_body: `${label.trim()}${required ? ' (Pflichtfrage)' : ''}`
+			});
+			if (nErr)
+				err = 'Frage angelegt, aber die Benachrichtigung ist fehlgeschlagen: ' + nErr.message;
+		}
 		busy = false;
 		if (error) {
 			err = 'Anlegen fehlgeschlagen: ' + error.message;
@@ -129,6 +141,12 @@
 					/>
 				{/if}
 				<Checkbox label="Pflichtfrage" bind:checked={required} />
+				{#if isUpcoming}
+					<Checkbox
+						label="Zugesagte über die neue Frage benachrichtigen"
+						bind:checked={notifyQuestion}
+					/>
+				{/if}
 				{#if err}<p class="err">{err}</p>{/if}
 				<Button type="submit" fullWidth disabled={busy}>
 					{#snippet iconLeft()}<Plus size={18} />{/snippet}

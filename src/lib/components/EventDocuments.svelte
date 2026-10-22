@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Card, Button, IconButton, Input, FilePicker } from '$lib/components/ui';
+	import { Card, Button, IconButton, Input, FilePicker, Checkbox } from '$lib/components/ui';
 	import { Download, Trash2, Plus } from '@lucide/svelte';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import {
@@ -39,6 +39,8 @@
 	let showForm = $state(false);
 	let title = $state('');
 	let file = $state<File | null>(null);
+	// Optional: Zugesagte benachrichtigen (Link führt zum Termin, notify_document).
+	let notify = $state(false);
 
 	async function refresh() {
 		const { data } = await supabase
@@ -84,11 +86,17 @@
 			eventId,
 			memberId
 		});
-		busy = false;
 		if ('error' in res) {
+			busy = false;
 			err = res.error;
 			return;
 		}
+		if (notify) {
+			const { error: nErr } = await supabase.rpc('notify_document', { p_document_id: res.id });
+			if (nErr) err = 'Hochgeladen, aber die Benachrichtigung ist fehlgeschlagen: ' + nErr.message;
+		}
+		busy = false;
+		notify = false;
 		file = null;
 		title = '';
 		showForm = false;
@@ -152,6 +160,7 @@
 				<div class="form">
 					<FilePicker {file} disabled={busy} onpick={onFile} />
 					<Input label="Titel" bind:value={title} />
+					<Checkbox label="Zugesagte benachrichtigen" bind:checked={notify} />
 					<div class="form__actions">
 						<Button disabled={busy || !file} onclick={add}>
 							{busy ? 'Lädt …' : 'Hinzufügen'}

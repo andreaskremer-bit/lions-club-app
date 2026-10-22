@@ -16,9 +16,8 @@
 	let channelBusy = $state(false);
 	let channelError = $state<string | null>(null);
 	const channelOptions = [
-		{ value: 'push', label: 'Nur Push' },
-		{ value: 'email', label: 'Nur E-Mail' },
-		{ value: 'both', label: 'Beide' }
+		{ value: 'push', label: 'Push, sonst E-Mail' },
+		{ value: 'email', label: 'Nur E-Mail' }
 	];
 
 	async function saveChannel(value: string) {
@@ -160,11 +159,13 @@
 		else if (n.document_id) await goto(resolve('/dokumente'), { invalidateAll: true });
 		else if (n.news_post_id) await goto(resolve('/news'), { invalidateAll: true });
 		else if (n.kind === 'birthday') await goto(resolve('/geburtstage'), { invalidateAll: true });
+		else if (n.kind === 'event_cancelled') await goto(resolve('/termine'), { invalidateAll: true });
 		else await invalidateAll();
 	}
 
-	// --- Test-Trigger (nur manage_members) -------------------------------------
-	let canTrigger = $derived((data.permissions ?? []).includes('manage_members'));
+	// --- Tageslauf manuell (nur admin_system) ----------------------------------
+	// Kein Test: verschickt echte Benachrichtigungen (vor 09:00 die des Tages an alle).
+	let canTrigger = $derived((data.permissions ?? []).includes('admin_system'));
 	let triggerBusy = $state(false);
 	let triggerMsg = $state<string | null>(null);
 
@@ -243,8 +244,9 @@
 		<section class="push">
 			<span class="push__title">Versandkanäle</span>
 			<p class="push__hint">
-				In-App-Hinweise bekommst du immer. Lege fest, wie du Erinnerungen zusätzlich erhalten
-				möchtest: „Beide“ schickt Push und nur dann E-Mail, wenn kein Gerät erreichbar ist.
+				In-App-Hinweise bekommst du immer. Lege fest, wie du sie zusätzlich erhalten möchtest:
+				„Push, sonst E-Mail“ schickt eine Push-Nachricht und nur dann eine E-Mail, wenn kein Gerät
+				mit aktiviertem Push erreichbar ist.
 			</p>
 			<SegmentedControl options={channelOptions} value={channel} onchange={saveChannel} />
 			{#if channelError}<p class="push__error">{channelError}</p>{/if}
@@ -252,13 +254,16 @@
 
 		{#if canTrigger}
 			<section class="trigger">
-				<span class="trigger__label">Test (nur Vorstand): Reminder-Engine manuell starten.</span>
+				<span class="trigger__label"
+					>Nur Webmaster: Tageslauf jetzt ausführen. Erzeugt die heute fälligen Erinnerungen und
+					Geburtstage sofort – „Versand“ schickt sie auch echt an alle Mitglieder.</span
+				>
 				<div class="trigger__actions">
 					<Button variant="ghost" disabled={triggerBusy} onclick={() => runReminders(false)}>
 						Reminder erzeugen
 					</Button>
 					<Button variant="ghost" disabled={triggerBusy} onclick={() => runReminders(true)}>
-						+ Versand anstoßen
+						+ Versand an alle
 					</Button>
 				</div>
 				{#if triggerMsg}<span class="trigger__msg">{triggerMsg}</span>{/if}
@@ -278,7 +283,9 @@
 					class={[
 						'note',
 						n.read_at ? '' : 'note--unread',
-						n.event_id || n.document_id || n.news_post_id ? 'note--link' : ''
+						n.event_id || n.document_id || n.news_post_id || n.kind === 'event_cancelled'
+							? 'note--link'
+							: ''
 					]
 						.filter(Boolean)
 						.join(' ')}

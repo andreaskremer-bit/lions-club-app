@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import { lionsStartYear } from '$lib/dates';
+import { authorAmtAt } from '$lib/news';
 
 export type NewsFeedItem = {
 	id: string;
@@ -37,14 +37,9 @@ export const load: PageLoad = async ({ parent }) => {
 		.order('pinned', { ascending: false })
 		.order('published_at', { ascending: false });
 
-	const year = lionsStartYear(new Date());
 	const posts: NewsFeedItem[] = ((data ?? []) as unknown as Raw[]).map((p) => {
 		const a = p.author;
-		const role = a?.member_amt
-			.filter((ma) => ma.lions_year === year)
-			.map((ma) => ma.amt)
-			.filter((x): x is NonNullable<typeof x> => !!x)
-			.sort((x, y) => x.sort_order - y.sort_order)[0];
+		const role = a ? authorAmtAt(a.member_amt, p.published_at) : null;
 		const roleLabel = role ? (role.abbr ?? role.label) : null;
 		return {
 			id: p.id,

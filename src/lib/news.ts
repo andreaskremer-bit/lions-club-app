@@ -1,5 +1,7 @@
 // News-Helfer (M6).
 
+import { lionsStartYear } from './dates';
+
 export type NewsPost = {
 	id: string;
 	title: string;
@@ -43,4 +45,24 @@ export function linkify(text: string): TextSegment[] {
 	}
 	if (last < text.length) out.push({ text: text.slice(last) });
 	return out;
+}
+
+type AmtAt = {
+	lions_year: number;
+	amt: { label: string; abbr?: string | null; sort_order: number } | null;
+};
+
+/**
+ * Amt des Autors im Lions-Jahr der VERÖFFENTLICHUNG (nicht im heutigen): Nach dem 1.7.
+ * zeigten ältere Beiträge sonst das neue Amt oder gar keins. Höchstrangiges Amt zuerst.
+ */
+export function authorAmtAt(memberAmt: AmtAt[], publishedAt: string) {
+	const year = lionsStartYear(new Date(publishedAt));
+	return (
+		memberAmt
+			.filter((ma) => ma.lions_year === year)
+			.map((ma) => ma.amt)
+			.filter((x): x is NonNullable<typeof x> => !!x)
+			.sort((x, y) => x.sort_order - y.sort_order)[0] ?? null
+	);
 }
