@@ -4,19 +4,88 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { safeFileName } from './storagePath';
 
-export type DocumentCategory = 'protokoll_clubabend' | 'protokoll_mv' | 'satzung' | 'sonstige';
+import type { EventType } from './dates';
+
+export type DocumentCategory =
+	| 'protokoll_clubabend'
+	| 'protokoll_mv'
+	| 'satzung'
+	| 'sonstige'
+	| 'termin_unterlage';
 
 export const categoryLabel: Record<DocumentCategory, string> = {
 	protokoll_clubabend: 'Protokoll Club-Abend',
 	protokoll_mv: 'Protokoll Mitgliederversammlung',
 	satzung: 'Satzung',
-	sonstige: 'Sonstige'
+	sonstige: 'Sonstige',
+	termin_unterlage: 'Termin-Unterlage'
 };
 
 export const categoryOptions = (Object.keys(categoryLabel) as DocumentCategory[]).map((value) => ({
 	value,
 	label: categoryLabel[value]
 }));
+
+/**
+ * Termin-Unterlagen (Speisekarte, Reiseplanung …) erscheinen nur am Termin, alle anderen
+ * Kategorien immer in der Ablage – auch mit Termin-Verknüpfung (Protokolle).
+ */
+export const EVENT_ONLY_CATEGORY: DocumentCategory = 'termin_unterlage';
+
+/**
+ * PostgREST-Filter für die Ablage (`.or(...)`): alles außer Termin-Unterlagen. Eine
+ * Termin-Unterlage ohne Termin (Termin gelöscht → event_id NULL) bleibt sichtbar, sonst
+ * wäre sie nirgends mehr zu finden.
+ */
+export const ARCHIVE_FILTER = `category.neq.${EVENT_ONLY_CATEGORY},event_id.is.null`;
+
+/** Steht das Dokument in der Ablage? (Spiegelt ARCHIVE_FILTER.) */
+export const inArchive = (d: Pick<DocumentRow, 'category' | 'event_id'>): boolean =>
+	d.category !== EVENT_ONLY_CATEGORY || d.event_id === null;
+
+/** Kategorien für die Filter-Chips der Ablage (ohne Termin-Unterlage). */
+export const archiveCategoryOptions = categoryOptions.filter(
+	(o) => o.value !== EVENT_ONLY_CATEGORY
+);
+
+/** Termin-Typ, zu dem eine Protokoll-Kategorie gehört (für den Termin-Vorschlag). */
+const protocolEventType: Partial<Record<DocumentCategory, EventType>> = {
+	protokoll_clubabend: 'clubabend',
+	protokoll_mv: 'versammlung'
+};
+
+export type SuggestableEvent = { id: string; starts_at: string; type: EventType };
+
+const BERLIN_DATE = new Intl.DateTimeFormat('en-CA', {
+	timeZone: 'Europe/Berlin',
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit'
+});
+
+/**
+ * Schlägt zu einem Protokoll den passenden Termin vor: den letzten Termin des
+ * passenden Typs am oder vor dem Protokolldatum (ohne Datum: vor jetzt). Kalendertag in
+ * Europe/Berlin, damit ein Clubabend um 19 Uhr zum gleichen Datum zählt. Andere
+ * Kategorien: kein Vorschlag (null).
+ */
+export function suggestEvent(
+	events: SuggestableEvent[],
+	category: DocumentCategory,
+	docDate: string | null,
+	now: Date = new Date()
+): string | null {
+	const type = protocolEventType[category];
+	if (!type) return null;
+	const limit = docDate || BERLIN_DATE.format(now);
+	let best: SuggestableEvent | null = null;
+	for (const ev of events) {
+		if (ev.type !== type) continue;
+		if (BERLIN_DATE.format(new Date(ev.starts_at)) > limit) continue;
+		if (!best || Date.parse(ev.starts_at) > Date.parse(best.starts_at)) best = ev;
+	}
+	return best?.id ?? null;
+}
 
 /** Kategorien, bei denen „Mitglieder benachrichtigen“ sinnvoll vorbelegt ist. */
 export const notifyByDefault: DocumentCategory[] = ['protokoll_clubabend', 'protokoll_mv'];

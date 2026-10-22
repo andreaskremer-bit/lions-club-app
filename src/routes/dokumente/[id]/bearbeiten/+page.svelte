@@ -59,6 +59,10 @@
 			err = 'Bitte einen Titel angeben.';
 			return;
 		}
+		if (category === 'termin_unterlage' && !eventId) {
+			err = 'Bitte den Termin wählen, zu dem die Unterlage gehört.';
+			return;
+		}
 		busy = true;
 		err = '';
 
@@ -158,7 +162,16 @@
 				<Select label="Kategorie" options={categoryOptions} bind:value={category} />
 				<Input label="Datum (Bezug)" type="date" bind:value={docDate} />
 				<Input label="Beschreibung" multiline bind:value={description} />
-				<Select label="Termin (optional)" options={eventOptions} bind:value={eventId} />
+				<Select
+					label={category === 'termin_unterlage' ? 'Termin' : 'Termin (optional)'}
+					hint={category === 'termin_unterlage'
+						? 'Termin-Unterlagen erscheinen nur beim Termin, nicht in der Ablage.'
+						: eventId
+							? 'Das Dokument erscheint in der Ablage und beim Termin.'
+							: undefined}
+					options={eventOptions}
+					bind:value={eventId}
+				/>
 			</Card>
 
 			<Card>

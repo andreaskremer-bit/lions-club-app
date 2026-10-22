@@ -15,6 +15,7 @@
 	import {
 		categoryOptions,
 		notifyByDefault,
+		suggestEvent,
 		uploadDocument,
 		MAX_FILE_BYTES,
 		type DocumentCategory
@@ -27,7 +28,9 @@
 	let category = $state<DocumentCategory>('protokoll_clubabend');
 	let docDate = $state('');
 	let description = $state('');
-	let eventId = $state('');
+	// Protokolle: passenden Termin aus Kategorie + Datum vorschlagen, per Auswahl überschreibbar.
+	let suggestedEventId = $derived(suggestEvent(data.events, category, docDate || null));
+	let eventId = $derived(suggestedEventId ?? '');
 	// Default aus der Kategorie (Protokolle: an), per Checkbox überschreibbar.
 	let notify = $derived(notifyByDefault.includes(category));
 	let file = $state<File | null>(null);
@@ -48,6 +51,16 @@
 		}))
 	]);
 
+	let eventHint = $derived(
+		category === 'termin_unterlage'
+			? 'Termin-Unterlagen erscheinen nur beim Termin, nicht in der Ablage.'
+			: suggestedEventId && eventId === suggestedEventId
+				? 'Vorgeschlagen nach Kategorie und Datum. Das Dokument erscheint in der Ablage und beim Termin.'
+				: eventId
+					? 'Das Dokument erscheint in der Ablage und beim Termin.'
+					: undefined
+	);
+
 	function onFile(f: File | null) {
 		if (f && f.size > MAX_FILE_BYTES) {
 			err = 'Datei zu groß (max. 20 MB).';
@@ -66,6 +79,10 @@
 		}
 		if (!file) {
 			err = 'Bitte eine Datei wählen.';
+			return;
+		}
+		if (category === 'termin_unterlage' && !eventId) {
+			err = 'Bitte den Termin wählen, zu dem die Unterlage gehört.';
 			return;
 		}
 		busy = true;
@@ -111,7 +128,12 @@
 			<Select label="Kategorie" options={categoryOptions} bind:value={category} />
 			<Input label="Datum (Bezug, z. B. Sitzungsdatum)" type="date" bind:value={docDate} />
 			<Input label="Beschreibung" multiline bind:value={description} />
-			<Select label="Termin (optional)" options={eventOptions} bind:value={eventId} />
+			<Select
+				label={category === 'termin_unterlage' ? 'Termin' : 'Termin (optional)'}
+				hint={eventHint}
+				options={eventOptions}
+				bind:value={eventId}
+			/>
 		</Card>
 
 		<Card>

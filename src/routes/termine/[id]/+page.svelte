@@ -255,6 +255,7 @@
 			eventId={e.id}
 			canManage={data.permissions.includes('manage_events') ||
 				data.permissions.includes('publish_content')}
+			canPublish={data.permissions.includes('publish_content')}
 			memberId={data.myMemberId}
 		/>
 

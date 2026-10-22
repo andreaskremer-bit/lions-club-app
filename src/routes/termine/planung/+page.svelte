@@ -184,7 +184,7 @@
 				const res = await uploadDocument(supabase, {
 					file: docFile,
 					title: docFile.name.replace(/\.[^.]+$/, ''),
-					category: 'sonstige',
+					category: 'termin_unterlage',
 					eventId: created.id,
 					memberId: data.memberId
 				});

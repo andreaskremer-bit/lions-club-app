@@ -10,11 +10,15 @@
 		supabase,
 		eventId,
 		canManage = false,
+		canPublish = false,
 		memberId = null
 	}: {
 		supabase: SupabaseClient;
 		eventId: string;
+		/** manage_events oder publish_content: Termin-Unterlagen hochladen/löschen. */
 		canManage?: boolean;
+		/** publish_content: darf auch verknüpfte Ablage-Dokumente (Protokolle) löschen. */
+		canPublish?: boolean;
 		memberId?: string | null;
 	} = $props();
 
@@ -26,8 +30,9 @@
 	let busy = $state(false);
 	let err = $state('');
 
-	// Upload-Formular (nur für Verwalter sichtbar). Kategorie ist für Termin-Anhänge
-	// ohne Bedeutung (sie tauchen nicht in der Ablage /dokumente auf) → fest "sonstige".
+	// Upload-Formular (nur für Verwalter sichtbar). Uploads am Termin sind immer
+	// Termin-Unterlagen (nur hier sichtbar, nicht in der Ablage /dokumente). Protokolle
+	// kommen über die Ablage und erscheinen dort UND hier.
 	let showForm = $state(false);
 	let title = $state('');
 	let file = $state<File | null>(null);
@@ -72,7 +77,7 @@
 		const res = await uploadDocument(supabase, {
 			file,
 			title: title.trim() || file.name,
-			category: 'sonstige',
+			category: 'termin_unterlage',
 			eventId,
 			memberId
 		});
@@ -125,7 +130,7 @@
 							<Download size={18} />
 							<span class="doc__title">{d.title}</span>
 						</button>
-						{#if canManage}
+						{#if canPublish || (canManage && d.category === 'termin_unterlage')}
 							<IconButton label="Löschen" onclick={() => remove(d)} disabled={busy}>
 								{#snippet icon()}<Trash2 size={18} />{/snippet}
 							</IconButton>

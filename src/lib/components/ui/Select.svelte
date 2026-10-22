@@ -9,6 +9,7 @@
 
 	type Props = {
 		label?: string;
+		hint?: string;
 		options?: SelectOption<T>[];
 		/** Deaktivierte Erst-Option, solange nichts gewählt ist. */
 		placeholder?: string;
@@ -18,6 +19,7 @@
 
 	let {
 		label,
+		hint,
 		options = [],
 		placeholder,
 		id,
@@ -42,4 +44,5 @@
 		</select>
 		<span class="lc-select__chev"><ChevronDown /></span>
 	</div>
+	{#if hint}<p class="lc-field__hint">{hint}</p>{/if}
 </div>

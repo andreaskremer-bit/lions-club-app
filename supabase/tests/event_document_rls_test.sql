@@ -1,10 +1,10 @@
 -- RLS-Tests für Termin-Dokumente: manage_events (Clubmaster) darf NUR
--- event-gebundene Dokumente schreiben, publish_content weiterhin alle,
--- normale Mitglieder keine. (pgTAP – Lauf: `npx supabase test db`.)
+-- event-gebundene Termin-Unterlagen schreiben (keine Protokolle, auch nicht mit Termin),
+-- publish_content weiterhin alle, normale Mitglieder keine. (pgTAP – Lauf: `npx supabase test db`.)
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(7);
+select plan(11);
 
 truncate auth.users, public.member cascade;
 
@@ -34,17 +34,31 @@ values ('00000000-0000-0000-0000-0000000ee001', 'Club-Reise', 'reise', now());
 set local role authenticated;
 set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000e0002","role":"authenticated"}';
 
--- (1) Darf ein event-gebundenes Dokument anlegen.
+-- (1) Darf eine Termin-Unterlage anlegen.
 select lives_ok(
   $$ insert into public.document (title, category, event_id)
-     values ('Ablaufplan', 'sonstige', '00000000-0000-0000-0000-0000000ee001') $$,
-  'Clubmaster kann event-gebundenes Dokument anlegen'
+     values ('Ablaufplan', 'termin_unterlage', '00000000-0000-0000-0000-0000000ee001') $$,
+  'Clubmaster kann Termin-Unterlage anlegen'
 );
 
 -- (2) Darf KEIN freies Dokument (ohne Termin) anlegen.
 select throws_ok(
-  $$ insert into public.document (title, category) values ('Frei', 'sonstige') $$,
+  $$ insert into public.document (title, category) values ('Frei', 'termin_unterlage') $$,
   '42501', null, 'Clubmaster kann kein termin-loses Dokument anlegen'
+);
+
+-- (2a) Darf kein Protokoll anlegen, auch nicht mit Termin – es stünde in der Ablage.
+select throws_ok(
+  $$ insert into public.document (title, category, event_id)
+     values ('Protokoll', 'protokoll_clubabend', '00000000-0000-0000-0000-0000000ee001') $$,
+  '42501', null, 'Clubmaster kann kein Protokoll mit Termin anlegen'
+);
+
+-- (2b) Darf eine Termin-Unterlage nicht in eine Ablage-Kategorie umwandeln.
+select throws_ok(
+  $$ update public.document set category = 'sonstige'
+     where event_id = '00000000-0000-0000-0000-0000000ee001' $$,
+  '42501', null, 'Clubmaster kann Termin-Unterlage nicht in die Ablage verschieben'
 );
 
 -- (3) Darf ein event-gebundenes Dokument NICHT vom Termin entkoppeln.
@@ -54,10 +68,10 @@ select throws_ok(
   '42501', null, 'Clubmaster kann event_id nicht auf NULL setzen'
 );
 
--- (4) Darf das event-gebundene Dokument löschen.
+-- (4) Darf die Termin-Unterlage löschen.
 select lives_ok(
   $$ delete from public.document where event_id = '00000000-0000-0000-0000-0000000ee001' $$,
-  'Clubmaster kann event-gebundenes Dokument löschen'
+  'Clubmaster kann Termin-Unterlage löschen'
 );
 
 -- ── Rolle: normales Mitglied ────────────────────────────────────────────────
@@ -84,6 +98,27 @@ select lives_ok(
   $$ insert into public.document (title, category, event_id)
      values ('Protokoll', 'protokoll_clubabend', '00000000-0000-0000-0000-0000000ee001') $$,
   'publish_content kann event-gebundenes Dokument anlegen'
+);
+
+-- ── Zurück zum Clubmaster: verknüpftes Protokoll ist tabu ───────────────────
+set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000e0002","role":"authenticated"}';
+
+-- (8) Löschen eines verknüpften Protokolls trifft unter RLS keine Zeile.
+delete from public.document where category = 'protokoll_clubabend';
+reset role;
+select is(
+  (select count(*)::int from public.document where category = 'protokoll_clubabend'),
+  1, 'Clubmaster kann verknüpftes Protokoll nicht löschen'
+);
+
+-- (9) Ändern ebenso wirkungslos.
+set local role authenticated;
+set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000e0002","role":"authenticated"}';
+update public.document set title = 'Geändert' where category = 'protokoll_clubabend';
+reset role;
+select is(
+  (select title from public.document where category = 'protokoll_clubabend'),
+  'Protokoll', 'Clubmaster kann verknüpftes Protokoll nicht ändern'
 );
 
 select * from finish();

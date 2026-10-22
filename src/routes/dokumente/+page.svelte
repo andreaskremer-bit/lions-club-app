@@ -4,7 +4,13 @@
 	import { resolve } from '$app/paths';
 	import { AppBar, IconButton, Input, SegmentedControl } from '$lib/components/ui';
 	import { ChevronLeft, Plus, FileText, Download, Pencil } from '@lucide/svelte';
-	import { categoryLabel, categoryOptions, openDocument, type DocumentRow } from '$lib/documents';
+	import {
+		ARCHIVE_FILTER,
+		archiveCategoryOptions,
+		categoryLabel,
+		openDocument,
+		type DocumentRow
+	} from '$lib/documents';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -46,8 +52,8 @@
 		let q = term
 			? supabase.rpc('search_documents', { term }).select(COLS)
 			: supabase.from('document').select(COLS);
-		// Termin-Anhänge erscheinen nur am jeweiligen Termin, nicht in der Ablage (wie im Load).
-		q = q.is('event_id', null);
+		// Termin-Unterlagen erscheinen nur am jeweiligen Termin, nicht in der Ablage (wie im Load).
+		q = q.or(ARCHIVE_FILTER);
 		if (category) q = q.eq('category', category);
 		if (sort === 'titel') q = q.order('title');
 		else if (sort === 'kategorie')
@@ -115,7 +121,7 @@
 				class={['chip', category === '' ? 'chip--on' : ''].join(' ')}
 				onclick={() => setCategory('')}>Alle</button
 			>
-			{#each categoryOptions as o (o.value)}
+			{#each archiveCategoryOptions as o (o.value)}
 				<button
 					class={['chip', category === o.value ? 'chip--on' : ''].join(' ')}
 					onclick={() => setCategory(o.value)}>{o.label}</button

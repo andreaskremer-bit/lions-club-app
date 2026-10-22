@@ -547,3 +547,15 @@ Anlass: Zwei neue Mitglieder angelegt und „eingeladen“ – es ging keine Mai
 - **Kein Changelog-Eintrag** (User-Entscheidung): rein administrative Funktion.
 
 **Grün.** 25 Unit-Tests in `supabase/functions` · 166 pgTAP (neu `member_invite_test.sql`, `notifications_default_test.sql`). Lokal mit `functions serve` + Mailpit: Mail kommt an, Umlaut-Betreff korrekt, Emblem lädt, `invite_sent_at` gesetzt.
+
+## Dokumente: Protokolle mit Termin in der Ablage, Kategorie „Termin-Unterlage“ (2026-10-22)
+
+Anlass: Vier Clubabend-Protokolle (05.08., 02.09., 07.10., 21.10.) fehlten in der Ablage. Sie waren beim Hochladen mit ihrem Clubabend verknüpft, und bisher entschied allein `event_id`: mit Termin = nur am Termin, nie in der Ablage (`de18e5d`). Für Speisekarten oder Reisepläne richtig, für Protokolle nicht.
+
+- **Neues Modell (User-Entscheidung):** Die Kategorie entscheidet über die Ablage, der Termin ist nur noch Zusatz. Neue Kategorie **`termin_unterlage`** („Termin-Unterlage“) erscheint nur am Termin, alle anderen Kategorien immer in der Ablage, mit Termin auch dort. Termin-Unterlagen ohne Termin (Termin gelöscht, `on delete set null`) bleiben in der Ablage sichtbar statt unauffindbar. Filter zentral in `src/lib/documents.ts` (`ARCHIVE_FILTER`/`inArchive`), genutzt von Load und Suche.
+- **Migrationen** `20261022120000` (Enum-Wert, getrennt vom ersten Gebrauch) + `20261022120100`: bestehende `sonstige` mit Termin → `termin_unterlage` (in Prod 0 Zeilen); **Clubmaster-Policies verschärft**: `manage_events` ohne `publish_content` schreibt nur noch Termin-Unterlagen (Tabelle + Storage). Sonst hätte er über die Termin-Verknüpfung Protokolle in die Ablage stellen oder dort löschen können.
+- **Uploads am Termin** (Termin-Seite + Anhang beim Anlegen in der Planung) setzen fest `termin_unterlage` statt `sonstige`. Auf der Termin-Seite sieht der Clubmaster den Löschen-Knopf nur noch an Termin-Unterlagen.
+- **Termin-Vorschlag beim Hinzufügen** (`suggestEvent()`): Protokoll Club-Abend → letzter Clubabend am oder vor dem Protokolldatum (ohne Datum: vor heute), Protokoll MV → letzte Mitgliederversammlung; Kalendertag in Europe/Berlin. Überschreibbar, Hinweistext unter dem Feld. Bei „Termin-Unterlage“ ist der Termin Pflicht (Hinzufügen + Bearbeiten). `Select` hat dafür ein `hint`-Prop wie `Input`.
+- Changelog-Eintrag 2026-10-22.
+
+**Grün.** 120 Unit-Tests (neu `src/lib/documents.test.ts`) · 170 pgTAP (`event_document_rls_test.sql` erweitert) · lokal per Playwright: Ablage zeigt verknüpftes Protokoll, Filter-Chips ohne Termin-Unterlage, Vorschlag greift und lässt sich überschreiben.

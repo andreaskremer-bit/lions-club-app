@@ -29,6 +29,23 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-10-22',
+		changes: [
+			{
+				kind: 'behoben',
+				text: 'Protokolle, die mit einem Clubabend verknüpft sind, stehen jetzt in der Dokumentablage und zusätzlich beim Termin.'
+			},
+			{
+				kind: 'neu',
+				text: 'Neue Kategorie „Termin-Unterlage“ für Speisekarten, Reisepläne und Ähnliches: Diese Dokumente erscheinen nur beim Termin.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Beim Hinzufügen eines Protokolls schlägt die App den passenden Clubabend bzw. die Mitgliederversammlung vor.'
+			}
+		]
+	},
+	{
 		date: '2026-10-04',
 		changes: [
 			{
