@@ -40,36 +40,20 @@ export const CHANGELOG: ChangelogEntry[] = [
 				text: 'Unter „Mehr“ → „Vorstand“ siehst du, wer im laufenden Lions-Jahr welches Amt hat.'
 			},
 			{
+				kind: 'behoben',
+				text: 'Protokolle, die mit einem Clubabend verknüpft sind, stehen jetzt in der Dokumentablage und zusätzlich beim Termin. Speisekarten, Reisepläne und Ähnliches erscheinen als „Termin-Unterlage“ nur beim Termin.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Auf der Termin-Seite steht deine Rückmeldung jetzt als „Zugesagt“ oder „Abgesagt“ – auch nach Beginn. Zusatzfragen beantwortest du nach deiner Zusage.'
+			},
+			{
 				kind: 'verbessert',
 				text: 'Versandkanal: Es gibt jetzt „Push, sonst E-Mail“ und „Nur E-Mail“. Tippst du eine Push-Nachricht oder den Link in einer E-Mail an, gilt die Benachrichtigung als gelesen.'
 			},
 			{
-				kind: 'verbessert',
-				text: 'Die Startseite zeigt immer die neueste Nachricht, eine angepinnte zusätzlich darüber. „Zurück“ auf einer Termin-Seite führt dorthin, wo du herkamst.'
-			},
-			{
 				kind: 'behoben',
-				text: 'Protokolle, die mit einem Clubabend verknüpft sind, stehen jetzt in der Dokumentablage und zusätzlich beim Termin.'
-			},
-			{
-				kind: 'neu',
-				text: 'Neue Kategorie „Termin-Unterlage“ für Speisekarten, Reisepläne und Ähnliches: Diese Dokumente erscheinen nur beim Termin.'
-			},
-			{
-				kind: 'verbessert',
-				text: 'Beim Hinzufügen eines Protokolls schlägt die App den passenden Clubabend bzw. die Mitgliederversammlung vor.'
-			},
-			{
-				kind: 'verbessert',
-				text: 'Auf der Termin-Seite steht deine Rückmeldung jetzt als „Zugesagt“ oder „Abgesagt“ – auch nach Beginn des Termins.'
-			},
-			{
-				kind: 'verbessert',
-				text: 'Zusatzfragen beantwortest du nach deiner Zusage. Dein Kommentar zur Rückmeldung erscheint jetzt in der Teilnehmerliste.'
-			},
-			{
-				kind: 'behoben',
-				text: 'Erinnerungen kommen auch bei kurzfristig angelegten Terminen. An deinem Geburtstag bekommst du keine Benachrichtigung mehr über dich selbst, und vergangene Termine zeigen nicht mehr „Offen“.'
+				text: 'Erinnerungen kommen auch bei kurzfristig angelegten Terminen, und die Startseite zeigt immer die neueste Nachricht.'
 			}
 		]
 	},
