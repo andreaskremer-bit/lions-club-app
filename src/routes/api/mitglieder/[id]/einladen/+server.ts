@@ -5,6 +5,8 @@ import { env } from '$env/dynamic/private';
 import { lionsStartYear } from '$lib/dates';
 import type { RequestHandler } from './$types';
 
+const INVITE_TIMEOUT_MS = 8000;
+
 /**
  * Lädt ein Mitglied ein: legt – falls noch nicht vorhanden – ein Auth-Konto an (kein
  * Self-Signup), damit es sich per E-Mail-OTP einloggen kann, und verschickt danach die
@@ -63,14 +65,21 @@ export const POST: RequestHandler = async ({ locals, params }) => {
 		const res = await fetch(`${PUBLIC_SUPABASE_URL}/functions/v1/send-invite`, {
 			method: 'POST',
 			headers: { Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
-			body: JSON.stringify({ member_id: params.id })
+			body: JSON.stringify({ member_id: params.id }),
+			// Unter dem Netlify-Limit bleiben (Kaltstart + SMTP können dauern). Sonst bräche
+			// Netlify ab, die UI meldete „fehlgeschlagen“ und ein zweiter Klick schickte doppelt.
+			signal: AbortSignal.timeout(INVITE_TIMEOUT_MS)
 		});
 		if (!res.ok) {
 			const body = await res.json().catch(() => ({}));
 			return json({ status: 'konto_ohne_mail', reason: body.error ?? `HTTP ${res.status}` });
 		}
 		return json({ status: 'eingeladen' });
-	} catch {
+	} catch (e) {
+		// Zeitüberschreitung: Die Mail kann trotzdem raus sein – nicht „fehlgeschlagen“ melden.
+		if (e instanceof DOMException && e.name === 'TimeoutError') {
+			return json({ status: 'unklar' });
+		}
 		return json({ status: 'konto_ohne_mail', reason: 'Edge Function nicht erreichbar' });
 	}
 };

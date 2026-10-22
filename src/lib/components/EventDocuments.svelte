@@ -3,22 +3,25 @@
 	import { Card, Button, IconButton, Input, FilePicker } from '$lib/components/ui';
 	import { Download, Trash2, Plus } from '@lucide/svelte';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import { uploadDocument, openDocument, MAX_FILE_BYTES, type DocumentRow } from '$lib/documents';
+	import {
+		uploadDocument,
+		openDocument,
+		EVENT_ONLY_CATEGORY,
+		MAX_FILE_BYTES,
+		type DocumentRow
+	} from '$lib/documents';
 	import { isOwnStoragePath } from '$lib/storagePath';
 
 	let {
 		supabase,
 		eventId,
 		canManage = false,
-		canPublish = false,
 		memberId = null
 	}: {
 		supabase: SupabaseClient;
 		eventId: string;
 		/** manage_events oder publish_content: Termin-Unterlagen hochladen/löschen. */
 		canManage?: boolean;
-		/** publish_content: darf auch verknüpfte Ablage-Dokumente (Protokolle) löschen. */
-		canPublish?: boolean;
 		memberId?: string | null;
 	} = $props();
 
@@ -77,7 +80,7 @@
 		const res = await uploadDocument(supabase, {
 			file,
 			title: title.trim() || file.name,
-			category: 'termin_unterlage',
+			category: EVENT_ONLY_CATEGORY,
 			eventId,
 			memberId
 		});
@@ -130,7 +133,9 @@
 							<Download size={18} />
 							<span class="doc__title">{d.title}</span>
 						</button>
-						{#if canPublish || (canManage && d.category === 'termin_unterlage')}
+						<!-- Verknüpfte Ablage-Dokumente (Protokolle) nur in der Ablage löschen: hier
+							     sähe es nach „vom Termin lösen“ aus, entfernte aber das Dokument ganz. -->
+						{#if canManage && d.category === EVENT_ONLY_CATEGORY}
 							<IconButton label="Löschen" onclick={() => remove(d)} disabled={busy}>
 								{#snippet icon()}<Trash2 size={18} />{/snippet}
 							</IconButton>

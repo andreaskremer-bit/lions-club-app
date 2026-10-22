@@ -14,6 +14,9 @@
 	import { ChevronLeft, Plus } from '@lucide/svelte';
 	import {
 		categoryOptions,
+		EVENT_ONLY_CATEGORY,
+		EVENT_ONLY_HINT,
+		LINKED_HINT,
 		notifyByDefault,
 		suggestEvent,
 		uploadDocument,
@@ -28,10 +31,14 @@
 	let category = $state<DocumentCategory>('protokoll_clubabend');
 	let docDate = $state('');
 	let description = $state('');
-	// Protokolle: passenden Termin aus Kategorie + Datum vorschlagen, per Auswahl überschreibbar.
+	// Protokolle: Termin am Protokolldatum vorschlagen. Sobald das Feld von Hand
+	// geändert wurde, gilt nur noch diese Wahl (auch „– keiner –“).
 	let suggestedEventId = $derived(suggestEvent(data.events, category, docDate || null));
-	let eventId = $derived(suggestedEventId ?? '');
-	// Default aus der Kategorie (Protokolle: an), per Checkbox überschreibbar.
+	let manualEventId = $state<string | null>(null);
+	let eventId = $derived(manualEventId ?? suggestedEventId ?? '');
+	let eventOnly = $derived(category === EVENT_ONLY_CATEGORY);
+	// Default aus der Kategorie (Protokolle: an), per Checkbox überschreibbar. Termin-
+	// Unterlagen nie: der Link der Benachrichtigung führt in die Ablage, wo sie fehlen.
 	let notify = $derived(notifyByDefault.includes(category));
 	let file = $state<File | null>(null);
 	let busy = $state(false);
@@ -52,12 +59,12 @@
 	]);
 
 	let eventHint = $derived(
-		category === 'termin_unterlage'
-			? 'Termin-Unterlagen erscheinen nur beim Termin, nicht in der Ablage.'
-			: suggestedEventId && eventId === suggestedEventId
-				? 'Vorgeschlagen nach Kategorie und Datum. Das Dokument erscheint in der Ablage und beim Termin.'
+		eventOnly
+			? EVENT_ONLY_HINT
+			: manualEventId === null && suggestedEventId
+				? `Vorgeschlagen nach dem Datum. ${LINKED_HINT}`
 				: eventId
-					? 'Das Dokument erscheint in der Ablage und beim Termin.'
+					? LINKED_HINT
 					: undefined
 	);
 
@@ -81,7 +88,7 @@
 			err = 'Bitte eine Datei wählen.';
 			return;
 		}
-		if (category === 'termin_unterlage' && !eventId) {
+		if (eventOnly && !eventId) {
 			err = 'Bitte den Termin wählen, zu dem die Unterlage gehört.';
 			return;
 		}
@@ -104,7 +111,7 @@
 		}
 
 		// Optional Mitglieder benachrichtigen.
-		if (notify) {
+		if (notify && !eventOnly) {
 			await supabase.rpc('notify_document', { p_document_id: res.id });
 		}
 
@@ -129,10 +136,10 @@
 			<Input label="Datum (Bezug, z. B. Sitzungsdatum)" type="date" bind:value={docDate} />
 			<Input label="Beschreibung" multiline bind:value={description} />
 			<Select
-				label={category === 'termin_unterlage' ? 'Termin' : 'Termin (optional)'}
+				label={eventOnly ? 'Termin' : 'Termin (optional)'}
 				hint={eventHint}
 				options={eventOptions}
-				bind:value={eventId}
+				bind:value={() => eventId, (v) => (manualEventId = v ?? '')}
 			/>
 		</Card>
 
@@ -141,7 +148,9 @@
 				<span class="filepick__label">Datei</span>
 				<FilePicker {file} disabled={busy} onpick={onFile} />
 			</div>
-			<Checkbox label="Mitglieder benachrichtigen" bind:checked={notify} />
+			{#if !eventOnly}
+				<Checkbox label="Mitglieder benachrichtigen" bind:checked={notify} />
+			{/if}
 		</Card>
 
 		{#if err}<p class="err">{err}</p>{/if}

@@ -14,7 +14,7 @@
 	} from '$lib/components/ui';
 	import { ChevronLeft, Plus } from '@lucide/svelte';
 	import { seriesDates, type Rhythm, type EventType } from '$lib/dates';
-	import { uploadDocument, MAX_FILE_BYTES } from '$lib/documents';
+	import { uploadDocument, EVENT_ONLY_CATEGORY, MAX_FILE_BYTES } from '$lib/documents';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -184,7 +184,7 @@
 				const res = await uploadDocument(supabase, {
 					file: docFile,
 					title: docFile.name.replace(/\.[^.]+$/, ''),
-					category: 'termin_unterlage',
+					category: EVENT_ONLY_CATEGORY,
 					eventId: created.id,
 					memberId: data.memberId
 				});

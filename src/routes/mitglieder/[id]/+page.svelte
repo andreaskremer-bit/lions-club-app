@@ -25,7 +25,9 @@
 		inviteMsg =
 			body.status === 'eingeladen'
 				? `Einladung an ${m.email} verschickt.`
-				: `Konto angelegt, aber die E-Mail ging nicht raus (${body.reason}). Bitte später erneut senden.`;
+				: body.status === 'unklar'
+					? 'Der Mailversand hat zu lange gedauert. Die Einladung ist möglicherweise trotzdem angekommen – bitte erst beim Mitglied nachfragen, bevor du sie erneut sendest.'
+					: `Konto angelegt, aber die E-Mail ging nicht raus (${body.reason}). Bitte später erneut senden.`;
 		await invalidateAll();
 	}
 

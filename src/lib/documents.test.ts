@@ -30,33 +30,29 @@ describe('inArchive', () => {
 });
 
 describe('suggestEvent', () => {
-	const now = new Date('2026-10-22T08:00:00Z');
-
 	it('nimmt den Clubabend am Protokolldatum', () => {
-		expect(suggestEvent(events, 'protokoll_clubabend', '2026-10-21', now)).toBe('ca-2110');
+		expect(suggestEvent(events, 'protokoll_clubabend', '2026-10-21')).toBe('ca-2110');
 	});
-	it('nimmt den letzten Clubabend vor dem Protokolldatum', () => {
-		expect(suggestEvent(events, 'protokoll_clubabend', '2026-10-20', now)).toBe('ca-0710');
+	it('schlägt ohne Clubabend am Protokolldatum nichts vor (kein Rückgriff auf ältere)', () => {
+		expect(suggestEvent(events, 'protokoll_clubabend', '2026-10-20')).toBeNull();
 	});
-	it('nimmt ohne Datum den letzten vergangenen Clubabend', () => {
-		expect(suggestEvent(events, 'protokoll_clubabend', null, now)).toBe('ca-2110');
+	it('schlägt ohne Datum nichts vor', () => {
+		expect(suggestEvent(events, 'protokoll_clubabend', null)).toBeNull();
 	});
 	it('wählt für MV-Protokolle die Mitgliederversammlung', () => {
-		expect(suggestEvent(events, 'protokoll_mv', '2026-10-22', now)).toBe('mv-1510');
+		expect(suggestEvent(events, 'protokoll_mv', '2026-10-15')).toBe('mv-1510');
+		expect(suggestEvent(events, 'protokoll_clubabend', '2026-10-15')).toBeNull();
 	});
 	it('zählt den Kalendertag in Europe/Berlin', () => {
 		// 23:30 UTC am 21.10. ist in Berlin schon der 22.10.
 		const late = [
 			{ id: 'spaet', starts_at: '2026-10-21T23:30:00+00:00', type: 'clubabend' as const }
 		];
-		expect(suggestEvent(late, 'protokoll_clubabend', '2026-10-21', now)).toBeNull();
-		expect(suggestEvent(late, 'protokoll_clubabend', '2026-10-22', now)).toBe('spaet');
+		expect(suggestEvent(late, 'protokoll_clubabend', '2026-10-21')).toBeNull();
+		expect(suggestEvent(late, 'protokoll_clubabend', '2026-10-22')).toBe('spaet');
 	});
 	it('macht für andere Kategorien keinen Vorschlag', () => {
-		expect(suggestEvent(events, 'satzung', '2026-10-21', now)).toBeNull();
-		expect(suggestEvent(events, 'sonstige', '2026-10-21', now)).toBeNull();
-	});
-	it('liefert null, wenn kein passender Termin existiert', () => {
-		expect(suggestEvent(events, 'protokoll_mv', '2026-10-01', now)).toBeNull();
+		expect(suggestEvent(events, 'satzung', '2026-10-21')).toBeNull();
+		expect(suggestEvent(events, 'termin_unterlage', '2026-10-21')).toBeNull();
 	});
 });

@@ -7,6 +7,9 @@
 	import { isOwnStoragePath, safeFileName } from '$lib/storagePath';
 	import {
 		categoryOptions,
+		EVENT_ONLY_CATEGORY,
+		EVENT_ONLY_HINT,
+		LINKED_HINT,
 		MAX_FILE_BYTES,
 		ACCEPTED_FILE_TYPES,
 		type DocumentCategory
@@ -59,7 +62,10 @@
 			err = 'Bitte einen Titel angeben.';
 			return;
 		}
-		if (category === 'termin_unterlage' && !eventId) {
+		// Nur neu entstehende Termin-Unterlagen ohne Termin abweisen. Eine Unterlage, deren
+		// Termin gelöscht wurde (event_id NULL), bleibt ohne Termin speicherbar.
+		const wasOrphan = doc.category === EVENT_ONLY_CATEGORY && !doc.event_id;
+		if (category === EVENT_ONLY_CATEGORY && !eventId && !wasOrphan) {
 			err = 'Bitte den Termin wählen, zu dem die Unterlage gehört.';
 			return;
 		}
@@ -163,11 +169,11 @@
 				<Input label="Datum (Bezug)" type="date" bind:value={docDate} />
 				<Input label="Beschreibung" multiline bind:value={description} />
 				<Select
-					label={category === 'termin_unterlage' ? 'Termin' : 'Termin (optional)'}
-					hint={category === 'termin_unterlage'
-						? 'Termin-Unterlagen erscheinen nur beim Termin, nicht in der Ablage.'
+					label={category === EVENT_ONLY_CATEGORY ? 'Termin' : 'Termin (optional)'}
+					hint={category === EVENT_ONLY_CATEGORY
+						? EVENT_ONLY_HINT
 						: eventId
-							? 'Das Dokument erscheint in der Ablage und beim Termin.'
+							? LINKED_HINT
 							: undefined}
 					options={eventOptions}
 					bind:value={eventId}

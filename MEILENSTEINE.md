@@ -559,3 +559,15 @@ Anlass: Vier Clubabend-Protokolle (05.08., 02.09., 07.10., 21.10.) fehlten in de
 - Changelog-Eintrag 2026-10-22.
 
 **Grün.** 120 Unit-Tests (neu `src/lib/documents.test.ts`) · 170 pgTAP (`event_document_rls_test.sql` erweitert) · lokal per Playwright: Ablage zeigt verknüpftes Protokoll, Filter-Chips ohne Termin-Unterlage, Vorschlag greift und lässt sich überschreiben.
+
+### Review der Änderungen seit 2026-10-04 (`/code-review high db623b2..HEAD`, 2026-10-22)
+
+10 Befunde, 8 behoben, 1 offen zur Besprechung, 1 verworfen.
+
+- **Termin-Vorschlag** schlägt nur noch den Termin **genau am Protokolldatum** vor (Kalendertag Europe/Berlin); ohne Datum kein Vorschlag. Vorher: „letzter am oder vor dem Datum“ – konnte den noch nicht stattgefundenen Clubabend von heute Abend treffen und Protokolle ohne eigenen Termin an Wochen alte Termine hängen. Eine Auswahl von Hand (auch „– keiner –“) wird nicht mehr überschrieben, wenn sich Datum oder Kategorie ändern (Function-Binding auf `manualEventId`).
+- **Termin-Unterlagen:** keine Checkbox „Mitglieder benachrichtigen“ (der Link führte in die Ablage, wo sie fehlen); verwaiste Unterlagen (Termin gelöscht) bleiben bearbeitbar; am Termin lassen sich nur noch Termin-Unterlagen löschen – Protokolle nur in der Ablage, weil „Löschen“ am Termin nach „Verknüpfung lösen“ aussah, das Dokument aber ganz entfernte. Kategorie und Hinweistexte zentral (`EVENT_ONLY_CATEGORY`, `EVENT_ONLY_HINT`, `LINKED_HINT`).
+- **Einladung:** Aufruf von `send-invite` mit 8-s-Zeitlimit (unter dem Netlify-Limit). Bei Zeitüberschreitung Status `unklar` und der Hinweis, vor erneutem Senden nachzufragen – sonst meldete die UI „fehlgeschlagen“, obwohl die Mail raus sein konnte, und ein zweiter Klick schickte doppelt.
+- **Offen (Befund 9):** Die Profilseite lädt `first_login_at`/`invite_sent_at` für jeden Betrachter; die Spalten sind per RLS ohnehin für alle Mitglieder lesbar. Wird gesondert besprochen.
+- **Verworfen:** Backfill in `20261007120100` schaltete pauschal alle ein – betraf damals nur die zwei neuen Mitglieder; Migration ist angewendet und bleibt unverändert.
+
+**Grün.** 119 Unit-Tests · lokal per Playwright: Vorschlag nur bei passendem Datum, Auswahl von Hand bleibt, Checkbox bei Termin-Unterlage weg, am Termin kein Löschen-Knopf beim Protokoll.

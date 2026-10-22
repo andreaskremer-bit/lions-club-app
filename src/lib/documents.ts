@@ -43,6 +43,12 @@ export const ARCHIVE_FILTER = `category.neq.${EVENT_ONLY_CATEGORY},event_id.is.n
 export const inArchive = (d: Pick<DocumentRow, 'category' | 'event_id'>): boolean =>
 	d.category !== EVENT_ONLY_CATEGORY || d.event_id === null;
 
+/** Hinweis unter dem Termin-Feld, wenn „Termin-Unterlage“ gewählt ist. */
+export const EVENT_ONLY_HINT = 'Termin-Unterlagen erscheinen nur beim Termin, nicht in der Ablage.';
+
+/** Hinweis unter dem Termin-Feld, wenn ein Ablage-Dokument verknüpft ist. */
+export const LINKED_HINT = 'Das Dokument erscheint in der Ablage und beim Termin.';
+
 /** Kategorien für die Filter-Chips der Ablage (ohne Termin-Unterlage). */
 export const archiveCategoryOptions = categoryOptions.filter(
 	(o) => o.value !== EVENT_ONLY_CATEGORY
@@ -64,27 +70,22 @@ const BERLIN_DATE = new Intl.DateTimeFormat('en-CA', {
 });
 
 /**
- * Schlägt zu einem Protokoll den passenden Termin vor: den letzten Termin des
- * passenden Typs am oder vor dem Protokolldatum (ohne Datum: vor jetzt). Kalendertag in
- * Europe/Berlin, damit ein Clubabend um 19 Uhr zum gleichen Datum zählt. Andere
- * Kategorien: kein Vorschlag (null).
+ * Schlägt zu einem Protokoll den Termin vor, der GENAU am Protokolldatum stattfand
+ * (Kalendertag in Europe/Berlin, passender Typ). Ohne Datum, ohne Treffer oder bei
+ * anderen Kategorien: kein Vorschlag (null). Bewusst kein „letzter davor“ – das hätte
+ * Protokolle ohne eigenen Clubabend an Wochen zurückliegende Termine gehängt.
  */
 export function suggestEvent(
 	events: SuggestableEvent[],
 	category: DocumentCategory,
-	docDate: string | null,
-	now: Date = new Date()
+	docDate: string | null
 ): string | null {
 	const type = protocolEventType[category];
-	if (!type) return null;
-	const limit = docDate || BERLIN_DATE.format(now);
-	let best: SuggestableEvent | null = null;
-	for (const ev of events) {
-		if (ev.type !== type) continue;
-		if (BERLIN_DATE.format(new Date(ev.starts_at)) > limit) continue;
-		if (!best || Date.parse(ev.starts_at) > Date.parse(best.starts_at)) best = ev;
-	}
-	return best?.id ?? null;
+	if (!type || !docDate) return null;
+	const match = events
+		.filter((ev) => ev.type === type && BERLIN_DATE.format(new Date(ev.starts_at)) === docDate)
+		.sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at));
+	return match[0]?.id ?? null;
 }
 
 /** Kategorien, bei denen „Mitglieder benachrichtigen“ sinnvoll vorbelegt ist. */
