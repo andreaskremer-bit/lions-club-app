@@ -27,9 +27,11 @@
 		...rest
 	}: Props = $props();
 
-	let fieldId = $derived(
-		id || (label ? `f-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined)
-	);
+	// Eindeutig je Instanz – aus dem Label abgeleitete IDs kollidierten bei gleich
+	// beschrifteten Feldern (Mitglied/Partner, Beginn/Ende).
+	const uid = $props.id();
+	let fieldId = $derived(id || uid);
+	let noteId = $derived(error || hint ? `${fieldId}-note` : undefined);
 	let inputCls = $derived(
 		['lc-input', icon ? 'lc-input--has-icon' : '', error ? 'lc-input--error' : '']
 			.filter(Boolean)
@@ -46,15 +48,28 @@
 	<div class="lc-input-wrap">
 		{#if icon}<span class="lc-input__icon">{@render icon()}</span>{/if}
 		{#if multiline}
-			<textarea id={fieldId} class={inputCls} aria-invalid={!!error} bind:value {...rest}
+			<textarea
+				id={fieldId}
+				class={inputCls}
+				aria-invalid={!!error}
+				aria-describedby={noteId}
+				bind:value
+				{...rest}
 			></textarea>
 		{:else}
-			<input id={fieldId} class={inputCls} aria-invalid={!!error} bind:value {...rest} />
+			<input
+				id={fieldId}
+				class={inputCls}
+				aria-invalid={!!error}
+				aria-describedby={noteId}
+				bind:value
+				{...rest}
+			/>
 		{/if}
 	</div>
 	{#if error}
-		<p class="lc-field__error">{error}</p>
+		<p id={noteId} class="lc-field__error">{error}</p>
 	{:else if hint}
-		<p class="lc-field__hint">{hint}</p>
+		<p id={noteId} class="lc-field__hint">{hint}</p>
 	{/if}
 </div>

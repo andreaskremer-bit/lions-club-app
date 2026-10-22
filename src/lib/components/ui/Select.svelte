@@ -28,9 +28,10 @@
 		...rest
 	}: Props = $props();
 
-	let fieldId = $derived(
-		id || (label ? `s-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined)
-	);
+	// Eindeutig je Instanz (siehe Input).
+	const uid = $props.id();
+	let fieldId = $derived(id || uid);
+	let noteId = $derived(hint ? `${fieldId}-note` : undefined);
 	const optValue = (o: SelectOption<T>) => (typeof o === 'string' ? o : o.value);
 	const optLabel = (o: SelectOption<T>) => (typeof o === 'string' ? o : o.label);
 </script>
@@ -38,11 +39,11 @@
 <div class={['lc-field', extra].filter(Boolean).join(' ')}>
 	{#if label}<label class="lc-field__label" for={fieldId}>{label}</label>{/if}
 	<div class="lc-select-field">
-		<select id={fieldId} class="lc-select" bind:value {...rest}>
+		<select id={fieldId} class="lc-select" aria-describedby={noteId} bind:value {...rest}>
 			{#if placeholder}<option value="" disabled>{placeholder}</option>{/if}
 			{#each options as o (optValue(o))}<option value={optValue(o)}>{optLabel(o)}</option>{/each}
 		</select>
 		<span class="lc-select__chev"><ChevronDown /></span>
 	</div>
-	{#if hint}<p class="lc-field__hint">{hint}</p>{/if}
+	{#if hint}<p id={noteId} class="lc-field__hint">{hint}</p>{/if}
 </div>
