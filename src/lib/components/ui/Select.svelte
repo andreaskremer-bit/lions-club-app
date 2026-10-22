@@ -38,7 +38,7 @@
 <div class={['lc-field', extra].filter(Boolean).join(' ')}>
 	{#if label}<label class="lc-field__label" for={fieldId}>{label}</label>{/if}
 	<div class="lc-select-field">
-		<select {id} class="lc-select" bind:value {...rest}>
+		<select id={fieldId} class="lc-select" bind:value {...rest}>
 			{#if placeholder}<option value="" disabled>{placeholder}</option>{/if}
 			{#each options as o (optValue(o))}<option value={optValue(o)}>{optLabel(o)}</option>{/each}
 		</select>
