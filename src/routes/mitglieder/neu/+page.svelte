@@ -23,7 +23,10 @@
 	let phone_office = $state('');
 	let city = $state('');
 	let birthday = $state('');
-	let joined_on = $state('');
+	// Vorbelegt mit heute (Berlin): Termine vor dem Eintritt zählen bei der Anwesenheit nicht.
+	let joined_on = $state(
+		new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date())
+	);
 
 	let saving = $state(false);
 	let error = $state('');

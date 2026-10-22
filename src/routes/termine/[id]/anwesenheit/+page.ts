@@ -6,7 +6,15 @@ export type AttMember = {
 	first_name: string;
 	last_name: string;
 	status: 'aktiv' | 'inaktiv' | 'ehrenmitglied';
+	joined_on: string | null;
 };
+
+const BERLIN_DATE = new Intl.DateTimeFormat('en-CA', {
+	timeZone: 'Europe/Berlin',
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit'
+});
 
 export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase, permissions } = await parent();
@@ -21,7 +29,10 @@ export const load: PageLoad = async ({ parent, params }) => {
 			.select('id, title, type, starts_at, donation_required')
 			.eq('id', params.id)
 			.maybeSingle(),
-		supabase.from('member').select('id, first_name, last_name, status').order('last_name'),
+		supabase
+			.from('member')
+			.select('id, first_name, last_name, status, joined_on')
+			.order('last_name'),
 		supabase.from('attendance').select('member_id, present').eq('event_id', params.id),
 		supabase.from('event_response').select('member_id, status').eq('event_id', params.id)
 	]);
@@ -53,5 +64,13 @@ export const load: PageLoad = async ({ parent, params }) => {
 		rsvp[r.member_id] = r.status;
 	}
 
-	return { event, members: (memRes.data ?? []) as AttMember[], attendance, rsvp };
+	// Wer erst nach dem Termin eingetreten ist, gehört nicht in die Erfassung – sonst
+	// bekäme er beim (erneuten) Speichern eines älteren Termins eine Abwesenheit. Bereits
+	// erfasste Zeilen bleiben sichtbar, damit sie korrigierbar sind.
+	const eventDay = BERLIN_DATE.format(new Date(event.starts_at));
+	const members = ((memRes.data ?? []) as AttMember[]).filter(
+		(m) => !m.joined_on || m.joined_on <= eventDay || m.id in attendance
+	);
+
+	return { event, members, attendance, rsvp };
 };

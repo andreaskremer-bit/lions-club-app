@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Button, Card, Select } from '$lib/components/ui';
+	import { AppBar, IconButton, Button, Card, Select, HintCard } from '$lib/components/ui';
 	import type { SelectOption } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
 	import { lionsStartYear } from '$lib/dates';
 	import { csvRow, downloadCsv } from '$lib/csv';
+	import { buildRows, unrecordedEvents, statusLabel, type AttRow } from '$lib/auswertung';
 
 	let { data } = $props();
 
@@ -46,7 +47,6 @@
 
 	// Anwesenheit nur für die Termine des gewählten Lions-Jahres laden (gut 400 Zeilen statt
 	// des ganzen Bestands, der an die 1000-Zeilen-Grenze von PostgREST stößt).
-	type AttRow = { event_id: string; member_id: string; present: boolean };
 	let attendance = $state<AttRow[]>([]);
 	let loadingAtt = $state(false);
 	let attError = $state('');
@@ -77,34 +77,41 @@
 			});
 	});
 
-	type Row = { id: string; name: string; abwesend: number; anwesend: number; erfasst: number };
-	let rows = $derived.by((): Row[] => {
-		return data.members.map((m) => {
-			let abwesend = 0;
-			let anwesend = 0;
-			for (const a of attendance) {
-				if (a.member_id !== m.id) continue;
-				if (a.present) anwesend++;
-				else abwesend++;
-			}
-			return {
-				id: m.id,
-				name: `${m.last_name}, ${m.first_name}`,
-				abwesend,
-				anwesend,
-				erfasst: anwesend + abwesend
-			};
+	let rows = $derived(buildRows(data.members, attendance));
+	let pastEvents = $derived(eventsInPeriod.filter((e) => new Date(e.starts_at) < new Date()));
+	let missing = $derived(loadingAtt ? [] : unrecordedEvents(eventsInPeriod, attendance));
+	const eventDate = (iso: string) =>
+		new Date(iso).toLocaleDateString('de-DE', {
+			timeZone: 'Europe/Berlin',
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric'
 		});
-	});
 
 	let totalAbsences = $derived(rows.reduce((s, r) => s + r.abwesend, 0));
 
 	function exportCsv() {
-		const head = ['Nachname', 'Vorname', 'Abwesenheiten', 'Anwesend', 'Erfasste Termine'];
+		const head = [
+			'Nachname',
+			'Vorname',
+			'Status (heute)',
+			'Abwesenheiten',
+			'Anwesend',
+			'Erfasste Termine'
+		];
 		const lines = [csvRow(head)];
-		for (const m of data.members) {
-			const r = rows.find((x) => x.id === m.id)!;
-			lines.push(csvRow([m.last_name, m.first_name, r.abwesend, r.anwesend, r.erfasst]));
+		for (const r of rows) {
+			const m = data.members.find((x) => x.id === r.id)!;
+			lines.push(
+				csvRow([
+					m.last_name,
+					m.first_name,
+					statusLabel[r.status],
+					r.abwesend,
+					r.anwesend,
+					r.erfasst
+				])
+			);
 		}
 		downloadCsv(lines, `abwesenheiten_${selectedYear}-${selectedYear + 1}.csv`);
 	}
@@ -138,11 +145,21 @@
 		</div>
 
 		<p class="summary">
-			{eventsInPeriod.length} spendenpflichtige Termine · {totalAbsences} Abwesenheiten gesamt (aktive
-			Mitglieder)
+			{pastEvents.length === 1
+				? '1 spendenpflichtiger Termin'
+				: `${pastEvents.length} spendenpflichtige Termine`} bisher, davon {pastEvents.length -
+				missing.length} erfasst · {totalAbsences}
+			{totalAbsences === 1 ? 'Abwesenheit' : 'Abwesenheiten'} gesamt
 		</p>
 
 		{#if attError}<p class="summary">{attError}</p>{/if}
+
+		{#if missing.length}
+			<HintCard tone="warning" title="Anwesenheit noch nicht erfasst">
+				{missing.map((e) => `${eventDate(e.starts_at)} ${e.title}`).join('; ')}. Diese Termine
+				zählen für niemanden als Abwesenheit, bis die Anwesenheit erfasst ist.
+			</HintCard>
+		{/if}
 
 		<Card>
 			<table class="tbl">
@@ -152,7 +169,10 @@
 				<tbody>
 					{#each rows as r (r.id)}
 						<tr>
-							<td>{r.name}</td>
+							<td>
+								{r.name}
+								{#if r.status !== 'aktiv'}<span class="st">heute {statusLabel[r.status]}</span>{/if}
+							</td>
 							<td class="num">{r.abwesend}</td>
 							<td class="num muted">{r.erfasst}</td>
 						</tr>
@@ -161,7 +181,9 @@
 			</table>
 		</Card>
 		<p class="hint">
-			Abwesenheiten = nicht anwesend bei spendenpflichtigen Terminen im gewählten Lions-Jahr. Der
+			Abwesenheiten = nicht anwesend bei spendenpflichtigen Terminen im gewählten Lions-Jahr. Wer
+			heute inaktiv oder Ehrenmitglied ist, aber erfasste Termine hat, steht mit seinem heutigen
+			Status in der Liste – ob eine Befreiung für den Zeitraum gilt, entscheidest du. Der
 			Spendenbetrag wird außerhalb der App verrechnet. Anwesenheitsdaten werden nach zwei
 			Lions-Jahren automatisch gelöscht; das laufende und das abgeschlossene Vorjahr sind immer
 			vollständig.
@@ -182,6 +204,11 @@
 	.controls :global(.year) {
 		flex: 0 0 auto;
 		min-width: 10rem;
+	}
+	.st {
+		display: block;
+		color: var(--text-secondary);
+		font-size: var(--text-sm);
 	}
 	.summary {
 		font-size: var(--text-sm);

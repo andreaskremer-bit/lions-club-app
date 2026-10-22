@@ -41,9 +41,10 @@
 	let partner_birthday_show_age = $state(init.partner_birthday_show_age ?? true);
 	let partner_email = $state(init.partner_email ?? '');
 	let partner_mobile = $state(init.partner_mobile ?? '');
-	// Status + Mitgliedsnummer nur für Berechtigte (Spaltenschutz-Trigger)
+	// Status, Mitgliedsnummer, Eintrittsdatum nur für Berechtigte (Spaltenschutz-Trigger)
 	let status = $state<MemberStatus>(init.status);
 	let lions_member_no = $state(init.lions_member_no ?? '');
+	let joined_on = $state(init.joined_on ?? '');
 	const statusOptions: { value: MemberStatus; label: string }[] = [
 		{ value: 'aktiv', label: 'aktiv' },
 		{ value: 'inaktiv', label: 'inaktiv' },
@@ -143,10 +144,12 @@
 			partner_email: orNull(partner_email),
 			partner_mobile: orNull(partner_mobile)
 		};
-		// Status + Mitgliedsnummer nur mit edit_member_master (sonst Spaltenschutz-Trigger).
+		// Status, Mitgliedsnummer, Eintrittsdatum nur mit edit_member_master (sonst
+		// Spaltenschutz-Trigger).
 		if (data.canEditMaster) {
 			payload.status = status;
 			payload.lions_member_no = orNull(lions_member_no);
+			payload.joined_on = orNull(joined_on);
 		}
 
 		const { error: err } = await supabase.from('member').update(payload).eq('id', m.id);
@@ -176,9 +179,19 @@
 	}
 
 	async function removeMember() {
+		// Erfasste Anwesenheit fällt beim Löschen weg (Cascade) und fehlt dann in der
+		// Auswertung des Schatzmeisters. Ältere als zwei Lions-Jahre gibt es nicht mehr
+		// (monatliche Bereinigung) – jede vorhandene Zeile zählt also noch.
+		const { count } = await supabase
+			.from('attendance')
+			.select('event_id', { count: 'exact', head: true })
+			.eq('member_id', m.id);
+		const warning = count
+			? `\n\nFür ${m.first_name} ${m.last_name} ${count === 1 ? 'ist 1 Anwesenheit' : `sind ${count} Anwesenheiten`} aus dem laufenden oder vorigen Lions-Jahr erfasst. Beim Löschen gehen sie verloren und fehlen in der Auswertung des Schatzmeisters. Bei einem Austritt besser erst auf „inaktiv“ setzen und nach dem Einzug der Abwesenheitsspenden löschen.`
+			: '';
 		if (
 			!confirm(
-				`${m.first_name} ${m.last_name} wirklich löschen? Das kann nicht rückgängig gemacht werden.`
+				`${m.first_name} ${m.last_name} wirklich löschen? Das kann nicht rückgängig gemacht werden.${warning}`
 			)
 		)
 			return;
@@ -247,6 +260,12 @@
 				{#if data.canEditMaster}
 					<Select label="Status" options={statusOptions} bind:value={status} />
 					<Input label="Lions-Mitgliedsnummer" bind:value={lions_member_no} />
+					<Input
+						label="Mitglied seit"
+						type="date"
+						bind:value={joined_on}
+						hint="Termine vor diesem Datum zählen bei der Anwesenheit nicht."
+					/>
 				{/if}
 			</Card>
 

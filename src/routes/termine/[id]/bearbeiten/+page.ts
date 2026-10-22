@@ -16,13 +16,25 @@ export type EditEvent = {
 
 export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase } = await parent();
-	const { data } = await supabase
-		.from('event')
-		.select(
-			'id, title, type, speaker, location, starts_at, ends_at, description, reminder_days_before'
-		)
-		.eq('id', params.id)
-		.maybeSingle();
-	if (!data) throw error(404, 'Termin nicht gefunden');
-	return { event: data as EditEvent };
+	const [evRes, attRes, compRes] = await Promise.all([
+		supabase
+			.from('event')
+			.select(
+				'id, title, type, speaker, location, starts_at, ends_at, description, reminder_days_before'
+			)
+			.eq('id', params.id)
+			.maybeSingle(),
+		// Anzahl erfasster Anwesenheiten (nur die Zahl – attendance selbst ist Spendengrundlage).
+		supabase.rpc('event_attendance_count', { p_event: params.id }),
+		supabase
+			.from('companion')
+			.select('id, event_response!inner(event_id)', { count: 'exact', head: true })
+			.eq('event_response.event_id', params.id)
+	]);
+	if (!evRes.data) throw error(404, 'Termin nicht gefunden');
+	return {
+		event: evRes.data as EditEvent,
+		attendanceCount: (attRes.data as number | null) ?? 0,
+		companionCount: compRes.count ?? 0
+	};
 };

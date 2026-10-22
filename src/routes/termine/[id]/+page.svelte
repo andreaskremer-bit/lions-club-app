@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { AppBar, IconButton, Button, Card, Tag, Input } from '$lib/components/ui';
+	import { AppBar, IconButton, Button, Card, Tag, Input, StatusBadge } from '$lib/components/ui';
 	import AnswerField from '$lib/components/AnswerField.svelte';
 	import EventDocuments from '$lib/components/EventDocuments.svelte';
 	import {
@@ -157,11 +157,11 @@
 	}
 
 	// ── Zusatzabfragen beantworten ──────────────────────────────────────────────
-	// Respondenten: das Mitglied selbst (id = null) + eigene Begleitpersonen.
-	// Wer abgesagt hat, beantwortet die Zusatzfragen nicht selbst – nur für angemeldete
-	// Begleitpersonen.
+	// Respondenten: das Mitglied selbst (id = null, nur mit Zusage) + eigene Begleitpersonen.
+	// Ohne Zusage keine eigene Antwort (RLS may_answer): Sonst hielt man sich nach dem
+	// Beantworten für angemeldet, zählte aber weiter als „offen“.
 	let respondents = $derived([
-		...(ownStatus === 'abgesagt' ? [] : [{ id: null as string | null, label: 'Du' }]),
+		...(ownStatus === 'zugesagt' ? [{ id: null as string | null, label: 'Du' }] : []),
 		...(myResponse?.companion ?? []).map((c) => ({ id: c.id as string | null, label: c.name }))
 	]);
 
@@ -302,13 +302,23 @@
 
 		<!-- Eigene Rückmeldung -->
 		<Card>
-			<h2 class="sec">Deine Rückmeldung</h2>
+			<div class="sec-row">
+				<h2 class="sec">Deine Rückmeldung</h2>
+				{#if ownStatus}
+					<StatusBadge status={ownStatus === 'zugesagt' ? 'yes' : 'no'} />
+				{:else if !data.isPast}
+					<StatusBadge status="open" />
+				{/if}
+			</div>
 			{#if data.isPast}
 				<p class="muted">
-					{data.isRunning
+					{!ownStatus ? 'Du hast keine Rückmeldung gegeben. ' : ''}{data.isRunning
 						? 'Der Termin hat begonnen – keine Änderung mehr möglich.'
 						: 'Vergangener Termin – keine Änderung möglich.'}
 				</p>
+				{#if myResponse?.comment}<p class="own-comment">
+						Dein Kommentar: {myResponse.comment}
+					</p>{/if}
 			{:else}
 				<div class="rsvp">
 					<Button
@@ -409,7 +419,13 @@
 					</p>
 				{/if}
 				{#if respondents.length === 0}
-					<p class="muted">Du hast abgesagt – keine Angaben nötig.</p>
+					<p class="muted">
+						{ownStatus === 'abgesagt'
+							? 'Du hast abgesagt – keine Angaben nötig.'
+							: data.isPast
+								? 'Du hast keine Rückmeldung gegeben.'
+								: 'Sag zuerst zu, dann kannst du die Fragen beantworten.'}
+					</p>
 				{/if}
 				{#each respondents.length ? data.questions : [] as q (q.id)}
 					<div class="q-block">
@@ -505,6 +521,21 @@
 </div>
 
 <style>
+	.sec-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+	.sec-row .sec {
+		margin: 0;
+	}
+	.own-comment {
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
+	}
 	.head {
 		display: flex;
 		flex-direction: column;

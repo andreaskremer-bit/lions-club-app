@@ -95,11 +95,13 @@
 	const isTimedType = (t: EventType) => t === 'clubabend' || t === 'versammlung';
 	const plus2h = (d: Date) => new Date(d.getTime() + 2 * 60 * 60 * 1000);
 
-	// Ort vorbelegen (überschreibbar): bei Clubabend/MV das Vereinslokal.
+	// Ort vorbelegen (überschreibbar): bei Clubabend/MV das Vereinslokal. Bei anderen
+	// Typen einen nur vorgeschlagenen Ort wieder leeren (wie beim Ende) – sonst stand bei
+	// Reise oder Geselligem das Vereinslokal, weil der Standardtyp Club-Abend ist.
 	$effect(() => {
-		if (!locationTouched && isTimedType(type) && !location && data.venueLocation) {
-			location = data.venueLocation;
-		}
+		if (locationTouched || !data.venueLocation) return;
+		if (isTimedType(type) && !location) location = data.venueLocation;
+		else if (!isTimedType(type) && location === data.venueLocation) location = '';
 	});
 
 	// Ende vorschlagen (überschreibbar): bei Clubabend/MV Beginn + 2 Std. Bei anderen Typen

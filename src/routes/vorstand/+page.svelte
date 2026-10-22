@@ -2,7 +2,15 @@
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Button, Input, Card, SegmentedControl } from '$lib/components/ui';
+	import {
+		AppBar,
+		IconButton,
+		Button,
+		Input,
+		Card,
+		SegmentedControl,
+		HintCard
+	} from '$lib/components/ui';
 	import { ChevronLeft, X, Save } from '@lucide/svelte';
 	import type { AmtCluster, Assignment } from './+page';
 
@@ -68,8 +76,23 @@
 		assignments.push({ member_id: memberId, amt_id: amtId, lions_year: year });
 	}
 
+	// April–Juni: Hinweis, wenn das kommende Lions-Jahr noch leer ist. Ohne Eintrag
+	// übernimmt der stündliche Job offices-rollover am 1.7. die Ämter (kein Lockout), aber
+	// der Vorstand soll die Nachfolge bewusst eintragen.
+	let nextYearEmpty = $derived(!assignments.some((a) => a.lions_year === cy + 1));
+	const month = new Date().getMonth(); // 3 = April
+	const showNextYearHint = month >= 3 && month <= 5;
+
 	async function unassign(amtId: string, memberId: string) {
 		if (busy) return;
+		if (
+			memberId === data.memberId &&
+			year === cy &&
+			!confirm(
+				'Du entfernst dich selbst aus diesem Amt im laufenden Lions-Jahr. Rechte, die daran hängen, verlierst du sofort. Fortfahren?'
+			)
+		)
+			return;
 		busy = true;
 		err = '';
 		const { error } = await supabase
@@ -138,6 +161,12 @@
 		<SegmentedControl options={yearOptions} bind:value={yearStr} />
 		{#if pastPraesident}
 			<p class="pastp">Past-Präsident: <strong>{pastPraesident}</strong></p>
+		{/if}
+		{#if showNextYearHint && nextYearEmpty}
+			<HintCard tone="warning" title="Kommendes Lions-Jahr noch nicht besetzt">
+				Trag die Ämter für {ljLabel(cy + 1)} ein. Ohne Eintrag übernimmt die App am 1. Juli die Ämter
+				des laufenden Jahres, damit niemand seine Rechte verliert.
+			</HintCard>
 		{/if}
 		{#if err}<p class="err">{err}</p>{/if}
 

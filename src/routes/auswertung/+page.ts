@@ -1,8 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-
-export type AuswMember = { id: string; first_name: string; last_name: string };
-export type AuswEvent = { id: string; title: string; starts_at: string };
+import type { AuswMember, AuswEvent } from '$lib/auswertung';
 
 export const load: PageLoad = async ({ parent }) => {
 	const { supabase, permissions } = await parent();
@@ -15,8 +13,9 @@ export const load: PageLoad = async ({ parent }) => {
 	const [membersRes, eventsRes] = await Promise.all([
 		supabase
 			.from('member')
-			.select('id, first_name, last_name')
-			.eq('status', 'aktiv')
+			// Alle Status: wer inzwischen inaktiv oder Ehrenmitglied ist, behält seine
+			// erfassten Abwesenheiten (buildRows filtert).
+			.select('id, first_name, last_name, status')
 			.order('last_name')
 			.order('first_name'),
 		supabase

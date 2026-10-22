@@ -73,9 +73,11 @@
 		new Set(data.members.filter((m) => m.status === 'aktiv').map((m) => m.id))
 	);
 
-	function ownStatus(e: EventListItem): Status {
+	// Ohne Rückmeldung: „Offen“ nur, solange man noch reagieren kann. Ab Beginn (RSVP-
+	// Sperre) kein Badge – „Offen“ bei vergangenen Terminen las sich wie eine Aufforderung.
+	function ownStatus(e: EventListItem): Status | undefined {
 		const r = e.event_response.find((x) => x.member_id === data.myMemberId);
-		if (!r) return 'open';
+		if (!r) return new Date(e.starts_at).getTime() > now ? 'open' : undefined;
 		return r.status === 'zugesagt' ? 'yes' : 'no';
 	}
 
@@ -251,7 +253,7 @@
 						<a class="day-ev" href={resolve('/termine/[id]', { id: e.id })}>
 							<span class="day-ev__time">{timeFmt.format(new Date(e.starts_at))}</span>
 							<span class="day-ev__title">{e.title}</span>
-							<StatusBadge status={ownStatus(e)} />
+							{#if ownStatus(e)}<StatusBadge status={ownStatus(e)} />{/if}
 						</a>
 					{/each}
 				</div>

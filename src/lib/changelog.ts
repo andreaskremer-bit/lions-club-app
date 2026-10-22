@@ -42,6 +42,18 @@ export const CHANGELOG: ChangelogEntry[] = [
 			{
 				kind: 'verbessert',
 				text: 'Beim Hinzufügen eines Protokolls schlägt die App den passenden Clubabend bzw. die Mitgliederversammlung vor.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Auf der Termin-Seite steht deine Rückmeldung jetzt als „Zugesagt“ oder „Abgesagt“ – auch nach Beginn des Termins.'
+			},
+			{
+				kind: 'verbessert',
+				text: 'Zusatzfragen beantwortest du nach deiner Zusage. Dein Kommentar zur Rückmeldung erscheint jetzt in der Teilnehmerliste.'
+			},
+			{
+				kind: 'behoben',
+				text: 'Erinnerungen kommen auch bei kurzfristig angelegten Terminen. An deinem Geburtstag bekommst du keine Benachrichtigung mehr über dich selbst, und vergangene Termine zeigen nicht mehr „Offen“.'
 			}
 		]
 	},

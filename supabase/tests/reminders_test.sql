@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(15);
 
 truncate auth.users, public.event cascade;
 
@@ -46,10 +46,11 @@ select is(
   0, 'Wer geantwortet hat, wird nicht erinnert'
 );
 
--- (3) Geburtstag (Anna) -> eine Benachrichtigung je freigeschaltetem Mitglied (3).
+-- (3) Geburtstag (Anna) -> eine Benachrichtigung je freigeschaltetem Mitglied außer
+-- Anna selbst (Bert + Sina = 2; seit 20261022120500).
 select is(
   (select count(*)::int from public.notification where kind = 'birthday'),
-  3, 'Geburtstag geht an alle freigeschalteten Mitglieder'
+  2, 'Geburtstag geht an alle freigeschalteten Mitglieder außer dem Geburtstagskind'
 );
 
 -- (4) Anwesenheits-Erinnerung ist pausiert -> auch der Vorstand (Sina) bekommt keine.
@@ -80,11 +81,44 @@ select is(
   2, 'Gate filtert beim Erzeugen, nicht erst beim Versand'
 );
 
--- (8) Idempotent: erneuter Lauf erzeugt keine Duplikate (2 Termin + 3 Geburtstag).
+-- (8) Idempotent: erneuter Lauf erzeugt keine Duplikate (2 Termin + 2 Geburtstag).
 select public.enqueue_due_reminders(date '2026-09-15');
 select is(
   (select count(*)::int from public.notification),
-  5, 'Zweiter Lauf erzeugt keine Duplikate (2 + 3)'
+  4, 'Zweiter Lauf erzeugt keine Duplikate (2 + 2)'
+);
+
+-- (8a) Am Folgetag (Vorlauf noch offen) kein zweiter Termin-Reminder für dieselben.
+select public.enqueue_due_reminders(date '2026-09-16');
+select is(
+  (select count(*)::int from public.notification where kind = 'event_reminder'),
+  2, 'Termin-Reminder höchstens einmal je Termin und Mitglied'
+);
+
+-- (8b) Kurzfristig angelegter Termin (2 Tage vorher, Vorlauf 3): wird nachgeholt.
+insert into public.event (id, title, type, starts_at) values
+  ('00000000-0000-0000-0000-0000000a5003', 'Kurzfristig', 'gesellig', timestamptz '2026-09-18 19:00+02');
+select public.enqueue_due_reminders(date '2026-09-16');
+select is(
+  (select count(*)::int from public.notification
+    where kind = 'event_reminder' and event_id = '00000000-0000-0000-0000-0000000a5003'),
+  3, 'Termin innerhalb des Vorlaufs angelegt: Reminder kommt beim nächsten Lauf'
+);
+
+-- (8c) Termin am selben Tag, aber schon vor 09:00 begonnen: kein Reminder mehr.
+insert into public.event (id, title, type, starts_at) values
+  ('00000000-0000-0000-0000-0000000a5004', 'Frühstück', 'gesellig', timestamptz '2026-09-17 08:00+02');
+select public.enqueue_due_reminders(date '2026-09-17');
+select is(
+  (select count(*)::int from public.notification
+    where kind = 'event_reminder' and event_id = '00000000-0000-0000-0000-0000000a5004'),
+  0, 'Bereits begonnener Termin bekommt keinen Reminder'
+);
+
+-- (8d) Kein Geburtstagskind bekommt die eigene Geburtstags-Benachrichtigung.
+select is(
+  (select count(*)::int from public.notification where kind = 'birthday' and recipient_id = subject_member_id),
+  0, 'Geburtstagskind wird nicht über sich selbst benachrichtigt'
 );
 
 -- (9–11) Nur Cron (postgres) und die Admin-Route (service_role) dürfen den Tageslauf

@@ -5,11 +5,16 @@
 	import { AppBar, IconButton, Input, Select, Button, Card } from '$lib/components/ui';
 	import EventDocuments from '$lib/components/EventDocuments.svelte';
 	import { ChevronLeft, Trash2 } from '@lucide/svelte';
-	import type { EventType } from '$lib/dates';
+	import { companionAllowed, type EventType } from '$lib/dates';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
 	let canManage = $derived((data.permissions ?? []).includes('manage_events'));
+	// Termine mit erfasster Anwesenheit (Spendengrundlage): Löschen und Typwechsel nur mit
+	// record_attendance – die Datenbank sperrt es sonst ohnehin (event_guard_attendance).
+	let attendanceLocked = $derived(
+		data.attendanceCount > 0 && !(data.permissions ?? []).includes('record_attendance')
+	);
 
 	const typeLabel: Record<EventType, string> = {
 		clubabend: 'Club-Abend',
@@ -84,6 +89,17 @@
 			err = 'Das Ende muss nach dem Beginn liegen.';
 			return;
 		}
+		// Typwechsel auf MV/Lions-Termin entfernt angemeldete Begleitpersonen (Trigger).
+		if (
+			type !== ev.type &&
+			companionAllowed(ev.type) &&
+			!companionAllowed(type) &&
+			data.companionCount > 0 &&
+			!confirm(
+				`Bei diesem Typ sind keine Begleitpersonen vorgesehen. ${data.companionCount === 1 ? 'Die angemeldete Begleitperson wird' : `Die ${data.companionCount} angemeldeten Begleitpersonen werden`} entfernt. Fortfahren?`
+			)
+		)
+			return;
 		busy = true;
 		err = '';
 		// try/finally: `busy` immer zurücksetzen, damit die Maske bei einem
@@ -116,9 +132,12 @@
 
 	async function remove() {
 		if (busy || !canManage) return;
+		const att = data.attendanceCount
+			? ` Auch die erfasste Anwesenheit (${data.attendanceCount} Einträge) geht verloren und fehlt in der Auswertung des Schatzmeisters.`
+			: '';
 		if (
 			!confirm(
-				'Termin wirklich löschen? Rückmeldungen, Anwesenheit, Fragen und Erinnerungen dazu werden mit entfernt.'
+				`Termin wirklich löschen? Rückmeldungen, Fragen und Erinnerungen dazu werden mit entfernt.${att}`
 			)
 		)
 			return;
@@ -151,7 +170,15 @@
 				<Input label="Titel (Programm/Thema)" bind:value={title} required />
 				<Input label="Beschreibung" multiline bind:value={description} />
 				<Input label="Referent/in (optional)" bind:value={speaker} />
-				<Select label="Typ" options={typeOptions} bind:value={type} />
+				<Select
+					label="Typ"
+					options={typeOptions}
+					bind:value={type}
+					disabled={attendanceLocked}
+					hint={attendanceLocked
+						? 'Für diesen Termin ist Anwesenheit erfasst. Den Typ ändert, wer Anwesenheit erfassen darf.'
+						: undefined}
+				/>
 				<Input label="Ort" bind:value={location} />
 				<div class="row">
 					<Input label="Datum (Beginn)" type="date" bind:value={startDate} class="d" />
@@ -181,15 +208,27 @@
 			{#if err}<p class="err">{err}</p>{/if}
 
 			<Button fullWidth disabled={busy} onclick={save}>{busy ? 'Speichern …' : 'Speichern'}</Button>
-			<Button variant="ghost" disabled={busy} onclick={remove}>
-				{#snippet iconLeft()}<Trash2 size={18} />{/snippet}
-				Termin löschen
-			</Button>
+			{#if attendanceLocked}
+				<p class="muted">
+					Für diesen Termin ist Anwesenheit erfasst. Löschen kann ihn, wer Anwesenheit erfassen
+					darf.
+				</p>
+			{:else}
+				<Button variant="ghost" disabled={busy} onclick={remove}>
+					{#snippet iconLeft()}<Trash2 size={18} />{/snippet}
+					Termin löschen
+				</Button>
+			{/if}
 		{/if}
 	</main>
 </div>
 
 <style>
+	.muted {
+		color: var(--text-secondary);
+		font-size: var(--text-sm);
+		margin: 0;
+	}
 	.row {
 		display: flex;
 		gap: var(--space-3);

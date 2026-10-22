@@ -13,10 +13,12 @@
 	let nextEvent = $derived(data.nextEvent);
 	let latestNews = $derived(data.latestNews);
 
-	let ownStatus = $derived.by<Status>(() => {
-		if (!nextEvent) return 'open';
+	// Ohne Rückmeldung „Offen“ nur vor Beginn – ein laufender Termin nimmt keine mehr an.
+	let ownStatus = $derived.by<Status | undefined>(() => {
+		if (!nextEvent) return undefined;
 		const r = nextEvent.event_response.find((x) => x.member_id === data.myMemberId);
-		return r ? (r.status === 'zugesagt' ? 'yes' : 'no') : 'open';
+		if (r) return r.status === 'zugesagt' ? 'yes' : 'no';
+		return new Date(nextEvent.starts_at).getTime() > Date.now() ? 'open' : undefined;
 	});
 
 	let activeIds = $derived(new Set(data.activeMemberIds));
