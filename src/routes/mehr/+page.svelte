@@ -78,7 +78,7 @@
 
 		<Button variant="secondary" fullWidth onclick={() => goto(resolve('/mehr/vorstand'))}>
 			{#snippet iconLeft()}<Award size={18} />{/snippet}
-			Vorstand
+			Vorstand & Ämter
 			{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 		</Button>
 
@@ -93,7 +93,7 @@
 		{#if permissions.includes('manage_roles')}
 			<Button variant="secondary" fullWidth onclick={() => goto(resolve('/vorstand'))}>
 				{#snippet iconLeft()}<Award size={18} />{/snippet}
-				Vorstand & Ämter
+				Verwaltung Vorstand & Ämter
 				{#snippet iconRight()}<ArrowRight size={18} />{/snippet}
 			</Button>
 		{/if}

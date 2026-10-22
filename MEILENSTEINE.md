@@ -605,7 +605,7 @@ User-Entscheidungen: 1–4 und 6–11 wie empfohlen, **5: Ehrenmitglieder bekomm
 - **C6:** Kanal `both` entfällt (Daten auf `push`, Default `push`, Check-Constraint); UI „Push, sonst E-Mail“ / „Nur E-Mail“.
 - **C7:** Push- und Mail-Links tragen `#n=<id>` (`linkFor()` in `send-notifications/email.ts`); das Root-Layout markiert gelesen und entfernt das Fragment (beim Direktaufruf ist der Router noch nicht bereit → Browser-`history.replaceState`). Zähler als eigener Zustand (`src/lib/unread.svelte.ts` + `unread.ts`), aufgefrischt beim Zurückkehren in die App – ohne Root-Load-Neulauf, der offene Formulare zurücksetzen würde.
 - **C8:** Termin-Unterlagen: Haken „Zugesagte benachrichtigen“ beim Hochladen am Termin und in der Ablage; `notify_document` schickt sie an die Zusagen mit `event_id` → Link zum Termin (`pathFor`), auch der Clubmaster darf melden.
-- **C9:** `/mehr/vorstand` – schreibgeschützte Übersicht der Ämter des laufenden LJ (nur besetzte) + Past-Präsident, für alle unter „Mehr“.
+- **C9:** `/mehr/vorstand` – schreibgeschützte Übersicht der Ämter des laufenden LJ (nur besetzte) + Past-Präsident, für alle unter „Mehr“ → „Vorstand & Ämter“; Clubvorstand und weiterer Clubvorstand dort als eine Gruppe „Vorstand“ (User-Wunsch). Die Verwaltungsseite `/vorstand` heißt unter „Mehr“ jetzt „Verwaltung Vorstand & Ämter“ und behält die Cluster.
 - **C10:** Startseite: „Neueste News“ ist die neueste; eine angepinnte steht als „Angepinnt“ darüber.
 - **C11:** Tageslauf-Knopf nur `admin_system` (UI + API), ehrlich beschriftet · „Zurück“ auf der Termin-Seite folgt der Herkunft (sonst Terminliste) · Autorenrolle aus dem LJ der Veröffentlichung (`authorAmtAt()` in `src/lib/news.ts`) · fehlgeschlagene Benachrichtigung bei News/Dokument wird gemeldet.
 

@@ -37,7 +37,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 			},
 			{
 				kind: 'neu',
-				text: 'Unter „Mehr“ → „Vorstand“ siehst du, wer im laufenden Lions-Jahr welches Amt hat.'
+				text: 'Unter „Mehr“ → „Vorstand & Ämter“ siehst du, wer im laufenden Lions-Jahr welches Amt hat.'
 			},
 			{
 				kind: 'behoben',

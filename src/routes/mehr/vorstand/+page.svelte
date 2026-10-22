@@ -7,10 +7,11 @@
 	let { data } = $props();
 
 	const ljLabel = (y: number) => `${y}/${String((y + 1) % 100).padStart(2, '0')}`;
-	const clusters = [
-		{ key: 'clubvorstand', label: 'Clubvorstand' },
-		{ key: 'weiterer_vorstand', label: 'Weiterer Clubvorstand' },
-		{ key: 'beauftragte', label: 'Club-Beauftragte' }
+	// Für Mitglieder genügt „Vorstand“: Clubvorstand und weiterer Clubvorstand in einer
+	// Gruppe (in dieser Reihenfolge), die Unterscheidung bleibt der Verwaltung (/vorstand).
+	const groupsDef = [
+		{ key: 'vorstand', label: 'Vorstand', clusters: ['clubvorstand', 'weiterer_vorstand'] },
+		{ key: 'beauftragte', label: 'Club-Beauftragte', clusters: ['beauftragte'] }
 	] as const;
 
 	const holdersOf = (amtId: string, year: number) =>
@@ -26,11 +27,12 @@
 
 	// Nur besetzte Ämter zeigen – leere Beauftragten-Posten wären bloßes Rauschen.
 	let groups = $derived(
-		clusters
-			.map((c) => ({
-				...c,
-				rows: data.amts
-					.filter((a) => a.cluster === c.key)
+		groupsDef
+			.map((g) => ({
+				key: g.key,
+				label: g.label,
+				rows: g.clusters
+					.flatMap((c) => data.amts.filter((a) => a.cluster === c))
 					.map((a) => ({ amt: a, members: holdersOf(a.id, data.year) }))
 					.filter((r) => r.members.length > 0)
 			}))
@@ -39,7 +41,7 @@
 </script>
 
 <div class="shell">
-	<AppBar title="Vorstand" eyebrow={`Lions-Jahr ${ljLabel(data.year)}`} bordered>
+	<AppBar title="Vorstand & Ämter" eyebrow={`Lions-Jahr ${ljLabel(data.year)}`} bordered>
 		{#snippet leading()}
 			<IconButton label="Zurück" onclick={() => goto(resolve('/mehr'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
@@ -62,17 +64,17 @@
 									>{/each}
 							</dd>
 						</div>
+						{#if r.amt.key === 'praesident' && pastPraesident}
+							<div class="row">
+								<dt>Past-Präsident(in)</dt>
+								<dd>
+									<a href={resolve('/mitglieder/[id]', { id: pastPraesident.id })}
+										>{pastPraesident.first_name} {pastPraesident.last_name}</a
+									>
+								</dd>
+							</div>
+						{/if}
 					{/each}
-					{#if g.key === 'clubvorstand' && pastPraesident}
-						<div class="row">
-							<dt>Past-Präsident(in)</dt>
-							<dd>
-								<a href={resolve('/mitglieder/[id]', { id: pastPraesident.id })}
-									>{pastPraesident.first_name} {pastPraesident.last_name}</a
-								>
-							</dd>
-						</div>
-					{/if}
 				</dl>
 			</Card>
 		{:else}
