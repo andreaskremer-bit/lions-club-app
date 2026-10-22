@@ -5,11 +5,15 @@ import { lionsStartYear } from '$lib/dates';
 
 type AmtRef = { label: string; abbr: string | null; sort_order: number; display_only: boolean };
 
+export type MemberAccess = {
+	first_login_at: string | null;
+	last_login_at: string | null;
+	invite_sent_at: string | null;
+};
+
 export type MemberDetail = {
 	id: string;
 	user_id: string | null;
-	first_login_at: string | null;
-	invite_sent_at: string | null;
 	first_name: string;
 	last_name: string;
 	title: string | null;
@@ -32,17 +36,16 @@ export type MemberDetail = {
 	partner_birthday_show_age: boolean;
 	partner_email: string | null;
 	partner_mobile: string | null;
-	notes: string | null;
 	member_amt: { amt: AmtRef | null }[];
 };
 
 export const load: PageLoad = async ({ parent, params }) => {
-	const { supabase, user } = await parent();
+	const { supabase, user, permissions } = await parent();
 
 	const { data, error: err } = await supabase
 		.from('member')
 		.select(
-			'id, user_id, first_login_at, invite_sent_at, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_title, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, notes, member_amt(amt(label, abbr, sort_order, display_only))'
+			'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, photo_path, partner_title, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, member_amt(amt(label, abbr, sort_order, display_only))'
 		)
 		.eq('id', params.id)
 		.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Ämter des aktuellen LJ
@@ -61,5 +64,13 @@ export const load: PageLoad = async ({ parent, params }) => {
 		photoUrl = signed?.signedUrl ?? null;
 	}
 
-	return { member, photoUrl, isSelf: !!user && member.user_id === user.id };
+	// Login-/Einladungsdatum sind per Spaltenrecht gesperrt (Datensparsamkeit) und kommen
+	// nur für die Mitgliederverwaltung über die RPC.
+	let access: MemberAccess | null = null;
+	if (permissions.includes('manage_members')) {
+		const { data: rows } = await supabase.rpc('member_access_info', { p_member_id: params.id });
+		access = (rows as MemberAccess[] | null)?.[0] ?? null;
+	}
+
+	return { member, access, photoUrl, isSelf: !!user && member.user_id === user.id };
 };

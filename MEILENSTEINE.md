@@ -571,3 +571,15 @@ Anlass: Vier Clubabend-Protokolle (05.08., 02.09., 07.10., 21.10.) fehlten in de
 - **Verworfen:** Backfill in `20261007120100` schaltete pauschal alle ein – betraf damals nur die zwei neuen Mitglieder; Migration ist angewendet und bleibt unverändert.
 
 **Grün.** 119 Unit-Tests · lokal per Playwright: Vorschlag nur bei passendem Datum, Auswahl von Hand bleibt, Checkbox bei Termin-Unterlage weg, am Termin kein Löschen-Knopf beim Protokoll.
+
+### Spaltenrechte auf `member` (Befund 9, 2026-10-22)
+
+Die RLS auf `member` prüfte nur, ob jemand Clubmitglied ist, nicht welche Spalten er liest. Jedes Mitglied konnte über die API Login-Zeiten (33 gefüllt), Einladungsdatum und App-Nutzung (installiert/Browser, 32 gefüllt) aller anderen auslesen.
+
+- **Migration `20261022120200`:** `revoke select on member from authenticated` + `grant select (…)` auf alle Spalten außer `first_login_at`, `last_login_at`, `invite_sent_at`, `first_standalone_at`, `last_standalone_at`, `last_browser_at`, `notes` (leer, ohne Oberfläche, bewusst gesperrt statt gelöscht). Gilt auch für die eigene Zeile. Schreibrechte unverändert, Systemfelder ohnehin per Trigger geschützt.
+- **RPC `member_access_info(uuid)`** (security definer, nur `manage_members`, EXECUTE nicht für `anon`): Login- und Einladungsdatum für die Zugangs-Karte der Profilseite. Profilseite lädt die gesperrten Felder nicht mehr, `notes` fällt aus der Abfrage.
+- **Dauerregel** in `CLAUDE.md`: neue `member`-Spalten ausdrücklich freigeben; `member_column_privileges_test.sql` vergleicht die Sperrliste exakt und scheitert bei jeder neuen, unentschiedenen Spalte.
+- **Deploy-Reihenfolge umgekehrt** (erst Code, dann DB), weil der alte Client die gesperrten Spalten noch abfragte.
+- `display_mode_test.sql` prüft die Telemetrie jetzt als Superuser (lesen als Mitglied ist gesperrt).
+
+**Grün.** 178 pgTAP (neu `member_column_privileges_test.sql`, 8 Tests) · lokal per Playwright alle 27 Seiten als Mitglied ohne Amt, Sekretär und Präsident: keine fehlgeschlagene API-Abfrage; Zugangs-Karte zeigt „Login aktiv“ bzw. „Eingeladen am …, noch nie angemeldet“.

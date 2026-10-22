@@ -23,10 +23,8 @@ insert into auth.users (id, email) values
 -- (1) Funktion existiert.
 select has_function('public'::name, 'track_display_mode'::name, 'track_display_mode() existiert');
 
--- ── Rolle: eingeloggtes Mitglied ────────────────────────────────────────────
-set local role authenticated;
-set local "request.jwt.claims" =
-	'{"sub":"00000000-0000-0000-0000-000000000001","role":"authenticated"}';
+-- Die Telemetrie-Spalten sind seit 20261022120200 für authenticated nicht lesbar.
+-- Deshalb: Aufruf als Mitglied, Prüfung als Superuser (reset role).
 
 -- (2) Vorbedingung: noch nichts erfasst.
 select is(
@@ -35,8 +33,14 @@ select is(
 	'Vor dem ersten Aufruf ist first_standalone_at leer'
 );
 
+-- ── Rolle: eingeloggtes Mitglied ────────────────────────────────────────────
+set local role authenticated;
+set local "request.jwt.claims" =
+	'{"sub":"00000000-0000-0000-0000-000000000001","role":"authenticated"}';
+
 -- (3) Standalone-Meldung setzt beide Standalone-Spalten.
 select public.track_display_mode(true);
+reset role;
 select ok(
 	(select first_standalone_at is not null and last_standalone_at is not null
 	   from public.member where email = 'mitglied@example.com'),
@@ -60,7 +64,6 @@ select is(
 
 -- (6) Erstkontakt wird nicht überschrieben. Innerhalb einer Transaktion ist
 -- now() konstant, deshalb per gesetztem Altwert geprüft statt über die Uhr.
-reset role;
 update public.member
    set first_standalone_at = timestamptz '2026-01-01 10:00:00+01'
  where email = 'mitglied@example.com';
@@ -69,6 +72,7 @@ set local "request.jwt.claims" =
 	'{"sub":"00000000-0000-0000-0000-000000000001","role":"authenticated"}';
 
 select public.track_display_mode(true);
+reset role;
 select is(
 	(select first_standalone_at from public.member where email = 'mitglied@example.com'),
 	timestamptz '2026-01-01 10:00:00+01',
@@ -76,7 +80,11 @@ select is(
 );
 
 -- (7) Browser-Meldung setzt last_browser_at und laesst Standalone stehen.
+set local role authenticated;
+set local "request.jwt.claims" =
+	'{"sub":"00000000-0000-0000-0000-000000000001","role":"authenticated"}';
 select public.track_display_mode(false);
+reset role;
 select ok(
 	(select last_browser_at is not null
 	      and first_standalone_at = timestamptz '2026-01-01 10:00:00+01'
@@ -85,6 +93,7 @@ select ok(
 );
 
 -- ── Rolle: Konto OHNE member-Zeile ──────────────────────────────────────────
+set local role authenticated;
 set local "request.jwt.claims" =
 	'{"sub":"00000000-0000-0000-0000-0000000000ff","role":"authenticated"}';
 

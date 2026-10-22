@@ -162,15 +162,15 @@
 		{#if data.permissions.includes('manage_members')}
 			<Card>
 				<h2 class="sec">Zugang</h2>
-				{#if m.user_id && m.first_login_at}
+				{#if m.user_id && data.access?.first_login_at}
 					<p class="muted">Login aktiv.</p>
 				{:else}
 					<p class="muted">
 						{#if !m.user_id}
 							Noch kein Login. Lade das Mitglied ein: Das legt den Zugang an und schickt eine E-Mail
 							mit der Anleitung zur Anmeldung.
-						{:else if m.invite_sent_at}
-							Eingeladen am {inviteDate(m.invite_sent_at)}, noch nie angemeldet.
+						{:else if data.access?.invite_sent_at}
+							Eingeladen am {inviteDate(data.access?.invite_sent_at)}, noch nie angemeldet.
 						{:else}
 							Zugang angelegt, aber noch keine Einladungs-Mail verschickt und noch nie angemeldet.
 						{/if}
@@ -179,7 +179,7 @@
 						{#snippet iconLeft()}<Send size={18} />{/snippet}
 						{inviting
 							? 'Wird gesendet …'
-							: m.invite_sent_at
+							: data.access?.invite_sent_at
 								? 'Einladung erneut senden'
 								: m.user_id
 									? 'Einladung senden'
