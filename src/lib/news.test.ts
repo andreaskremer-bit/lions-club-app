@@ -58,4 +58,8 @@ describe('authorAmtAt', () => {
 	it('liefert null ohne Amt in dem Jahr', () => {
 		expect(authorAmtAt(amts, '2024-10-01T10:00:00Z')).toBeNull();
 	});
+	it('ignoriert Ämter im Förderverein', () => {
+		const fv = { label: 'Vorsitzende(r)', sort_order: 200, cluster: 'foerderverein' };
+		expect(authorAmtAt([{ lions_year: 2026, amt: fv }], '2026-10-01T10:00:00Z')).toBeNull();
+	});
 });

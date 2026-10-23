@@ -4,7 +4,7 @@
 	import { AppBar, IconButton, Avatar, Tag, Card, ListRow, Button } from '$lib/components/ui';
 	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send, Building2 } from '@lucide/svelte';
 	import type { MemberStatus } from '../+page';
-	import { amtSpans, showLionsJoined } from '$lib/amtHistory';
+	import { amtSpans, isFvAmt, showLionsJoined } from '$lib/amtHistory';
 
 	let { data } = $props();
 	let m = $derived(data.member);
@@ -58,10 +58,11 @@
 	let ämter = $derived(
 		m.member_amt
 			.map((r) => r.amt)
-			.filter((a): a is NonNullable<typeof a> => !!a)
+			.filter((a): a is NonNullable<typeof a> => !!a && !isFvAmt(a))
 			.sort((a, b) => a.sort_order - b.sort_order)
 	);
-	let ämterHistorie = $derived(amtSpans(data.officeHistory));
+	let ämterHistorie = $derived(amtSpans(data.officeHistory.filter((r) => !isFvAmt(r.amt))));
+	let fvHistorie = $derived(amtSpans(data.officeHistory.filter((r) => isFvAmt(r.amt))));
 	let address = $derived(
 		[m.street, [m.zip, m.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
 	);
@@ -216,6 +217,20 @@
 				<h2 class="sec">Ämter im Club</h2>
 				<dl class="facts facts--spans">
 					{#each ämterHistorie as a (a.label + a.from)}
+						<div>
+							<dt>{a.label}</dt>
+							<dd>{a.text}</dd>
+						</div>
+					{/each}
+				</dl>
+			</Card>
+		{/if}
+
+		{#if fvHistorie.length > 0}
+			<Card>
+				<h2 class="sec">Ämter im Förderverein</h2>
+				<dl class="facts facts--spans">
+					{#each fvHistorie as a (a.label + a.from)}
 						<div>
 							<dt>{a.label}</dt>
 							<dd>{a.text}</dd>

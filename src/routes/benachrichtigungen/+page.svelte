@@ -160,6 +160,7 @@
 		else if (n.news_post_id) await goto(resolve('/news'), { invalidateAll: true });
 		else if (n.kind === 'birthday') await goto(resolve('/geburtstage'), { invalidateAll: true });
 		else if (n.kind === 'event_cancelled') await goto(resolve('/termine'), { invalidateAll: true });
+		else if (n.kind === 'board_missing') await goto(resolve('/vorstand'), { invalidateAll: true });
 		else await invalidateAll();
 	}
 
@@ -283,7 +284,11 @@
 					class={[
 						'note',
 						n.read_at ? '' : 'note--unread',
-						n.event_id || n.document_id || n.news_post_id || n.kind === 'event_cancelled'
+						n.event_id ||
+						n.document_id ||
+						n.news_post_id ||
+						n.kind === 'event_cancelled' ||
+						n.kind === 'board_missing'
 							? 'note--link'
 							: ''
 					]

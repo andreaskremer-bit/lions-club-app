@@ -170,6 +170,10 @@ describe('pathFor', () => {
 		);
 	});
 
+	it('führt den Vorstand-Hinweis in die Ämterverwaltung', () => {
+		expect(pathFor({ ...base, kind: 'board_missing' })).toBe('/vorstand');
+	});
+
 	it('hängt die Outbox-ID als Fragment an (gelesen beim Antippen)', () => {
 		expect(linkFor({ ...base, id: 'n1', kind: 'news' })).toBe('/news#n=n1');
 		expect(linkFor({ ...base, kind: 'news' })).toBe('/news');
@@ -192,7 +196,8 @@ describe('pathFor', () => {
 			'event_new',
 			'event_changed',
 			'event_cancelled',
-			'event_question'
+			'event_question',
+			'board_missing'
 		];
 		const paths = new Set<string>();
 		for (const kind of kinds) {

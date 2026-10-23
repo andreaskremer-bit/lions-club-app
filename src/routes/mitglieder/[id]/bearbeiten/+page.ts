@@ -2,6 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { MemberStatus } from '../../+page';
 import { lionsStartYear } from '$lib/dates';
+import { isFvAmt } from '$lib/amtHistory';
 
 export type EditMember = {
 	id: string;
@@ -32,7 +33,7 @@ export type EditMember = {
 	member_amt: { amt_id: string; lions_year: number }[];
 };
 
-export type AmtOption = { id: string; label: string; sort_order: number };
+export type AmtOption = { id: string; label: string; sort_order: number; cluster: string | null };
 
 export const load: PageLoad = async ({ parent, params }) => {
 	const { supabase, user, permissions } = await parent();
@@ -46,7 +47,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 			)
 			.eq('id', params.id)
 			.maybeSingle(),
-		supabase.from('amt').select('id, label, sort_order').order('sort_order')
+		supabase.from('amt').select('id, label, sort_order, cluster').order('sort_order')
 	]);
 
 	if (memRes.error) throw error(500, memRes.error.message);
@@ -68,7 +69,13 @@ export const load: PageLoad = async ({ parent, params }) => {
 
 	// Ämter des AKTUELLEN Lions-Jahres als read-only Labels (Pflege im Vorstandsbereich).
 	const cy = lionsStartYear(new Date());
-	const labelById = new Map(((amtRes.data ?? []) as AmtOption[]).map((a) => [a.id, a.label]));
+	// Förderverein-Ämter mit Zusatz – „Schatzmeister(in)“ gibt es in beiden Vereinen.
+	const labelById = new Map(
+		((amtRes.data ?? []) as AmtOption[]).map((a) => [
+			a.id,
+			isFvAmt(a) ? `${a.label} (Förderverein)` : a.label
+		])
+	);
 	const currentOffices = member.member_amt
 		.filter((x) => x.lions_year === cy)
 		.map((x) => labelById.get(x.amt_id))

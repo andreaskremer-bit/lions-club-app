@@ -1,6 +1,7 @@
 // News-Helfer (M6).
 
 import { lionsStartYear } from './dates';
+import { isFvAmt } from './amtHistory';
 
 export type NewsPost = {
 	id: string;
@@ -49,12 +50,13 @@ export function linkify(text: string): TextSegment[] {
 
 type AmtAt = {
 	lions_year: number;
-	amt: { label: string; abbr?: string | null; sort_order: number } | null;
+	amt: { label: string; abbr?: string | null; sort_order: number; cluster?: string | null } | null;
 };
 
 /**
  * Amt des Autors im Lions-Jahr der VERÖFFENTLICHUNG (nicht im heutigen): Nach dem 1.7.
  * zeigten ältere Beiträge sonst das neue Amt oder gar keins. Höchstrangiges Amt zuerst.
+ * Ämter im Förderverein zählen nicht: Der Beitrag erscheint im Namen des Clubs.
  */
 export function authorAmtAt(memberAmt: AmtAt[], publishedAt: string) {
 	const year = lionsStartYear(new Date(publishedAt));
@@ -62,7 +64,7 @@ export function authorAmtAt(memberAmt: AmtAt[], publishedAt: string) {
 		memberAmt
 			.filter((ma) => ma.lions_year === year)
 			.map((ma) => ma.amt)
-			.filter((x): x is NonNullable<typeof x> => !!x)
+			.filter((x): x is NonNullable<typeof x> => !!x && !isFvAmt(x))
 			.sort((x, y) => x.sort_order - y.sort_order)[0] ?? null
 	);
 }

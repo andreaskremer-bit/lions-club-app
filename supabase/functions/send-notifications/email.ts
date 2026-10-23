@@ -40,7 +40,8 @@ export type Kind =
 	| 'event_new'
 	| 'event_changed'
 	| 'event_cancelled'
-	| 'event_question';
+	| 'event_question'
+	| 'board_missing';
 
 export type MailNotification = {
 	/** Outbox-ID: hängt als `#n=<id>` am Link, damit Antippen die Meldung als gelesen markiert. */
@@ -80,6 +81,8 @@ export function pathFor(n: MailNotification): string {
 			return n.event_id ? `/termine/${n.event_id}` : '/dokumente';
 		case 'news':
 			return '/news';
+		case 'board_missing':
+			return '/vorstand';
 		default:
 			return '/benachrichtigungen';
 	}
@@ -144,6 +147,11 @@ const PRESET: Record<Kind, { kicker: string; cta: string; fallback: string }> = 
 		kicker: 'Neue Frage',
 		cta: 'Frage beantworten',
 		fallback: 'Zu einem Termin, für den du zugesagt hast, gibt es eine neue Frage.'
+	},
+	board_missing: {
+		kicker: 'Vorstand',
+		cta: 'Ämter eintragen',
+		fallback: 'Für das kommende Lions-Jahr ist noch kein Vorstand eingetragen.'
 	}
 };
 

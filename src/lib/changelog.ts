@@ -38,6 +38,10 @@ export const CHANGELOG: ChangelogEntry[] = [
 			{
 				kind: 'neu',
 				text: 'Unter „Mehr“ → „Vorstand & Ämter“ findest du die Präsidenten des Clubs seit 1993.'
+			},
+			{
+				kind: 'neu',
+				text: 'Auch die Ämter im Lions-Förderverein Bonn-Rheinaue e.V. stehen jetzt im Profil, den aktuellen Vorstand des Fördervereins findest du unter „Mehr“ → „Vorstand & Ämter“.'
 			}
 		]
 	},

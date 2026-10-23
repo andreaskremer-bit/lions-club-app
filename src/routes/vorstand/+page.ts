@@ -2,7 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import { lionsStartYear } from '$lib/dates';
 
-export type AmtCluster = 'clubvorstand' | 'weiterer_vorstand' | 'beauftragte';
+export type AmtCluster = 'clubvorstand' | 'weiterer_vorstand' | 'beauftragte' | 'foerderverein';
 export type AmtRow = {
 	id: string;
 	key: string;

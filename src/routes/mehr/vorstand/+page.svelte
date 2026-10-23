@@ -11,7 +11,13 @@
 	// Gruppe (in dieser Reihenfolge), die Unterscheidung bleibt der Verwaltung (/vorstand).
 	const groupsDef = [
 		{ key: 'vorstand', label: 'Vorstand', clusters: ['clubvorstand', 'weiterer_vorstand'] },
-		{ key: 'beauftragte', label: 'Club-Beauftragte', clusters: ['beauftragte'] }
+		{ key: 'beauftragte', label: 'Club-Beauftragte', clusters: ['beauftragte'] },
+		{
+			key: 'foerderverein',
+			label: 'Vorstand Förderverein',
+			note: 'Lions-Förderverein Bonn-Rheinaue e.V.',
+			clusters: ['foerderverein']
+		}
 	] as const;
 
 	const holdersOf = (amtId: string, year: number) =>
@@ -31,6 +37,7 @@
 			.map((g) => ({
 				key: g.key,
 				label: g.label,
+				note: 'note' in g ? g.note : null,
 				rows: g.clusters
 					.flatMap((c) => data.amts.filter((a) => a.cluster === c))
 					.map((a) => ({ amt: a, members: holdersOf(a.id, data.year) }))
@@ -53,6 +60,7 @@
 		{#each groups as g (g.key)}
 			<Card>
 				<h2 class="sec">{g.label}</h2>
+				{#if g.note}<p class="note">{g.note}</p>{/if}
 				<dl class="list">
 					{#each g.rows as r (r.amt.id)}
 						<div class="row">
@@ -102,6 +110,11 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		margin: 0 0 var(--space-3);
+	}
+	.note {
+		margin: calc(-1 * var(--space-2)) 0 var(--space-2);
+		font-size: var(--text-sm);
+		color: var(--text-secondary);
 	}
 	.list {
 		margin: 0;

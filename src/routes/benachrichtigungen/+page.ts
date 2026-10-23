@@ -11,7 +11,8 @@ export type Notif = {
 		| 'event_new'
 		| 'event_changed'
 		| 'event_cancelled'
-		| 'event_question';
+		| 'event_question'
+		| 'board_missing';
 	title: string;
 	body: string | null;
 	event_id: string | null;

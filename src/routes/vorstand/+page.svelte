@@ -30,9 +30,15 @@
 	const clusterLabel: Record<AmtCluster, string> = {
 		clubvorstand: 'Clubvorstand',
 		weiterer_vorstand: 'Weiterer Clubvorstand',
-		beauftragte: 'Club-Beauftragte'
+		beauftragte: 'Club-Beauftragte',
+		foerderverein: 'Vorstand Förderverein'
 	};
-	const clusterOrder: AmtCluster[] = ['clubvorstand', 'weiterer_vorstand', 'beauftragte'];
+	const clusterOrder: AmtCluster[] = [
+		'clubvorstand',
+		'weiterer_vorstand',
+		'beauftragte',
+		'foerderverein'
+	];
 
 	let assignments = $state<Assignment[]>(untrack(() => data.assignments));
 	let busy = $state(false);
@@ -78,8 +84,14 @@
 
 	// April–Juni: Hinweis, wenn das kommende Lions-Jahr noch leer ist. Ohne Eintrag
 	// übernimmt der stündliche Job offices-rollover am 1.7. die Ämter (kein Lockout), aber
-	// der Vorstand soll die Nachfolge bewusst eintragen.
-	let nextYearEmpty = $derived(!assignments.some((a) => a.lions_year === cy + 1));
+	// der Vorstand soll die Nachfolge bewusst eintragen. Der Förderverein zählt nicht mit
+	// (eigene Wahl, wird am 1.7. getrennt übernommen) – wie beim Juni-Hinweis per Push.
+	let fvAmtIds = $derived(
+		new Set(data.amts.filter((a) => a.cluster === 'foerderverein').map((a) => a.id))
+	);
+	let nextYearEmpty = $derived(
+		!assignments.some((a) => a.lions_year === cy + 1 && !fvAmtIds.has(a.amt_id))
+	);
 	const month = new Date().getMonth(); // 3 = April
 	const showNextYearHint = month >= 3 && month <= 5;
 

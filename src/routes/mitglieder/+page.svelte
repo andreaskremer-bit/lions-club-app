@@ -5,6 +5,7 @@
 	import { AppBar, IconButton, Input, Switch, Avatar, HintCard } from '$lib/components/ui';
 	import { Search, UserPlus, Phone, Mail } from '@lucide/svelte';
 	import type { MemberListItem } from './+page';
+	import { isFvAmt } from '$lib/amtHistory';
 
 	let { data } = $props();
 
@@ -20,11 +21,11 @@
 	// Für aria-Labels: schlichter Vor-/Nachname ohne Titel.
 	const plainName = (m: MemberListItem) => `${m.first_name} ${m.last_name}`;
 
-	/** Alle Ämter des aktuellen Lions-Jahres, nach sort_order. */
+	/** Alle Clubämter des aktuellen Lions-Jahres, nach sort_order (ohne Förderverein). */
 	function amtList(m: MemberListItem) {
 		return m.member_amt
 			.map((r) => r.amt)
-			.filter((a): a is NonNullable<typeof a> => !!a)
+			.filter((a): a is NonNullable<typeof a> => !!a && !isFvAmt(a))
 			.sort((a, b) => a.sort_order - b.sort_order);
 	}
 	/** Volle Amtsnamen für `title` (mehrere mit Komma); leer wenn keine. */

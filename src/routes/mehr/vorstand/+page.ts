@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { lionsStartYear } from '$lib/dates';
 
-type AmtCluster = 'clubvorstand' | 'weiterer_vorstand' | 'beauftragte';
+type AmtCluster = 'clubvorstand' | 'weiterer_vorstand' | 'beauftragte' | 'foerderverein';
 export type BoardAmt = { id: string; key: string; label: string; cluster: AmtCluster | null };
 export type BoardHolder = { amt_id: string; lions_year: number; member: BoardMember | null };
 type BoardMember = { id: string; first_name: string; last_name: string };

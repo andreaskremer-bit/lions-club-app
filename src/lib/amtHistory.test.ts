@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { amtSpans, lionsYearLabel, presidentChronicle, showLionsJoined } from './amtHistory';
+import {
+	amtSpans,
+	isFvAmt,
+	lionsYearLabel,
+	presidentChronicle,
+	showLionsJoined
+} from './amtHistory';
 
 const P = { label: 'Präsident(in)', sort_order: 10 };
 const VP = { label: 'Vizepräsident(in)', sort_order: 20 };
@@ -66,5 +72,14 @@ describe('showLionsJoined', () => {
 		expect(showLionsJoined('2010-11-03', '2009-11-03')).toBe(false); // genau ein Jahr
 		expect(showLionsJoined(null, '2009-05-01')).toBe(true);
 		expect(showLionsJoined('2009-03-18', null)).toBe(false);
+	});
+});
+
+describe('isFvAmt', () => {
+	it('erkennt Ämter im Förderverein', () => {
+		expect(isFvAmt({ cluster: 'foerderverein' })).toBe(true);
+		expect(isFvAmt({ cluster: 'clubvorstand' })).toBe(false);
+		expect(isFvAmt({ cluster: null })).toBe(false);
+		expect(isFvAmt(null)).toBe(false);
 	});
 });

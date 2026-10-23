@@ -1,3 +1,13 @@
+/**
+ * Ämter des Lions-Förderverein Bonn-Rheinaue e.V. (eigener Verein): stehen in
+ * member_amt wie die Clubämter, gehören aber nicht in Kürzel, Autorenzeile oder
+ * „Ämter im Club“, sondern in eigene Abschnitte.
+ */
+export const FV_CLUSTER = 'foerderverein';
+
+export const isFvAmt = (a: { cluster?: string | null } | null | undefined): boolean =>
+	a?.cluster === FV_CLUSTER;
+
 /** „2013/14“ – Lions-Jahr zum Startjahr. */
 export function lionsYearLabel(startYear: number): string {
 	return `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`;

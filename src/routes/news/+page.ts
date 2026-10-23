@@ -22,7 +22,12 @@ type Raw = {
 		last_name: string;
 		member_amt: {
 			lions_year: number;
-			amt: { label: string; abbr: string | null; sort_order: number } | null;
+			amt: {
+				label: string;
+				abbr: string | null;
+				sort_order: number;
+				cluster: string | null;
+			} | null;
 		}[];
 	} | null;
 };
@@ -32,7 +37,7 @@ export const load: PageLoad = async ({ parent }) => {
 	const { data } = await supabase
 		.from('news_post')
 		.select(
-			'id, title, body, pinned, published_at, author:published_by(first_name, last_name, member_amt(lions_year, amt(label, abbr, sort_order)))'
+			'id, title, body, pinned, published_at, author:published_by(first_name, last_name, member_amt(lions_year, amt(label, abbr, sort_order, cluster)))'
 		)
 		.order('pinned', { ascending: false })
 		.order('published_at', { ascending: false });

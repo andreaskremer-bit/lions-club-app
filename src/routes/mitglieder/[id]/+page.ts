@@ -3,7 +3,13 @@ import type { PageLoad } from './$types';
 import type { MemberStatus } from '../+page';
 import { lionsStartYear } from '$lib/dates';
 
-type AmtRef = { label: string; abbr: string | null; sort_order: number; display_only: boolean };
+type AmtRef = {
+	label: string;
+	abbr: string | null;
+	sort_order: number;
+	display_only: boolean;
+	cluster: string | null;
+};
 
 export type MemberAccess = {
 	first_login_at: string | null;
@@ -47,7 +53,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 	const { data, error: err } = await supabase
 		.from('member')
 		.select(
-			'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, lions_joined_on, founding_member, photo_path, partner_title, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, member_amt(amt(label, abbr, sort_order, display_only))'
+			'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, lions_joined_on, founding_member, photo_path, partner_title, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, member_amt(amt(label, abbr, sort_order, display_only, cluster))'
 		)
 		.eq('id', params.id)
 		.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Ämter des aktuellen LJ
@@ -61,11 +67,11 @@ export const load: PageLoad = async ({ parent, params }) => {
 	// Alle Lions-Jahre (Historie aus Lions Deutschland) – nur Anzeige, keine Rechte.
 	const { data: history } = await supabase
 		.from('member_amt')
-		.select('lions_year, amt(label, sort_order)')
+		.select('lions_year, amt(label, sort_order, cluster)')
 		.eq('member_id', params.id);
 	const officeHistory = (history ?? []) as unknown as {
 		lions_year: number;
-		amt: { label: string; sort_order: number } | null;
+		amt: { label: string; sort_order: number; cluster: string | null } | null;
 	}[];
 
 	let photoUrl: string | null = null;

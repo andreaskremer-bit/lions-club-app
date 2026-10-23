@@ -36,7 +36,10 @@ type RawNews = {
 	author: {
 		first_name: string;
 		last_name: string;
-		member_amt: { lions_year: number; amt: { label: string; sort_order: number } | null }[];
+		member_amt: {
+			lions_year: number;
+			amt: { label: string; sort_order: number; cluster: string | null } | null;
+		}[];
 	} | null;
 };
 
@@ -47,7 +50,7 @@ export const load: PageLoad = async ({ parent }) => {
 	// Ohne `ends_at` gilt Beginn + 2 h als Ende (siehe `eventEnd`).
 	const startCutoffIso = new Date(now - DEFAULT_EVENT_MS).toISOString();
 	const NEWS_COLS =
-		'id, title, body, pinned, published_at, author:published_by(first_name, last_name, member_amt(lions_year, amt(label, sort_order)))';
+		'id, title, body, pinned, published_at, author:published_by(first_name, last_name, member_amt(lions_year, amt(label, sort_order, cluster)))';
 
 	const [eventRes, newsRes, pinnedRes, activeRes] = await Promise.all([
 		supabase
