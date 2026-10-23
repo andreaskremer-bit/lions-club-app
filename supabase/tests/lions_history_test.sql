@@ -5,7 +5,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(10);
 
 truncate auth.users, public.member cascade;
 truncate public.praesident_chronik;
@@ -50,6 +50,12 @@ select lives_ok(
 select throws_ok(
   $$ update public.member set lions_joined_on = date '2000-01-01' where email = 'mem@lh.example' $$,
   'P0001', null, 'Mitglied ändert den eigenen Lions-Eintritt nicht'
+);
+
+-- (3b) Gründungsmitglied ebenso geschützt.
+select throws_ok(
+  $$ update public.member set founding_member = true where email = 'mem@lh.example' $$,
+  'P0001', null, 'Mitglied markiert sich nicht selbst als Gründungsmitglied'
 );
 
 -- (4) Chronik lesbar.

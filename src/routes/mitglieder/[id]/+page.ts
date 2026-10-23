@@ -29,6 +29,7 @@ export type MemberDetail = {
 	birthday: string | null;
 	joined_on: string | null;
 	lions_joined_on: string | null;
+	founding_member: boolean;
 	photo_path: string | null;
 	partner_title: string | null;
 	partner_first_name: string | null;
@@ -46,7 +47,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 	const { data, error: err } = await supabase
 		.from('member')
 		.select(
-			'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, lions_joined_on, photo_path, partner_title, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, member_amt(amt(label, abbr, sort_order, display_only))'
+			'id, user_id, first_name, last_name, title, status, lions_member_no, email, phone, phone_office, mobile, street, zip, city, birthday, joined_on, lions_joined_on, founding_member, photo_path, partner_title, partner_first_name, partner_last_name, partner_birthday, partner_birthday_show_age, partner_email, partner_mobile, member_amt(amt(label, abbr, sort_order, display_only))'
 		)
 		.eq('id', params.id)
 		.eq('member_amt.lions_year', lionsStartYear(new Date())) // nur Ämter des aktuellen LJ

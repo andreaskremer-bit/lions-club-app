@@ -3,6 +3,20 @@ export function lionsYearLabel(startYear: number): string {
 	return `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`;
 }
 
+/**
+ * „Bei Lions seit“ nur zeigen, wenn es etwas erzählt: Bei den meisten liegt der
+ * Lions-Eintritt (Verwaltungsdatum, meist ein Monatserster) nur Wochen neben dem
+ * Clubbeitritt. Interessant ist er bei Wechslern aus anderen Clubs – mehr als ein
+ * Jahr vor dem Clubbeitritt – oder wenn der Clubbeitritt fehlt.
+ */
+export function showLionsJoined(joinedOn: string | null, lionsJoinedOn: string | null): boolean {
+	if (!lionsJoinedOn) return false;
+	if (!joinedOn) return true;
+	const [y, m, d] = joinedOn.split('-').map(Number);
+	const yearBefore = `${y - 1}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+	return lionsJoinedOn < yearBefore;
+}
+
 type AmtYear = { lions_year: number; amt: { label: string; sort_order: number } | null };
 
 export type AmtSpan = { label: string; from: number; to: number; text: string };

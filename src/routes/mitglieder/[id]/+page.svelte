@@ -4,7 +4,7 @@
 	import { AppBar, IconButton, Avatar, Tag, Card, ListRow, Button } from '$lib/components/ui';
 	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send, Building2 } from '@lucide/svelte';
 	import type { MemberStatus } from '../+page';
-	import { amtSpans } from '$lib/amtHistory';
+	import { amtSpans, showLionsJoined } from '$lib/amtHistory';
 
 	let { data } = $props();
 	let m = $derived(data.member);
@@ -158,7 +158,13 @@
 						<dd>{formatDate(m.joined_on)}</dd>
 					</div>
 				{/if}
-				{#if formatDate(m.lions_joined_on)}
+				{#if m.founding_member}
+					<div>
+						<dt>Gründungsmitglied</dt>
+						<dd>1993</dd>
+					</div>
+				{/if}
+				{#if showLionsJoined(m.joined_on, m.lions_joined_on)}
 					<div>
 						<dt>Bei Lions seit</dt>
 						<dd>{formatDate(m.lions_joined_on)}</dd>

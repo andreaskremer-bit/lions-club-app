@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { amtSpans, lionsYearLabel, presidentChronicle } from './amtHistory';
+import { amtSpans, lionsYearLabel, presidentChronicle, showLionsJoined } from './amtHistory';
 
 const P = { label: 'Präsident(in)', sort_order: 10 };
 const VP = { label: 'Vizepräsident(in)', sort_order: 20 };
@@ -55,5 +55,16 @@ describe('presidentChronicle', () => {
 			{ year: 2001, name: 'Carl K', deceased: false },
 			{ year: 2000, name: 'Ehemalig', deceased: true }
 		]);
+	});
+});
+
+describe('showLionsJoined', () => {
+	it('zeigt den Lions-Eintritt nur bei Wechslern oder ohne Clubbeitritt', () => {
+		expect(showLionsJoined('2009-03-18', '2009-05-01')).toBe(false); // später, Verwaltung
+		expect(showLionsJoined('2020-06-17', '2020-06-01')).toBe(false); // Wochen früher
+		expect(showLionsJoined('2023-10-01', '2012-04-01')).toBe(true); // Wechsler
+		expect(showLionsJoined('2010-11-03', '2009-11-03')).toBe(false); // genau ein Jahr
+		expect(showLionsJoined(null, '2009-05-01')).toBe(true);
+		expect(showLionsJoined('2009-03-18', null)).toBe(false);
 	});
 });
