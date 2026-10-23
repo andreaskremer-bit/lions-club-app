@@ -4,6 +4,7 @@
 	import { AppBar, IconButton, Avatar, Tag, Card, ListRow, Button } from '$lib/components/ui';
 	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send, Building2 } from '@lucide/svelte';
 	import type { MemberStatus } from '../+page';
+	import { amtSpans } from '$lib/amtHistory';
 
 	let { data } = $props();
 	let m = $derived(data.member);
@@ -60,6 +61,7 @@
 			.filter((a): a is NonNullable<typeof a> => !!a)
 			.sort((a, b) => a.sort_order - b.sort_order)
 	);
+	let ämterHistorie = $derived(amtSpans(data.officeHistory));
 	let address = $derived(
 		[m.street, [m.zip, m.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
 	);
@@ -156,8 +158,28 @@
 						<dd>{formatDate(m.joined_on)}</dd>
 					</div>
 				{/if}
+				{#if formatDate(m.lions_joined_on)}
+					<div>
+						<dt>Bei Lions seit</dt>
+						<dd>{formatDate(m.lions_joined_on)}</dd>
+					</div>
+				{/if}
 			</dl>
 		</Card>
+
+		{#if ämterHistorie.length > 0}
+			<Card>
+				<h2 class="sec">Ämter im Club</h2>
+				<dl class="facts facts--spans">
+					{#each ämterHistorie as a (a.label + a.from)}
+						<div>
+							<dt>{a.label}</dt>
+							<dd>{a.text}</dd>
+						</div>
+					{/each}
+				</dl>
+			</Card>
+		{/if}
 
 		{#if data.permissions.includes('manage_members')}
 			<Card>
@@ -286,5 +308,8 @@
 		color: var(--text-strong);
 		font-size: var(--text-base);
 		text-align: right;
+	}
+	.facts--spans dd {
+		white-space: nowrap;
 	}
 </style>

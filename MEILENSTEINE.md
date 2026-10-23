@@ -610,3 +610,15 @@ User-Entscheidungen: 1–4 und 6–11 wie empfohlen, **5: Ehrenmitglieder bekomm
 - **C11:** Tageslauf-Knopf nur `admin_system` (UI + API), ehrlich beschriftet · „Zurück“ auf der Termin-Seite folgt der Herkunft (sonst Terminliste) · Autorenrolle aus dem LJ der Veröffentlichung (`authorAmtAt()` in `src/lib/news.ts`) · fehlgeschlagene Benachrichtigung bei News/Dokument wird gemeldet.
 
 **Grün.** 211 pgTAP (neu `notifications_c_test.sql`; Outbox-/Reminder-Tests mit Login-Konten) · 134 Unit-Tests · lokal per Playwright: Gelesen per `#n=`, Vorstand-Übersicht, zwei Kanäle, Zurück, Änderungs- und Absage-Benachrichtigung, Haken in Planung/Fragen.
+
+## Historie aus Lions Deutschland (2026-10-23)
+
+Quelle: Mitgliederportal von Lions Deutschland (`mitglieder.lions.de`). 34 Profile per Browser ausgelesen (Profilseiten über die IDs aus der Mitgliederliste, kein API-Token abgegriffen). Rohdaten und Import-SQL lagen nur im Scratchpad – **nichts davon im Repo** (Personendaten, Repo ist öffentlich).
+
+- **Migration `20261023120000`:** `member.lions_joined_on` (Eintritt bei Lions, nur Anzeige; `joined_on` bleibt Clubeintritt und steuert die Anwesenheit) mit `grant select` und Spaltenschutz wie die Mitgliedsnummer · Amt `vize2` „2. Vizepräsident(in)“ (`2.VP`, display_only) · Tabelle `praesident_chronik` (Lions-Jahr + Name) für Präsidenten ohne `member`-Zeile; lesen alle Mitglieder, schreiben `manage_roles`.
+- **Daten (User-Entscheidungen):** übernommen werden Eintritt bei Lions, fehlende Lions-Nr. und Clubämter bis 2024/25 als normale `member_amt`-Zeilen; 2025/26 und 2026/27 bleiben die App-Daten. **Nicht** übernommen: Clubbeitritt, Bürge, Beruf, Geschlecht, IPP (wird abgeleitet), Hilfswerk-Ämter, AB/J/IR/AR, Ämter außerhalb des Clubs und in früheren Clubs. Zuordnung: U und US → `umwelt`; MA → `mitgliedschaftsbeauftragter` nur in Jahren ohne MB-Eintrag (sonst Dublette oder eigener Ausschuss). Lücken der Präsidentenliste aus einer Club-Liste ergänzt (Ehemalige in `praesident_chronik`).
+- **App:** Profil zeigt „Bei Lions seit“ und „Ämter im Club“ (zusammenhängende Jahre als Zeitraum, `src/lib/amtHistory.ts`); Feld „Bei Lions seit“ in Bearbeiten/Neu (nur `edit_member_master`); `/mehr/vorstand/praesidenten` „Präsidenten seit 1993“ (Mitglieder verlinkt).
+- **Geprüft:** Alle Leser von `member_amt` (App, `/api`, `has_permission`, `past_praesident_member_id`, `rollover_offices`, `keep_role_manager`) filtern auf das Lions-Jahr – alte Ämter geben keine Rechte und erscheinen nicht als aktuelle.
+- **Offen:** zwei neue Mitglieder sind bei Lions Deutschland noch nicht geführt; ihre Daten später nachtragen.
+
+**Grün.** 219 pgTAP (neu `lions_history_test.sql`) · 139 Unit-Tests (neu `amtHistory.test.ts`).

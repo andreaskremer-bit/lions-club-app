@@ -28,6 +28,8 @@
 		new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date())
 	);
 
+	let lions_joined_on = $state('');
+
 	let saving = $state(false);
 	let error = $state('');
 
@@ -55,7 +57,8 @@
 				phone_office: orNull(phone_office),
 				city: orNull(city),
 				birthday: orNull(birthday),
-				joined_on: orNull(joined_on)
+				joined_on: orNull(joined_on),
+				lions_joined_on: orNull(lions_joined_on)
 			})
 			.select('id')
 			.single();
@@ -105,6 +108,7 @@
 				<Input label="Ort" bind:value={city} />
 				<Input label="Geburtstag" type="date" bind:value={birthday} />
 				<Input label="Mitglied seit" type="date" bind:value={joined_on} />
+				<Input label="Bei Lions seit" type="date" bind:value={lions_joined_on} />
 			</Card>
 
 			{#if error}<p class="err">{error}</p>{/if}

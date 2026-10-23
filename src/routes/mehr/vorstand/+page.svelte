@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AppBar, IconButton, Card } from '$lib/components/ui';
+	import { AppBar, IconButton, Card, ListRow } from '$lib/components/ui';
 	import { ChevronLeft } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -80,6 +80,15 @@
 		{:else}
 			<p class="muted">Für dieses Lions-Jahr sind noch keine Ämter eingetragen.</p>
 		{/each}
+
+		<Card>
+			<ListRow
+				href={resolve('/mehr/vorstand/praesidenten')}
+				title="Präsidenten seit 1993"
+				subtitle="Chronik des Clubs"
+				chevron
+			/>
+		</Card>
 	</main>
 </div>
 

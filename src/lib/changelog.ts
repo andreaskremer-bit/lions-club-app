@@ -29,6 +29,19 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-10-23',
+		changes: [
+			{
+				kind: 'neu',
+				text: 'Im Profil steht jetzt, seit wann jemand bei Lions ist und welche Ämter er oder sie im Club hatte – zurück bis zur Gründung 1993.'
+			},
+			{
+				kind: 'neu',
+				text: 'Unter „Mehr“ → „Vorstand & Ämter“ findest du die Präsidenten des Clubs seit 1993.'
+			}
+		]
+	},
+	{
 		date: '2026-10-22',
 		changes: [
 			{

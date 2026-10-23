@@ -45,6 +45,7 @@
 	let status = $state<MemberStatus>(init.status);
 	let lions_member_no = $state(init.lions_member_no ?? '');
 	let joined_on = $state(init.joined_on ?? '');
+	let lions_joined_on = $state(init.lions_joined_on ?? '');
 	const statusOptions: { value: MemberStatus; label: string }[] = [
 		{ value: 'aktiv', label: 'aktiv' },
 		{ value: 'inaktiv', label: 'inaktiv' },
@@ -150,6 +151,7 @@
 			payload.status = status;
 			payload.lions_member_no = orNull(lions_member_no);
 			payload.joined_on = orNull(joined_on);
+			payload.lions_joined_on = orNull(lions_joined_on);
 		}
 
 		const { error: err } = await supabase.from('member').update(payload).eq('id', m.id);
@@ -266,6 +268,7 @@
 						bind:value={joined_on}
 						hint="Termine vor diesem Datum zählen bei der Anwesenheit nicht."
 					/>
+					<Input label="Bei Lions seit" type="date" bind:value={lions_joined_on} />
 				{/if}
 			</Card>
 
