@@ -9,7 +9,7 @@
 </script>
 
 <div class="shell">
-	<AppBar title="Präsidenten" eyebrow="Chronik des Clubs" bordered>
+	<AppBar title="Präsidentschaften" eyebrow="Chronik seit 1993" bordered>
 		{#snippet leading()}
 			<IconButton label="Zurück" onclick={() => goto(resolve('/mehr/vorstand'))}>
 				{#snippet icon()}<ChevronLeft />{/snippet}
@@ -34,7 +34,7 @@
 				</dl>
 			</Card>
 		{:else}
-			<p class="muted">Noch keine Präsidenten eingetragen.</p>
+			<p class="muted">Noch keine Präsidentschaften eingetragen.</p>
 		{/if}
 	</main>
 </div>

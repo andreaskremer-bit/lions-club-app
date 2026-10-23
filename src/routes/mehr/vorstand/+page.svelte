@@ -92,8 +92,8 @@
 		<Card>
 			<ListRow
 				href={resolve('/mehr/vorstand/praesidenten')}
-				title="Präsidenten seit 1993"
-				subtitle="Chronik des Clubs"
+				title="Präsidentinnen und Präsidenten"
+				subtitle="Chronik seit 1993"
 				chevron
 			/>
 		</Card>

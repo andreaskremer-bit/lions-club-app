@@ -37,7 +37,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 			},
 			{
 				kind: 'neu',
-				text: 'Unter „Mehr“ → „Vorstand & Ämter“ findest du die Präsidenten des Clubs seit 1993.'
+				text: 'Unter „Mehr“ → „Vorstand & Ämter“ findest du alle Präsidentinnen und Präsidenten des Clubs seit 1993.'
 			},
 			{
 				kind: 'neu',
