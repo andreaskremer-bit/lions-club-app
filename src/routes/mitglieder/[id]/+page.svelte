@@ -137,6 +137,44 @@
 			{/if}
 		</Card>
 
+		{#if m.partner_first_name || m.partner_last_name}
+			<Card>
+				<h2 class="sec">Partner/in</h2>
+				<dl class="facts">
+					<div>
+						<dt>Name</dt>
+						<dd>
+							{[m.partner_title, m.partner_first_name, m.partner_last_name]
+								.filter(Boolean)
+								.join(' ')}
+						</dd>
+					</div>
+					{#if m.partner_birthday}
+						<div>
+							<dt>Geburtstag</dt>
+							<dd>
+								{m.partner_birthday_show_age
+									? formatDate(m.partner_birthday)
+									: formatDayMonth(m.partner_birthday)}
+							</dd>
+						</div>
+					{/if}
+					{#if m.partner_mobile}
+						<div>
+							<dt>Mobil</dt>
+							<dd><a href={`tel:${m.partner_mobile}`}>{m.partner_mobile}</a></dd>
+						</div>
+					{/if}
+					{#if m.partner_email}
+						<div>
+							<dt>E-Mail</dt>
+							<dd><a href={`mailto:${m.partner_email}`}>{m.partner_email}</a></dd>
+						</div>
+					{/if}
+				</dl>
+			</Card>
+		{/if}
+
 		<Card>
 			<h2 class="sec">Im Club</h2>
 			<dl class="facts">
@@ -215,44 +253,6 @@
 					</Button>
 				{/if}
 				{#if inviteMsg}<p class="muted">{inviteMsg}</p>{/if}
-			</Card>
-		{/if}
-
-		{#if m.partner_first_name || m.partner_last_name}
-			<Card>
-				<h2 class="sec">Partner/in</h2>
-				<dl class="facts">
-					<div>
-						<dt>Name</dt>
-						<dd>
-							{[m.partner_title, m.partner_first_name, m.partner_last_name]
-								.filter(Boolean)
-								.join(' ')}
-						</dd>
-					</div>
-					{#if m.partner_birthday}
-						<div>
-							<dt>Geburtstag</dt>
-							<dd>
-								{m.partner_birthday_show_age
-									? formatDate(m.partner_birthday)
-									: formatDayMonth(m.partner_birthday)}
-							</dd>
-						</div>
-					{/if}
-					{#if m.partner_mobile}
-						<div>
-							<dt>Mobil</dt>
-							<dd><a href={`tel:${m.partner_mobile}`}>{m.partner_mobile}</a></dd>
-						</div>
-					{/if}
-					{#if m.partner_email}
-						<div>
-							<dt>E-Mail</dt>
-							<dd><a href={`mailto:${m.partner_email}`}>{m.partner_email}</a></dd>
-						</div>
-					{/if}
-				</dl>
 			</Card>
 		{/if}
 	</main>
