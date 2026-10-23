@@ -67,7 +67,7 @@
 		text-align: right;
 	}
 	dd a {
-		color: var(--accent, #1e4fa3);
+		color: var(--text-link);
 		text-decoration: none;
 		display: inline-block;
 		min-height: 44px;
