@@ -43,30 +43,27 @@ export function amtSpans(rows: AmtYear[]): AmtSpan[] {
 export type PresidentEntry = {
 	year: number;
 	name: string;
-	/** Gesetzt, wenn die Person als Mitglied geführt wird (Link aufs Profil). */
-	memberId: string | null;
+	/** Im Amt bzw. als aktives Mitglied verstorben (Kreuz hinter dem Namen). */
+	deceased: boolean;
 };
 
 /**
  * Präsidenten-Chronik: Mitglieder aus member_amt, Ehemalige aus praesident_chronik.
- * Hat ein Jahr beides, gewinnt das Mitglied (mit Profil-Link). Neueste zuerst.
+ * Hat ein Jahr beides, gewinnt das Mitglied. Neueste zuerst.
  */
 export function presidentChronicle(
-	members: {
-		lions_year: number;
-		member: { id: string; first_name: string; last_name: string } | null;
-	}[],
-	former: { lions_year: number; name: string }[]
+	members: { lions_year: number; member: { first_name: string; last_name: string } | null }[],
+	former: { lions_year: number; name: string; deceased: boolean }[]
 ): PresidentEntry[] {
 	const byYear = new Map<number, PresidentEntry>();
 	for (const f of former)
-		byYear.set(f.lions_year, { year: f.lions_year, name: f.name, memberId: null });
+		byYear.set(f.lions_year, { year: f.lions_year, name: f.name, deceased: f.deceased });
 	for (const r of members) {
 		if (!r.member) continue;
 		byYear.set(r.lions_year, {
 			year: r.lions_year,
 			name: `${r.member.first_name} ${r.member.last_name}`,
-			memberId: r.member.id
+			deceased: false
 		});
 	}
 	return [...byYear.values()].sort((a, b) => b.year - a.year);

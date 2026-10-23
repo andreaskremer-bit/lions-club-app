@@ -25,11 +25,9 @@
 						<div class="row">
 							<dt>{lionsYearLabel(p.year)}</dt>
 							<dd>
-								{#if p.memberId}
-									<a href={resolve('/mitglieder/[id]', { id: p.memberId })}>{p.name}</a>
-								{:else}
-									{p.name}
-								{/if}
+								{p.name}{#if p.deceased}
+									<span aria-hidden="true">&nbsp;†</span><span class="sr-only">, verstorben</span
+									>{/if}
 							</dd>
 						</div>
 					{/each}
@@ -66,14 +64,17 @@
 		font-size: var(--text-base);
 		text-align: right;
 	}
-	dd a {
-		color: var(--text-link);
-		text-decoration: none;
-		display: inline-block;
-		min-height: 44px;
-		line-height: 44px;
-	}
 	.muted {
 		color: var(--text-secondary);
+	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
 	}
 </style>

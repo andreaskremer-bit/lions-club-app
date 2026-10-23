@@ -212,7 +212,7 @@
 		background: none;
 		border: 0;
 		cursor: pointer;
-		color: var(--accent, #1e4fa3);
+		color: var(--text-link);
 		text-align: left;
 		font-size: var(--text-base);
 	}

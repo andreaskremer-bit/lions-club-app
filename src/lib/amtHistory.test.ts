@@ -45,15 +45,15 @@ describe('amtSpans', () => {
 describe('presidentChronicle', () => {
 	it('führt Mitglieder und Ehemalige zusammen, Mitglied gewinnt', () => {
 		const list = presidentChronicle(
-			[{ lions_year: 2001, member: { id: 'm1', first_name: 'Carl', last_name: 'K' } }],
+			[{ lions_year: 2001, member: { first_name: 'Carl', last_name: 'K' } }],
 			[
-				{ lions_year: 2001, name: 'Doppelt' },
-				{ lions_year: 2000, name: 'Ehemalig' }
+				{ lions_year: 2001, name: 'Doppelt', deceased: false },
+				{ lions_year: 2000, name: 'Ehemalig', deceased: true }
 			]
 		);
 		expect(list).toEqual([
-			{ year: 2001, name: 'Carl K', memberId: 'm1' },
-			{ year: 2000, name: 'Ehemalig', memberId: null }
+			{ year: 2001, name: 'Carl K', deceased: false },
+			{ year: 2000, name: 'Ehemalig', deceased: true }
 		]);
 	});
 });

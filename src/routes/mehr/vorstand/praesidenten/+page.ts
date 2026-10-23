@@ -8,18 +8,18 @@ export const load: PageLoad = async ({ parent }) => {
 	const [maRes, chronikRes] = await Promise.all([
 		supabase
 			.from('member_amt')
-			.select('lions_year, member(id, first_name, last_name), amt!inner(key)')
+			.select('lions_year, member(first_name, last_name), amt!inner(key)')
 			.eq('amt.key', 'praesident'),
-		supabase.from('praesident_chronik').select('lions_year, name')
+		supabase.from('praesident_chronik').select('lions_year, name, deceased')
 	]);
 	const members = (maRes.data ?? []) as unknown as {
 		lions_year: number;
-		member: { id: string; first_name: string; last_name: string } | null;
+		member: { first_name: string; last_name: string } | null;
 	}[];
 	return {
 		presidents: presidentChronicle(
 			members,
-			(chronikRes.data ?? []) as { lions_year: number; name: string }[]
+			(chronikRes.data ?? []) as { lions_year: number; name: string; deceased: boolean }[]
 		)
 	};
 };

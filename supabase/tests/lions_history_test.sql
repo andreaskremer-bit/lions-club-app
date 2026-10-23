@@ -5,7 +5,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(9);
 
 truncate auth.users, public.member cascade;
 truncate public.praesident_chronik;
@@ -74,6 +74,12 @@ set local "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000e0002",
 select lives_ok(
   $$ insert into public.praesident_chronik (lions_year, name) values (1997, 'Zweiter') $$,
   'manage_roles schreibt die Chronik'
+);
+
+-- (8b) Verstorben-Kennzeichen, Default false.
+select is(
+  (select deceased from public.praesident_chronik where lions_year = 1997), false,
+  'Chronik-Eintrag ist standardmäßig nicht als verstorben markiert'
 );
 
 -- ── anon ────────────────────────────────────────────────────────────────────
