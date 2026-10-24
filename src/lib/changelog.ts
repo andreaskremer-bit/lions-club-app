@@ -29,6 +29,10 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-10-24',
+		changes: [{ kind: 'verbessert', text: 'Sicherheit und Stabilität verbessert.' }]
+	},
+	{
 		date: '2026-10-23',
 		changes: [
 			{

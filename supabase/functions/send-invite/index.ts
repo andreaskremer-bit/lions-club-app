@@ -11,7 +11,7 @@
 // Aufrufschutz: verify_jwt = false (config.toml) -> Bearer-Token muss der
 // Service-Role-Key sein. Aufrufer ist nur die Server-Route (nach Rechteprüfung).
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { Mailer } from '../_shared/mailer.ts';
 import { renderInviteEmail } from '../send-notifications/email.ts';
 

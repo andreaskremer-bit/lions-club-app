@@ -1,0 +1,11 @@
+{
+	"name": "edge-deps",
+	"private": true,
+	"description": "Nur für npm audit und Dependabot: die npm-Pakete der Edge Functions (Deno) mit genau den Versionen aus ihren npm:-Imports. Wird nie installiert; npm:-Imports und diese Datei hält supabase/functions/_shared/npm-pins.test.ts deckungsgleich.",
+	"dependencies": {
+		"@supabase/supabase-js": "2.118.0",
+		"fflate": "0.8.3",
+		"unpdf": "1.9.1",
+		"web-push": "3.6.7"
+	}
+}

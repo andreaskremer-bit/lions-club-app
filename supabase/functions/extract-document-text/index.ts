@@ -16,7 +16,7 @@
 // PDF: npm:unpdf (serverless-taugliches pdfjs). DOCX: ZIP entpacken (word/document.xml
 // -> Tags strippen). Andere Typen (xlsx, Bilder) -> kein Volltext, nur Metadaten-Suche.
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -27,14 +27,14 @@ const ANON_KEY =
 const MAX_CHARS = 500_000; // FTS-Sicherheitskappe für sehr große Dokumente
 
 async function extractPdf(bytes: Uint8Array): Promise<string> {
-	const { getDocumentProxy, extractText } = await import('npm:unpdf');
+	const { getDocumentProxy, extractText } = await import('npm:unpdf@1.9.1');
 	const pdf = await getDocumentProxy(bytes);
 	const { text } = await extractText(pdf, { mergePages: true });
 	return Array.isArray(text) ? text.join('\n') : text;
 }
 
 async function extractDocx(bytes: Uint8Array): Promise<string> {
-	const { unzipSync, strFromU8 } = await import('npm:fflate');
+	const { unzipSync, strFromU8 } = await import('npm:fflate@0.8.3');
 	const files = unzipSync(bytes);
 	const xml = files['word/document.xml'];
 	if (!xml) return '';

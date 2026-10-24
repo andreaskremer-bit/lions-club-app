@@ -12,8 +12,8 @@
 // (Service-Role-Key) im Authorization-Header. Wird von pg_cron/pg_net bzw. der
 // Admin-Trigger-Route mit dem Service-Key aufgerufen.
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
-import webpush from 'npm:web-push@3';
+import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
+import webpush from 'npm:web-push@3.6.7';
 import { Mailer } from '../_shared/mailer.ts';
 import { type Kind, linkFor, renderEmail } from './email.ts';
 
