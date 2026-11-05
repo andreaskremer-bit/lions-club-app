@@ -1,0 +1,14 @@
+-- Startdatei für `npm run db:remote:read` (siehe scripts/db-remote.sh).
+-- Stellt die Sitzung auf „nur lesen“: jede schreibende Anweisung (INSERT,
+-- UPDATE, DELETE, DDL, auch temporäre Tabellen) bricht mit „cannot execute …
+-- in a read-only transaction“ ab.
+--
+-- Warum über psqlrc und nicht über PGOPTIONS: der Supabase-Pooler (Supavisor)
+-- reicht Startoptionen nicht an Postgres durch – `-c default_transaction_read_only=on`
+-- kam dort nachweislich nicht an (geprüft 2026-11-05).
+--
+-- Schutz gegen Versehen, keine Sicherheitsgrenze: ein ausdrückliches
+-- `begin read write` hebt ihn auf.
+\set QUIET on
+set session characteristics as transaction read only;
+\set QUIET off

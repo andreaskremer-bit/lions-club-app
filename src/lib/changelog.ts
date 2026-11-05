@@ -29,6 +29,15 @@ export type ChangelogEntry = {
 /** Neueste zuerst. */
 export const CHANGELOG: ChangelogEntry[] = [
 	{
+		date: '2026-11-05',
+		changes: [
+			{
+				kind: 'behoben',
+				text: 'Vom Home-Bildschirm aus startet die App jetzt immer auf der Startseite.'
+			}
+		]
+	},
+	{
 		date: '2026-10-24',
 		changes: [{ kind: 'verbessert', text: 'Sicherheit und Stabilität verbessert.' }]
 	},

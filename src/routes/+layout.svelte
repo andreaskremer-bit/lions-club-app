@@ -6,7 +6,9 @@
 	import { page, updated } from '$app/state';
 	import { onMount } from 'svelte';
 	import { Button, HintCard, TabBar, type TabItem } from '$lib/components/ui';
-	import { trackDisplayMode } from '$lib/displayMode';
+	import { browser } from '$app/environment';
+	import { isStandalone, trackDisplayMode } from '$lib/displayMode';
+	import { checkLaunch } from '$lib/launchGuard';
 	import type { ChangelogEntry } from '$lib/changelog';
 	import { markChangelogSeen, readSeen, storageAvailable, unseenEntries } from '$lib/whatsNew';
 	import { markRead, notificationIdFromHash, refreshUnread, unread } from '$lib/unread';
@@ -23,6 +25,26 @@
 	let { data, children } = $props();
 	let supabase = $derived(data.supabase);
 	let session = $derived(data.session);
+
+	// Start-Wächter (siehe $lib/launchGuard): Ein App-Start vom Homescreen beginnt
+	// auf der Startseite, auch wenn das Icon eine Unterseite als Startadresse
+	// trägt. Bewusst hier bei der Initialisierung ausgewertet und nicht erst in
+	// onMount: afterNavigate unten entfernt das `#n=`-Fragment von Push-Links,
+	// danach wäre ein Push-Start nicht mehr erkennbar.
+	const launchTarget = browser
+		? checkLaunch(sessionStorageOrNull(), {
+				standalone: isStandalone(),
+				pathname: location.pathname,
+				isNotificationLink: notificationIdFromHash(location.hash) !== null
+			})
+		: null;
+	function sessionStorageOrNull(): Storage | null {
+		try {
+			return window.sessionStorage;
+		} catch {
+			return null;
+		}
+	}
 
 	// Bottom-Navigation nur für eingeloggte Nutzer, nicht auf dem Login-Screen.
 	let showTabBar = $derived(!!session && page.url.pathname !== '/login');
@@ -102,6 +124,8 @@
 
 	// Auth-Statusänderungen (Login/Logout/Token-Refresh) spiegeln und Daten neu laden.
 	onMount(() => {
+		if (launchTarget) goto(resolve('/'), { replaceState: true });
+
 		// Service Worker aktiv registrieren. vite-pwa injiziert die Registrierung unter
 		// SvelteKit/adapter-netlify NICHT ins HTML -> ohne dies bleibt der SW inaktiv,
 		// `navigator.serviceWorker.ready` (siehe Push-Aktivierung) hängt und der

@@ -224,10 +224,12 @@ export default defineConfig({
 			devOptions: { enabled: true, type: 'classic' },
 			manifest: {
 				name: 'Lions Club Bonn-Rheinaue',
-				short_name: 'Lions BN-Rheinaue',
+				short_name: 'Club-App',
 				description: 'Clubverwaltung des Lions Club Bonn-Rheinaue',
 				lang: 'de',
 				dir: 'ltr',
+				// Feste App-Identität: ohne `id` leiten Browser sie aus `start_url` ab.
+				id: '/',
 				start_url: '/',
 				scope: '/',
 				display: 'standalone',

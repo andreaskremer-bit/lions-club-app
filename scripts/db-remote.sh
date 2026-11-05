@@ -11,6 +11,11 @@
 #   npm run db:remote                      # interaktive psql-Konsole gegen Remote
 #   npm run db:remote -- -c "select now()" # Einzelbefehl
 #   npm run db:remote -- -f migration.sql  # SQL-Datei einspielen
+#
+#   npm run db:remote:read -- -c "select …" # dasselbe, aber NUR LESEND: die Sitzung
+#                                          # startet read-only (scripts/psqlrc-readonly),
+#                                          # Schreibversuche brechen ab. Für Diagnose-
+#                                          # Abfragen gedacht.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -28,6 +33,12 @@ REF=$(grep -E '^PUBLIC_SUPABASE_URL=' .env | sed -E 's#.*://([^.]+)\..*#\1#')
 [ -n "$REF" ] || { echo "Fehler: PUBLIC_SUPABASE_URL fehlt/ungueltig in .env." >&2; exit 1; }
 
 export PGPASSWORD
+
+# Nur-Lesen-Modus: eigene Startdatei statt ~/.psqlrc (greift interaktiv, bei -c und -f).
+if [ "${DB_REMOTE_READONLY:-}" = "1" ]; then
+  export PSQLRC="$PWD/scripts/psqlrc-readonly"
+fi
+
 exec psql \
   "host=aws-0-eu-west-1.pooler.supabase.com port=5432 user=postgres.$REF dbname=postgres sslmode=require" \
   "$@"

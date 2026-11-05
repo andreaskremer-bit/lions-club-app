@@ -13,3 +13,14 @@ test('Login-Seite zeigt das E-Mail-Feld', async ({ page }) => {
 	await page.goto('/login');
 	await expect(page.getByLabel('E-Mail')).toBeVisible();
 });
+
+test('Seiten verweisen auf ein gültiges Web-App-Manifest', async ({ page, request }) => {
+	await page.goto('/login');
+	const href = await page.locator('link[rel="manifest"]').getAttribute('href');
+	expect(href).toBe('/manifest.webmanifest');
+	const res = await request.get(href!);
+	expect(res.ok()).toBe(true);
+	const manifest = await res.json();
+	expect(manifest.start_url).toBe('/');
+	expect(manifest.display).toBe('standalone');
+});
