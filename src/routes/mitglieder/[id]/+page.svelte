@@ -4,7 +4,7 @@
 	import { AppBar, IconButton, Avatar, Tag, Card, ListRow, Button } from '$lib/components/ui';
 	import { ChevronLeft, Phone, Smartphone, Mail, MapPin, Send, Building2 } from '@lucide/svelte';
 	import type { MemberStatus } from '../+page';
-	import { amtSpans, isFvAmt, showLionsJoined } from '$lib/amtHistory';
+	import { amtSpans, isFvAmt, lionsYearLabel, showLionsJoined } from '$lib/amtHistory';
 
 	let { data } = $props();
 	let m = $derived(data.member);
@@ -82,6 +82,15 @@
 		return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'long' }).format(new Date(d));
 	}
 </script>
+
+{#snippet zeitraum(a: { from: number; to: number })}
+	{#if a.from === a.to}
+		<span class="yr">{lionsYearLabel(a.from)}</span>
+	{:else}
+		<span class="yr">{lionsYearLabel(a.from)} –</span>
+		<span class="yr">{lionsYearLabel(a.to)}</span>
+	{/if}
+{/snippet}
 
 <div class="shell">
 	<AppBar title="Profil" eyebrow="Mitglied" bordered>
@@ -219,7 +228,7 @@
 					{#each ämterHistorie as a (a.label + a.from)}
 						<div>
 							<dt>{a.label}</dt>
-							<dd>{a.text}</dd>
+							<dd>{@render zeitraum(a)}</dd>
 						</div>
 					{/each}
 				</dl>
@@ -233,7 +242,7 @@
 					{#each fvHistorie as a (a.label + a.from)}
 						<div>
 							<dt>{a.label}</dt>
-							<dd>{a.text}</dd>
+							<dd>{@render zeitraum(a)}</dd>
 						</div>
 					{/each}
 				</dl>
@@ -330,7 +339,19 @@
 		font-size: var(--text-base);
 		text-align: right;
 	}
+	/* Lange Amtsbezeichnungen („Mitgliedschaftsbeauftragte(r)“) und Zeiträume passen
+	   nicht nebeneinander: zuerst bricht der Zeitraum nach dem Gedankenstrich um
+	   (hohes flex-shrink, jedes Lions-Jahr bleibt ganz), erst danach wird die
+	   Bezeichnung silbengetrennt – nie läuft die Zeile aus der Karte. */
+	.facts--spans dt {
+		min-width: 0;
+		-webkit-hyphens: auto;
+		hyphens: auto;
+	}
 	.facts--spans dd {
+		flex-shrink: 1000;
+	}
+	.facts--spans .yr {
 		white-space: nowrap;
 	}
 </style>
