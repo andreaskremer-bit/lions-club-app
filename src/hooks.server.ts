@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { SECURITY_HEADERS } from '$lib/securityHeaders';
 
 /**
  * Legt pro Request einen Supabase-Server-Client an (Session über Cookies)
@@ -62,4 +63,17 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(supabase, authGuard);
+/**
+ * Sicherheits-Header auf jede Antwort (Seiten, Fehlerseiten, `/api`). Steht in
+ * der Kette ganz außen. Den CSP-Header schreibt SvelteKit selbst (Option `csp`
+ * in `vite.config.ts`), weil nur es den Nonce des Inline-Skripts kennt.
+ */
+const securityHeaders: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+	for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+		response.headers.set(name, value);
+	}
+	return response;
+};
+
+export const handle: Handle = sequence(securityHeaders, supabase, authGuard);

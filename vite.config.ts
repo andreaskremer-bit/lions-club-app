@@ -3,9 +3,11 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import adapter from '@sveltejs/adapter-netlify';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { PAGE_CACHE_NAME, PHOTO_CACHE_NAME } from './src/lib/offlineCache';
+import { cspDirectives } from './src/lib/securityHeaders';
 
 // Inhalts-Hash der Offline-Seite und ihres Install-Skripts.
 //
@@ -68,7 +70,10 @@ const appVersion = berlinDate(commitIso ? new Date(commitIso) : new Date());
 const appCommit =
 	gitOutput('git rev-parse --short=7 HEAD') ?? process.env.COMMIT_REF?.slice(0, 7) ?? 'dev';
 
-export default defineConfig({
+// SvelteKit exportiert den Typ der CSP-Direktiven nicht – aus der Plugin-Option ableiten.
+type KitCsp = NonNullable<NonNullable<Parameters<typeof sveltekit>[0]>['csp']>;
+
+export default defineConfig(({ command, mode }) => ({
 	// Typen für beide Globals stehen in src/app.d.ts, gelesen werden sie nur in
 	// src/lib/version.ts.
 	define: {
@@ -100,6 +105,21 @@ export default defineConfig({
 			version: {
 				name: appCommit === 'dev' ? undefined : appCommit,
 				pollInterval: 10 * 60 * 1000
+			},
+
+			// Content-Security-Policy, vorerst NUR beobachtend (`reportOnly`): der
+			// Browser blockiert nichts, meldet Verstöße aber an /api/csp-report
+			// (Function-Log). Zum Scharfschalten `reportOnly` in `directives`
+			// umbenennen – erst, wenn das Log über mehrere Tage leer bleibt.
+			// Direktiven und Begründung: src/lib/securityHeaders.ts.
+			// Der Supabase-Ursprung kommt aus denselben Env-Dateien, die auch
+			// `$env/static/public` liest (auf Netlify aus den Site-Variablen).
+			csp: {
+				mode: 'auto',
+				reportOnly: cspDirectives({
+					supabaseUrl: loadEnv(mode, process.cwd(), 'PUBLIC_').PUBLIC_SUPABASE_URL,
+					dev: command === 'serve'
+				}) as KitCsp['reportOnly']
 			}
 		}),
 		// PWA mit Web-Push + Offline-Asset-Caching (M5).
@@ -256,4 +276,4 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,ts}', 'supabase/functions/**/*.{test,spec}.{js,ts}'],
 		environment: 'node'
 	}
-});
+}));
