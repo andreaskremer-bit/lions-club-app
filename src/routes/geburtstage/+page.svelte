@@ -13,7 +13,7 @@
 	let view = $state<'mitglieder' | 'partner'>('mitglieder');
 	const viewOptions = [
 		{ value: 'mitglieder', label: 'Mitglieder' },
-		{ value: 'partner', label: 'Partner/innen' }
+		{ value: 'partner', label: 'Partner(innen)' }
 	];
 
 	// Einheitliche Zeile für beide Ansichten; `showAge` steuert „wird X“
@@ -41,7 +41,7 @@
 							memberId: m.id,
 							name:
 								[m.partner_first_name, m.partner_last_name].filter(Boolean).join(' ') ||
-								'Partner/in',
+								'Partner(in)',
 							showAge: m.partner_birthday_show_age,
 							...nextBirthdayInfo(m.partner_birthday!)
 						}));

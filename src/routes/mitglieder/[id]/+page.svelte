@@ -149,7 +149,7 @@
 
 		{#if m.partner_first_name || m.partner_last_name}
 			<Card>
-				<h2 class="sec">Partner/in</h2>
+				<h2 class="sec">Partner(in)</h2>
 				<dl class="facts">
 					<div>
 						<dt>Name</dt>

@@ -7,7 +7,7 @@ export type TResponse = {
 	status: 'zugesagt' | 'abgesagt';
 	comment: string | null;
 	member: { first_name: string; last_name: string } | null;
-	companion: { id: string; name: string }[];
+	companion: { id: string; name: string; is_partner: boolean }[];
 };
 export type TAnswer = {
 	question_id: string;
@@ -29,7 +29,9 @@ export const load: PageLoad = async ({ parent, params }) => {
 			.order('sort_order'),
 		supabase
 			.from('event_response')
-			.select('member_id, status, comment, member(first_name, last_name), companion(id, name)')
+			.select(
+				'member_id, status, comment, member(first_name, last_name), companion(id, name, is_partner)'
+			)
 			// Alle Rückmeldungen: Begleitpersonen zählen auch, wenn das Mitglied abgesagt hat.
 			.eq('event_id', params.id),
 		supabase

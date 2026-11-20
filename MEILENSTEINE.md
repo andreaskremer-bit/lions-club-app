@@ -672,3 +672,15 @@ Anlass: Ein Blogbeitrag über einen Scan von 1.072 Supabase-Apps (98 % mit Befun
 - **Nebenbefunde im Log (ohne Handlungsbedarf):** viermal gleichzeitig „Invalid Refresh Token: Already Used“ (18.11., paralleles Erneuern einer Sitzung) und einmal ein 404 auf eine alte `workbox-….js` (15.11., veralteter Service Worker).
 - **Changelog:** neutraler Eintrag „Sicherheit und Stabilität verbessert.“ für Header und CSP zusammen (am 14.11. bewusst ausgelassen).
 - **Tests:** 168 Unit, 5 E2E (gegen `vite preview`).
+
+## Begleitpersonen: Partner(in) und Gäste getrennt (2026-11-20)
+
+Anlass: In den Meldungen standen Partner(innen) unter „Gäste“, beim Mitglied nur „+1“. Echte Gäste gingen darin unter.
+
+- **Datenmodell** (Migration `20261120120000`): `companion.is_partner boolean not null default false`, eindeutiger Teilindex `companion_one_partner_idx` = höchstens eine Partner(in) je Rückmeldung. Der Name bleibt Text (Stand bei der Anmeldung), damit es ohne Profil-Eintrag geht und Profiländerungen alte Termine nicht umschreiben. RLS unverändert (`comp_write_own` gilt für die neue Spalte mit, auch fürs Umstellen per `update`).
+- **Altdaten:** Nur sichere Treffer markiert – Name genau wie der Partner im Profil (so trug ihn der Button „… hinzufügen“ ein). In Prod vorab gezählt: 44 von 106 Begleitungen, keine doppelten je Rückmeldung. Der Rest bleibt Gast (u. a. 11 mit Nachnamen des Mitglieds – bewusst nicht geraten). Bei künftigen Terminen stellt das Mitglied per „Ist Partner(in)“ um; Umstellen statt Neuanlegen, damit Antworten auf Zusatzfragen (`answer.companion_id`, Cascade) erhalten bleiben. Nur 13 von 37 Mitgliedern haben einen Partner im Profil → Hinweis in der App und News-Beitrag.
+- **Eingabe:** Karte „Begleitpersonen“ mit zwei Abschnitten. „Partner(in)“: Ein-Tipp-Anmeldung aus dem Profil, sonst Namensfeld plus Tipp mit Link auf die eigenen Angaben. „Gäste“: freies Feld wie bisher.
+- **Anzeige:** Gemeinsamer Helfer `src/lib/meldungen.ts` für Termin-Detail, Meldungen-Sheet der Terminliste und Teilnehmerliste. Unter „Zugesagt“ lange Namensform „Andreas Kremer und Petra Kremer“ (User-Entscheidung), weitere Gäste als „(+1 Gast)“; sagt das Mitglied ab, steht die Partner(in) vorn: „Petra Kremer (Andreas Kremer selbst abgesagt)“. Sortiert nach dem Mitglied. Kopfzeile „9 Mitglieder, 4 Partner(innen), 1 Gast“. Gruppe „Gäste“ nur noch echte Gäste, immer mit „Gast von …“. Teilnehmerliste/CSV, Spalte Typ: „Partner(in) von …“ bzw. „Gast von …“.
+- **Wortwahl:** „Partner(in)“/„Partner(innen)“ wie „Präsident(in)“ (User-Entscheidung); die bisherigen „Partner/in“-Beschriftungen auf Profil, Bearbeiten und Geburtstage mit umgestellt.
+- **Im Browser geprüft** (lokaler Stack, Dev-Server, 390 px): Karte mit und ohne Profil-Partner, Meldungen, Sheet, Teilnehmerliste; „Ist Partner(in)“ durchgeklickt.
+- **Tests:** 246 pgTAP (neu `companion_partner_test.sql`, 8), 179 Unit (neu `meldungen.test.ts`).

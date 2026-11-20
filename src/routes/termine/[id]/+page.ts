@@ -9,7 +9,7 @@ export type ResponseRow = {
 	status: RsvpStatus;
 	comment: string | null;
 	member: { first_name: string; last_name: string } | null;
-	companion: { id: string; name: string }[];
+	companion: { id: string; name: string; is_partner: boolean }[];
 };
 
 export type EventDetail = {
@@ -51,7 +51,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 		supabase
 			.from('event')
 			.select(
-				'id, title, type, speaker, location, starts_at, ends_at, description, companion_allowed, donation_required, event_response(id, member_id, status, comment, member(first_name, last_name), companion(id, name))'
+				'id, title, type, speaker, location, starts_at, ends_at, description, companion_allowed, donation_required, event_response(id, member_id, status, comment, member(first_name, last_name), companion(id, name, is_partner))'
 			)
 			.eq('id', params.id)
 			.maybeSingle(),

@@ -285,7 +285,7 @@
 			</Card>
 
 			<Card>
-				<h2 class="sec">Partner/in</h2>
+				<h2 class="sec">Partner(in)</h2>
 				<Input label="Titel" bind:value={partner_title} placeholder="z. B. Dr." />
 				<Input label="Vorname" bind:value={partner_first_name} />
 				<Input label="Nachname" bind:value={partner_last_name} />

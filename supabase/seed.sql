@@ -98,12 +98,18 @@ join (values
   ('clubmaster@example.com',      'abgesagt')
 ) as v(email, status) on v.email = m.email;
 
--- Begleitperson (Club-Abend erlaubt es): Partnerin des Präsidenten
-insert into public.companion (event_response_id, name)
-select r.id, 'Elke Vorsteher'
+-- Begleitpersonen (Club-Abend erlaubt es): Partnerin des Präsidenten, ein Gast der
+-- Sekretärin und die Partnerin des Schatzmeisters, der selbst abgesagt hat.
+insert into public.companion (event_response_id, name, is_partner)
+select r.id, v.name, v.is_partner
 from public.event_response r
 join public.member m on m.id = r.member_id
-where r.event_id = '00000000-0000-0000-0000-0000000a1003' and m.email = 'praesident@example.com';
+join (values
+  ('praesident@example.com',    'Elke Vorsteher',      true),
+  ('sekretaer@example.com',     'Gerd Gastmann',       false),
+  ('schatzmeister@example.com', 'Margarete Kassenwart', true)
+) as v(email, name, is_partner) on v.email = m.email
+where r.event_id = '00000000-0000-0000-0000-0000000a1003';
 
 -- Finalisierte Rückmeldungen am vergangenen Jahresauftakt (für Vergangen-Ansicht)
 insert into public.event_response (event_id, member_id, status)

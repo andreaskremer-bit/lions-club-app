@@ -15,6 +15,7 @@
 	import type { EventListItem } from './+page';
 	import { isEventOver, isEventRunning } from '$lib/dates';
 	import { rsvpCounts } from '$lib/rsvp';
+	import { zugesagtZeilen } from '$lib/meldungen';
 
 	let { data } = $props();
 
@@ -135,21 +136,17 @@
 				.filter((m) => m.status === 'aktiv' && !responders.has(m.id))
 				.map((m) => `${m.first_name} ${m.last_name}`);
 		}
-		// Unter „Zugesagt“ stehen auch Mitglieder, die selbst abgesagt, aber Begleitung
-		// angemeldet haben – deren Gäste zählen in der Zahl mit.
-		return sheetEvent.event_response
-			.filter((r) =>
-				sheetTab === 'zugesagt'
-					? r.status === 'zugesagt' || r.companion.length > 0
-					: r.status === sheetTab
-			)
-			.map((r) => {
-				const nm = nameById.get(r.member_id) ?? 'Unbekannt';
-				if (sheetTab !== 'zugesagt' || !r.companion.length) return nm;
-				return r.status === 'abgesagt'
-					? `${nm} (selbst abgesagt, +${r.companion.length})`
-					: `${nm} (+${r.companion.length})`;
-			})
+		const rs = sheetEvent.event_response.map((r) => ({
+			status: r.status,
+			memberName: nameById.get(r.member_id) ?? 'Unbekannt',
+			companion: r.companion
+		}));
+		// Unter „Zugesagt“ stehen Partner(innen) beim Mitglied, dazu Mitglieder, die selbst
+		// abgesagt, aber Begleitung angemeldet haben (Helfer in $lib/meldungen).
+		if (sheetTab === 'zugesagt') return zugesagtZeilen(rs);
+		return rs
+			.filter((r) => r.status === sheetTab)
+			.map((r) => r.memberName)
 			.sort((a, b) => a.localeCompare(b, 'de'));
 	});
 

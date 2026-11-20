@@ -4,6 +4,7 @@
 	import { AppBar, IconButton, Button, Card } from '$lib/components/ui';
 	import { ChevronLeft, Download } from '@lucide/svelte';
 	import { csvRow, downloadCsv } from '$lib/csv';
+	import { begleitungTyp } from '$lib/meldungen';
 
 	let { data } = $props();
 
@@ -11,18 +12,19 @@
 	type Person = { name: string; kind: string; lookup: string; comment: string };
 
 	// Personen = zugesagte Mitglieder + alle Begleitpersonen. Begleitung zählt auch, wenn das
-	// Mitglied selbst abgesagt hat; dann steht dabei, zu wem sie gehört.
+	// Mitglied selbst abgesagt hat. Typ nennt Partner(in) bzw. Gast und zu wem sie gehören.
 	let persons = $derived.by((): Person[] => {
 		const out: Person[] = [];
 		for (const r of data.responses) {
 			const mn = r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
 			const zugesagt = r.status === 'zugesagt';
 			const comment = r.comment ?? '';
+			const rl = { status: r.status, memberName: mn, companion: r.companion };
 			if (zugesagt) out.push({ name: mn, kind: 'Mitglied', lookup: `m:${r.member_id}`, comment });
 			for (const c of r.companion)
 				out.push({
 					name: c.name,
-					kind: zugesagt ? 'Begleitung' : `Begleitung von ${mn} (selbst abgesagt)`,
+					kind: begleitungTyp(c, rl),
 					lookup: `c:${c.id}`,
 					// Hat das Mitglied abgesagt, steht sein Kommentar bei der Begleitung.
 					comment: zugesagt ? '' : comment

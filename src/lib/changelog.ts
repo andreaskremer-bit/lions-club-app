@@ -30,7 +30,13 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
 	{
 		date: '2026-11-20',
-		changes: [{ kind: 'verbessert', text: 'Sicherheit und Stabilität verbessert.' }]
+		changes: [
+			{
+				kind: 'neu',
+				text: 'Termine: Partner(innen) meldest du jetzt getrennt von weiteren Gästen an. In den Meldungen stehen sie direkt beim Mitglied, unter „Gäste“ nur noch echte Gäste.'
+			},
+			{ kind: 'verbessert', text: 'Sicherheit und Stabilität verbessert.' }
+		]
 	},
 	{
 		date: '2026-11-05',

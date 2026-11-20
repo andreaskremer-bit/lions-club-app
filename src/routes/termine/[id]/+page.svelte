@@ -22,6 +22,14 @@
 	} from '@lucide/svelte';
 	import type { EventType } from '../+page';
 	import { buildIcs, icsFilename } from '$lib/ics';
+	import {
+		aufteilung,
+		gaesteListe,
+		guestsOf,
+		partnerOf,
+		zaehlen,
+		zugesagtZeilen
+	} from '$lib/meldungen';
 
 	let { data } = $props();
 	let supabase = $derived(data.supabase);
@@ -81,30 +89,21 @@
 	// Schreibbares $derived: startet beim geladenen Kommentar, bleibt editierbar.
 	let comment = $derived(myResponse?.comment ?? '');
 	let newCompanion = $state('');
+	let newPartner = $state('');
 	let busy = $state(false);
 	let err = $state('');
 
 	const name = (r: { member: { first_name: string; last_name: string } | null }) =>
 		r.member ? `${r.member.first_name} ${r.member.last_name}` : 'Unbekannt';
-	let zugesagt = $derived(e.event_response.filter((r) => r.status === 'zugesagt'));
 	let abgesagt = $derived(e.event_response.filter((r) => r.status === 'abgesagt'));
-	// Begleitpersonen zählen auch, wenn das Mitglied selbst abgesagt hat (Entscheidung
-	// 2026-10-04): z. B. kommt der Partner allein.
-	let zuGuests = $derived(e.event_response.reduce((n, r) => n + r.companion.length, 0));
-	let zuPersonen = $derived(zugesagt.length + zuGuests);
-	// Gäste namentlich (meist Partner – wer zu wem gehört, weiß der Club). Nur wenn das
-	// Mitglied selbst nicht kommt, steht dabei, zu wem der Gast gehört.
-	let gaeste = $derived(
-		e.event_response
-			.flatMap((r) =>
-				r.companion.map((c) => ({
-					id: c.id,
-					name: c.name,
-					host: r.status === 'abgesagt' ? name(r) : null
-				}))
-			)
-			.sort((a, b) => a.name.localeCompare(b.name, 'de'))
+	// Partner(innen) stehen beim Mitglied, unter „Gäste“ nur echte Gäste (Helfer in
+	// $lib/meldungen). Begleitung zählt auch, wenn das Mitglied selbst abgesagt hat.
+	let meldungen = $derived(
+		e.event_response.map((r) => ({ status: r.status, memberName: name(r), companion: r.companion }))
 	);
+	let zaehlung = $derived(zaehlen(meldungen));
+	let zuZeilen = $derived(zugesagtZeilen(meldungen));
+	let gaeste = $derived(gaesteListe(meldungen));
 	// „Offen“ = aktive Mitglieder, die noch nicht reagiert haben (deckt sich mit dem Karten-Zaehler).
 	let offen = $derived.by(() => {
 		const responded = new Set(e.event_response.map((r) => r.member_id));
@@ -129,13 +128,13 @@
 		await invalidateAll();
 	}
 
-	async function insertCompanion(name: string) {
+	async function insertCompanion(name: string, isPartner: boolean) {
 		if (!myResponse || !name.trim() || busy) return;
 		busy = true;
 		err = '';
 		const { error } = await supabase
 			.from('companion')
-			.insert({ event_response_id: myResponse.id, name: name.trim() });
+			.insert({ event_response_id: myResponse.id, name: name.trim(), is_partner: isPartner });
 		busy = false;
 		if (error) {
 			err = error.message;
@@ -147,14 +146,35 @@
 	async function addCompanion() {
 		const name = newCompanion.trim();
 		if (!name) return;
-		await insertCompanion(name);
+		await insertCompanion(name, false);
 		if (!err) newCompanion = '';
 	}
 
-	// Partner aus dem Mitgliederprofil als Begleitung übernehmen (kein Doppel).
-	let partnerAdded = $derived(
-		!!data.partnerName && (myResponse?.companion ?? []).some((c) => c.name === data.partnerName)
-	);
+	async function addPartner() {
+		const name = newPartner.trim();
+		if (!name) return;
+		await insertCompanion(name, true);
+		if (!err) newPartner = '';
+	}
+
+	// Höchstens eine Partner(in) je Rückmeldung (DB-Index companion_one_partner_idx).
+	let myPartner = $derived(myResponse ? partnerOf(myResponse) : null);
+	let myGuests = $derived(myResponse ? guestsOf(myResponse) : []);
+
+	// Ältere Einträge (vor der Unterscheidung) stehen als Gast da: umstellen statt neu
+	// anlegen, damit Antworten auf Zusatzfragen erhalten bleiben.
+	async function markAsPartner(id: string) {
+		if (busy) return;
+		busy = true;
+		err = '';
+		const { error } = await supabase.from('companion').update({ is_partner: true }).eq('id', id);
+		busy = false;
+		if (error) {
+			err = error.message;
+			return;
+		}
+		await invalidateAll();
+	}
 
 	async function removeCompanion(id: string) {
 		busy = true;
@@ -386,32 +406,81 @@
 					</p>
 				{/if}
 				{#if myResponse}
-					{#each myResponse.companion as c (c.id)}
+					<h3 class="sub">Partner(in)</h3>
+					{#if myPartner}
 						<div class="comp">
-							<span>{c.name}</span>
+							<span>{myPartner.name}</span>
 							{#if !data.isPast}
-								<IconButton label="Entfernen" onclick={() => removeCompanion(c.id)} disabled={busy}>
+								<IconButton
+									label="Partner(in) entfernen"
+									onclick={() => removeCompanion(myPartner!.id)}
+									disabled={busy}
+								>
 									{#snippet icon()}<Trash2 size={18} />{/snippet}
 								</IconButton>
 							{/if}
 						</div>
+					{:else if data.isPast}
+						<p class="muted">Kein(e) Partner(in) angemeldet.</p>
+					{:else if data.partnerName}
+						<Button
+							variant="secondary"
+							fullWidth
+							disabled={busy}
+							onclick={() => insertCompanion(data.partnerName!, true)}
+						>
+							{#snippet iconLeft()}<UserPlus size={18} />{/snippet}
+							{data.partnerName} anmelden
+						</Button>
 					{:else}
-						<p class="muted">Noch keine Begleitperson eingetragen.</p>
-					{/each}
-					{#if !data.isPast}
-						{#if data.partnerName && !partnerAdded}
+						<div class="comp-add">
+							<Input bind:value={newPartner} placeholder="Name" />
 							<Button
 								variant="secondary"
-								fullWidth
-								disabled={busy}
-								onclick={() => insertCompanion(data.partnerName!)}
+								disabled={busy || !newPartner.trim()}
+								onclick={addPartner}
 							>
 								{#snippet iconLeft()}<UserPlus size={18} />{/snippet}
-								{data.partnerName} hinzufügen
+								Hinzufügen
 							</Button>
+						</div>
+						{#if data.myMemberId}
+							<p class="muted hint">
+								Tipp: Hinterlegst du deine Partnerin oder deinen Partner in
+								<a href={resolve('/mitglieder/[id]/bearbeiten', { id: data.myMemberId })}
+									>deinen Angaben</a
+								>, reicht hier künftig ein Tippen.
+							</p>
 						{/if}
+					{/if}
+
+					<h3 class="sub">Gäste</h3>
+					{#each myGuests as c (c.id)}
+						<div class="comp">
+							<span>{c.name}</span>
+							{#if !data.isPast}
+								<div class="comp__actions">
+									{#if !myPartner}
+										<Button variant="ghost" disabled={busy} onclick={() => markAsPartner(c.id)}>
+											Ist Partner(in)
+										</Button>
+									{/if}
+									<IconButton
+										label="Entfernen"
+										onclick={() => removeCompanion(c.id)}
+										disabled={busy}
+									>
+										{#snippet icon()}<Trash2 size={18} />{/snippet}
+									</IconButton>
+								</div>
+							{/if}
+						</div>
+					{:else}
+						<p class="muted">Kein Gast eingetragen.</p>
+					{/each}
+					{#if !data.isPast}
 						<div class="comp-add">
-							<Input bind:value={newCompanion} placeholder="Name der Begleitperson" />
+							<Input bind:value={newCompanion} placeholder="Name" />
 							<Button
 								variant="secondary"
 								disabled={busy || !newCompanion.trim()}
@@ -485,21 +554,17 @@
 			<details class="mgrp" open>
 				<summary class="grp">
 					<ChevronDown size={18} />
-					<span class="grp__label">Zugesagt ({zuPersonen})</span>
-					{#if zuGuests}<span class="grp__split"
-							>· {zugesagt.length}
-							{zugesagt.length === 1 ? 'Mitglied' : 'Mitglieder'}, {zuGuests}
-							{zuGuests === 1 ? 'Gast' : 'Gäste'}</span
+					<span class="grp__label">Zugesagt ({zaehlung.personen})</span>
+					{#if zaehlung.partner || zaehlung.gaeste}<span class="grp__split"
+							>· {aufteilung(zaehlung)}</span
 						>{/if}
 				</summary>
 				<ul class="names">
-					{#each zugesagt as r (r.id)}
-						<li>{name(r)}{r.companion.length ? ` (+${r.companion.length})` : ''}</li>
+					{#each zuZeilen as z, i (i)}
+						<li>{z}</li>
+					{:else}
+						<li class="muted">—</li>
 					{/each}
-					{#each abgesagt.filter((r) => r.companion.length) as r (r.id)}
-						<li>{name(r)}: selbst abgesagt, +{r.companion.length}</li>
-					{/each}
-					{#if zuPersonen === 0}<li class="muted">—</li>{/if}
 				</ul>
 			</details>
 
@@ -539,7 +604,7 @@
 					</summary>
 					<ul class="names">
 						{#each gaeste as c (c.id)}
-							<li>{c.name}{c.host ? ` (Gast von ${c.host})` : ''}</li>
+							<li>{c.name} (Gast von {c.host})</li>
 						{:else}
 							<li class="muted">—</li>
 						{/each}
@@ -621,6 +686,24 @@
 	}
 	.comp {
 		justify-content: space-between;
+	}
+	.comp__actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+	.sub {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--text-secondary);
+		margin: var(--space-3) 0 var(--space-1);
+	}
+	.sub:first-of-type {
+		margin-top: 0;
+	}
+	.hint {
+		font-size: var(--text-sm);
+		margin-top: var(--space-2);
 	}
 	.comp-add {
 		margin-top: var(--space-2);

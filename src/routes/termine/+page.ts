@@ -19,7 +19,11 @@ export type EventListItem = {
 	ends_at: string | null;
 	companion_allowed: boolean;
 	donation_required: boolean;
-	event_response: { member_id: string; status: RsvpStatus; companion: { id: string }[] }[];
+	event_response: {
+		member_id: string;
+		status: RsvpStatus;
+		companion: { id: string; name: string; is_partner: boolean }[];
+	}[];
 };
 
 export const load: PageLoad = async ({ parent }) => {
@@ -29,7 +33,7 @@ export const load: PageLoad = async ({ parent }) => {
 		supabase
 			.from('event')
 			.select(
-				'id, title, type, location, starts_at, ends_at, companion_allowed, donation_required, event_response(member_id, status, companion(id))'
+				'id, title, type, location, starts_at, ends_at, companion_allowed, donation_required, event_response(member_id, status, companion(id, name, is_partner))'
 			)
 			.order('starts_at'),
 		supabase
