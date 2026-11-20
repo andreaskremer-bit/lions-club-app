@@ -556,7 +556,7 @@
 					<ChevronDown size={18} />
 					<span class="grp__label">Zugesagt ({zaehlung.personen})</span>
 					{#if zaehlung.partner || zaehlung.gaeste}<span class="grp__split"
-							>· {aufteilung(zaehlung)}</span
+							>{aufteilung(zaehlung)}</span
 						>{/if}
 				</summary>
 				<ul class="names">
@@ -742,7 +742,17 @@
 	.grp__label {
 		flex: none;
 	}
+	/* Aufteilung in eigener Zeile unter dem Label (eingerückt wie die Namensliste),
+	   statt umbrechend in der schmalen Restspalte daneben. */
+	.grp:has(.grp__split) {
+		flex-wrap: wrap;
+		row-gap: 0;
+		padding-bottom: var(--space-2);
+	}
 	.grp__split {
+		flex-basis: 100%;
+		padding-left: calc(18px + var(--space-2));
+		font-size: var(--text-sm);
 		font-weight: 400;
 		color: var(--text-secondary);
 	}
