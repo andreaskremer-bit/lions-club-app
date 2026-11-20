@@ -26,15 +26,16 @@ test('Seiten verweisen auf ein gültiges Web-App-Manifest', async ({ page, reque
 });
 
 // Sicherheits-Header kommen aus src/hooks.server.ts, die CSP aus der SvelteKit-Option
-// `csp` (vite.config.ts). Der Test gilt für beide Betriebsarten der CSP: beobachtend
-// (Report-Only) und scharf.
+// `csp` (vite.config.ts). Seit 2026-11-20 ist die CSP scharf: ein Rückfall in den
+// beobachtenden Modus (Report-Only) soll hier auffallen.
 test('Antworten tragen Sicherheits-Header und eine CSP mit Nonce', async ({ request }) => {
 	const res = await request.get('/login');
 	const h = res.headers();
 	expect(h['x-frame-options']).toBe('DENY');
 	expect(h['referrer-policy']).toBe('same-origin');
 	expect(h['permissions-policy']).toContain('camera=()');
-	const csp = h['content-security-policy'] ?? h['content-security-policy-report-only'];
+	expect(h['content-security-policy-report-only']).toBeUndefined();
+	const csp = h['content-security-policy'];
 	expect(csp).toMatch(/script-src 'self' 'nonce-[^']+'/);
 	expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
 	expect(csp).toContain("frame-ancestors 'none'");

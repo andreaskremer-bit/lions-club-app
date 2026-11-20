@@ -107,19 +107,21 @@ export default defineConfig(({ command, mode }) => ({
 				pollInterval: 10 * 60 * 1000
 			},
 
-			// Content-Security-Policy, vorerst NUR beobachtend (`reportOnly`): der
-			// Browser blockiert nichts, meldet Verstöße aber an /api/csp-report
-			// (Function-Log). Zum Scharfschalten `reportOnly` in `directives`
-			// umbenennen – erst, wenn das Log über mehrere Tage leer bleibt.
-			// Direktiven und Begründung: src/lib/securityHeaders.ts.
+			// Content-Security-Policy, seit 2026-11-20 SCHARF (`directives`): der
+			// Browser blockiert Verstöße und meldet sie an /api/csp-report
+			// (`[csp] …` im Function-Log). Vom 14. bis 20.11. lief sie nur
+			// beobachtend (`reportOnly`), das Log blieb leer. Neue fremde Quelle =
+			// Direktiven in src/lib/securityHeaders.ts ergänzen, sonst blockiert
+			// der Browser sie. Zum Zurückstellen `directives` wieder in
+			// `reportOnly` umbenennen.
 			// Der Supabase-Ursprung kommt aus denselben Env-Dateien, die auch
 			// `$env/static/public` liest (auf Netlify aus den Site-Variablen).
 			csp: {
 				mode: 'auto',
-				reportOnly: cspDirectives({
+				directives: cspDirectives({
 					supabaseUrl: loadEnv(mode, process.cwd(), 'PUBLIC_').PUBLIC_SUPABASE_URL,
 					dev: command === 'serve'
-				}) as KitCsp['reportOnly']
+				}) as KitCsp['directives']
 			}
 		}),
 		// PWA mit Web-Push + Offline-Asset-Caching (M5).

@@ -34,9 +34,14 @@ const supabase: Handle = async ({ event, resolve }) => {
 			data: { user },
 			error
 		} = await event.locals.supabase.auth.getUser();
-		if (error) return { session: null, user: null };
+		if (error || !user) return { session: null, user: null };
 
-		return { session, user };
+		// `session.user` stammt ungeprüft aus dem Cookie (auth-js umhüllt es mit
+		// einem Proxy, der bei jedem Lesen warnt – `+layout.server.ts` serialisiert
+		// die Session und löste so je Aufruf eine Warnung im Function-Log aus).
+		// Durch den eben geprüften User ersetzen: dann trägt die Session nur noch
+		// Daten, die der Auth-Server bestätigt hat.
+		return { session: { ...session, user }, user };
 	};
 
 	return resolve(event, {
